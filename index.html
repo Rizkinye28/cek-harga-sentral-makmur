@@ -1,453 +1,438 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
 
-<meta charset="UTF-8">
-
-<meta name="viewport"
-      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-
-<title>Cek Harga - Sentral Makmur</title>
-
-<script src="https://unpkg.com/@zxing/browser@0.1.5/umd/zxing-browser.min.js"></script>
-
-<style>
-
-* {
-  box-sizing: border-box;
-}
-
-html {
-  touch-action: manipulation;
-}
-
-body {
-  margin: 0;
-  background: #f4f5f7;
-  font-family: Arial, sans-serif;
-  color: #222;
-}
-
-.container {
-  max-width: 520px;
-  margin: auto;
-  padding: 20px;
-}
-
-.title {
-  text-align: center;
-  font-size: 26px;
-  font-weight: bold;
-  margin-top: 10px;
-}
-
-.subtitle {
-  text-align: center;
-  color: #777;
-  margin-bottom: 20px;
-}
-
-.card {
-  background: white;
-  padding: 18px;
-  border-radius: 18px;
-  box-shadow: 0 4px 15px rgba(0,0,0,.08);
-}
-
-/* =========================
-   CAMERA
-========================= */
-
-#reader {
-  width: 100%;
-  height: 320px;
-  background: #111;
-  border-radius: 15px;
-  overflow: hidden;
-  position: relative;
-}
-
-#reader video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-.camera-message {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  text-align: center;
-  padding: 25px;
-}
-
-.scan-box {
-  position: absolute;
-  left: 6%;
-  right: 6%;
-  top: 32%;
-  height: 36%;
-  border: 2px solid white;
-  border-radius: 8px;
-  z-index: 20;
-  pointer-events: none;
-  box-shadow: 0 0 0 9999px rgba(0,0,0,.20);
-}
-
-.scan-line {
-  position: absolute;
-  left: 6%;
-  right: 6%;
-  top: 50%;
-  height: 2px;
-  background: white;
-  z-index: 21;
-  pointer-events: none;
-  box-shadow: 0 0 8px white;
-}
-
-.scan-hint {
-  position: absolute;
-  bottom: 12px;
-  left: 0;
-  right: 0;
-  text-align: center;
-  color: white;
-  font-size: 13px;
-  z-index: 22;
-  text-shadow: 0 1px 4px black;
-  pointer-events: none;
-}
-
-.auto-zoom-status {
-  position: absolute;
-  top: 12px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(0,0,0,.65);
-  color: white;
-  padding: 7px 12px;
-  border-radius: 20px;
-  font-size: 12px;
-  z-index: 30;
-  display: none;
-  pointer-events: none;
-}
-
-/* =========================
-   ZOOM
-========================= */
-
-#zoomControl {
-  display: none;
-  margin-top: 12px;
-  background: #f1f1f1;
-  padding: 14px;
-  border-radius: 12px;
-}
-
-.zoom-title {
-  text-align: center;
-  font-size: 14px;
-  font-weight: bold;
-  margin-bottom: 3px;
-}
-
-.zoom-help {
-  text-align: center;
-  font-size: 12px;
-  color: #777;
-  margin-bottom: 10px;
-}
-
-.zoom-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.zoom-label {
-  font-size: 13px;
-  font-weight: bold;
-  min-width: 28px;
-  text-align: center;
-}
-
-#zoomSlider {
-  flex: 1;
-  width: 100%;
-  height: 38px;
-  cursor: pointer;
-  touch-action: pan-x;
-  -webkit-appearance: none;
-  appearance: none;
-  background: transparent;
-}
-
-#zoomSlider::-webkit-slider-runnable-track {
-  height: 7px;
-  border-radius: 10px;
-  background: #ccc;
-}
-
-#zoomSlider::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 26px;
-  height: 26px;
-  margin-top: -9px;
-  border-radius: 50%;
-  background: #1f4e78;
-  border: 3px solid white;
-  box-shadow: 0 1px 5px rgba(0,0,0,.25);
-}
-
-#zoomSlider::-moz-range-track {
-  height: 7px;
-  border-radius: 10px;
-  background: #ccc;
-}
-
-#zoomSlider::-moz-range-thumb {
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  background: #1f4e78;
-  border: 3px solid white;
-}
-
-#zoomValue {
-  text-align: center;
-  font-size: 18px;
-  font-weight: bold;
-  margin-top: 6px;
-}
-
-/* =========================
-   BUTTON
-========================= */
-
-button {
-  width: 100%;
-  padding: 15px;
-  margin-top: 12px;
-  border: none;
-  border-radius: 12px;
-  font-size: 16px;
-  font-weight: bold;
-  cursor: pointer;
-  touch-action: manipulation;
-}
-
-.scan-button {
-  background: #1f4e78;
-  color: white;
-}
-
-.stop-button {
-  background: #ddd;
-  color: #222;
-  display: none;
-}
-
-/* =========================
-   SEARCH
-========================= */
-
-.search-area {
-  margin-top: 18px;
-}
-
-.search-title {
-  font-size: 14px;
-  font-weight: bold;
-  margin-bottom: 8px;
-}
-
-.manual {
-  display: flex;
-  gap: 8px;
-}
-
-input {
-  flex: 1;
-  min-width: 0;
-  padding: 14px;
-  border: 1px solid #ccc;
-  border-radius: 12px;
-  font-size: 16px;
-  text-transform: uppercase;
-}
-
-.check-button {
-  width: auto;
-  margin-top: 0;
-  background: #1f4e78;
-  color: white;
-}
-
-.clear-button {
-  background: #eee;
-  color: #222;
-}
-
-/* =========================
-   STATUS
-========================= */
-
-.status {
-  text-align: center;
-  margin-top: 10px;
-  font-size: 13px;
-  color: #777;
-}
-
-/* =========================
-   RESULT
-========================= */
-
-.result {
-  margin-top: 18px;
-}
-
-.product-card {
-  background: #eef8f1;
-  padding: 20px;
-  border-radius: 15px;
-  text-align: center;
-}
-
-.product-name {
-  font-size: 19px;
-  font-weight: bold;
-  line-height: 1.4;
-}
-
-.product-barcode {
-  margin-top: 7px;
-  font-size: 13px;
-  color: #777;
-}
-
-.price {
-  font-size: 38px;
-  font-weight: bold;
-  margin-top: 10px;
-}
-
-.stock-box {
-  margin-top: 18px;
-  padding: 15px;
-  border-radius: 13px;
-  text-align: center;
-}
-
-.stok-aman {
-  background: #e8f7ed;
-  color: #187a3d;
-}
-
-.stok-habis {
-  background: #fff1f1;
-  color: #b42318;
-}
-
-.stock-label {
-  font-size: 12px;
-  font-weight: bold;
-  letter-spacing: .5px;
-}
-
-.stock-number {
-  font-size: 30px;
-  font-weight: bold;
-  margin-top: 5px;
-}
-
-.accurate-code {
-  margin-top: 10px;
-  font-size: 12px;
-  color: #888;
-}
-
-.error {
-  margin-top: 18px;
-  padding: 16px;
-  border-radius: 14px;
-  background: #fff1f1;
-  color: #b42318;
-  text-align: center;
-  font-weight: bold;
-  word-break: break-word;
-}
-
-.loading {
-  margin-top: 18px;
-  padding: 16px;
-  border-radius: 14px;
-  background: #f1f5f9;
-  color: #475569;
-  text-align: center;
-  font-weight: bold;
-}
-
-/* =========================
-   MULTIPLE RESULT
-========================= */
-
-.result-count {
-  font-weight: bold;
-  margin-bottom: 8px;
-}
-
-.result-item {
-  background: white;
-  border: 1px solid #ddd;
-  border-radius: 13px;
-  padding: 14px;
-  margin-top: 9px;
-  cursor: pointer;
-}
-
-.result-item:active {
-  transform: scale(.99);
-}
-
-.result-item-name {
-  font-weight: bold;
-  line-height: 1.4;
-}
-
-.result-item-barcode {
-  font-size: 12px;
-  color: #888;
-  margin-top: 4px;
-}
-
-.result-item-price {
-  font-size: 20px;
-  font-weight: bold;
-  margin-top: 7px;
-}
-
-.result-item-code {
-  font-size: 11px;
-  color: #aaa;
-  margin-top: 4px;
-}
-
-.footer {
-  text-align: center;
-  margin-top: 15px;
-  font-size: 12px;
-  color: #888;
-}
-
-</style>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
+  >
+
+  <title>Cek Harga - Sentral Makmur</title>
+
+  <script src="https://unpkg.com/@zxing/browser@0.1.5/umd/zxing-browser.min.js"></script>
+
+  <style>
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      touch-action: manipulation;
+    }
+
+    body {
+      margin: 0;
+      background: #f4f5f7;
+      font-family: Arial, sans-serif;
+      color: #222;
+    }
+
+    .container {
+      max-width: 520px;
+      margin: auto;
+      padding: 20px;
+    }
+
+    .title {
+      text-align: center;
+      font-size: 26px;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #777;
+      margin-bottom: 20px;
+    }
+
+    .card {
+      background: white;
+      padding: 18px;
+      border-radius: 18px;
+      box-shadow: 0 4px 15px rgba(0,0,0,.08);
+    }
+
+    /* ================= CAMERA ================= */
+
+    #reader {
+      width: 100%;
+      height: 340px;
+      background: #111;
+      border-radius: 15px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    #reader video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .camera-message {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      text-align: center;
+      padding: 25px;
+    }
+
+    .scan-box {
+      position: absolute;
+      left: 4%;
+      right: 4%;
+      top: 29%;
+      height: 42%;
+      border: 2px solid white;
+      border-radius: 8px;
+      z-index: 20;
+      pointer-events: none;
+      box-shadow:
+        0 0 0 9999px rgba(0,0,0,.20);
+    }
+
+    .scan-line {
+      position: absolute;
+      left: 4%;
+      right: 4%;
+      top: 50%;
+      height: 2px;
+      background: white;
+      z-index: 21;
+      pointer-events: none;
+      box-shadow: 0 0 10px white;
+    }
+
+    .scan-hint {
+      position: absolute;
+      bottom: 12px;
+      left: 0;
+      right: 0;
+      text-align: center;
+      color: white;
+      font-size: 13px;
+      z-index: 22;
+      text-shadow: 0 1px 4px black;
+      pointer-events: none;
+    }
+
+    .auto-zoom-status {
+      position: absolute;
+      top: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,.68);
+      color: white;
+      padding: 7px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      z-index: 30;
+      display: none;
+      pointer-events: none;
+    }
+
+    /* ================= ZOOM ================= */
+
+    #zoomControl {
+      display: none;
+      margin-top: 12px;
+      background: #f1f1f1;
+      padding: 14px;
+      border-radius: 12px;
+    }
+
+    .zoom-title {
+      text-align: center;
+      font-size: 14px;
+      font-weight: bold;
+      margin-bottom: 3px;
+    }
+
+    .zoom-help {
+      text-align: center;
+      font-size: 12px;
+      color: #777;
+      margin-bottom: 10px;
+    }
+
+    .zoom-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .zoom-label {
+      font-size: 13px;
+      font-weight: bold;
+      min-width: 28px;
+      text-align: center;
+    }
+
+    #zoomSlider {
+      flex: 1;
+      width: 100%;
+      height: 38px;
+      cursor: pointer;
+      touch-action: pan-x;
+      -webkit-appearance: none;
+      appearance: none;
+      background: transparent;
+    }
+
+    #zoomSlider::-webkit-slider-runnable-track {
+      height: 7px;
+      border-radius: 10px;
+      background: #ccc;
+    }
+
+    #zoomSlider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 26px;
+      height: 26px;
+      margin-top: -9px;
+      border-radius: 50%;
+      background: #1f4e78;
+      border: 3px solid white;
+      box-shadow: 0 1px 5px rgba(0,0,0,.25);
+    }
+
+    #zoomSlider::-moz-range-track {
+      height: 7px;
+      border-radius: 10px;
+      background: #ccc;
+    }
+
+    #zoomSlider::-moz-range-thumb {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: #1f4e78;
+      border: 3px solid white;
+    }
+
+    #zoomValue {
+      text-align: center;
+      font-size: 18px;
+      font-weight: bold;
+      margin-top: 6px;
+    }
+
+    /* ================= BUTTON ================= */
+
+    button {
+      width: 100%;
+      padding: 15px;
+      margin-top: 12px;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+
+    .scan-button {
+      background: #1f4e78;
+      color: white;
+    }
+
+    .stop-button {
+      background: #ddd;
+      color: #222;
+      display: none;
+    }
+
+    /* ================= SEARCH ================= */
+
+    .search-area {
+      margin-top: 18px;
+    }
+
+    .search-title {
+      font-size: 14px;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+
+    .manual {
+      display: flex;
+      gap: 8px;
+    }
+
+    input {
+      flex: 1;
+      min-width: 0;
+      padding: 14px;
+      border: 1px solid #ccc;
+      border-radius: 12px;
+      font-size: 16px;
+      text-transform: uppercase;
+    }
+
+    .check-button {
+      width: auto;
+      margin-top: 0;
+      background: #1f4e78;
+      color: white;
+    }
+
+    .clear-button {
+      background: #eee;
+      color: #222;
+    }
+
+    /* ================= STATUS ================= */
+
+    .status {
+      text-align: center;
+      margin-top: 10px;
+      font-size: 13px;
+      color: #777;
+    }
+
+    /* ================= RESULT ================= */
+
+    .result {
+      margin-top: 18px;
+    }
+
+    .product-card {
+      background: #eef8f1;
+      padding: 20px;
+      border-radius: 15px;
+      text-align: center;
+    }
+
+    .product-name {
+      font-size: 19px;
+      font-weight: bold;
+      line-height: 1.4;
+    }
+
+    .product-barcode {
+      margin-top: 7px;
+      font-size: 13px;
+      color: #777;
+    }
+
+    .price {
+      font-size: 38px;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+
+    .stock-box {
+      margin-top: 18px;
+      padding: 15px;
+      border-radius: 13px;
+      text-align: center;
+    }
+
+    .stok-aman {
+      background: #e8f7ed;
+      color: #187a3d;
+    }
+
+    .stok-habis {
+      background: #fff1f1;
+      color: #b42318;
+    }
+
+    .stock-label {
+      font-size: 12px;
+      font-weight: bold;
+      letter-spacing: .5px;
+    }
+
+    .stock-number {
+      font-size: 30px;
+      font-weight: bold;
+      margin-top: 5px;
+    }
+
+    .accurate-code {
+      margin-top: 10px;
+      font-size: 12px;
+      color: #888;
+    }
+
+    .error {
+      margin-top: 18px;
+      padding: 16px;
+      border-radius: 14px;
+      background: #fff1f1;
+      color: #b42318;
+      text-align: center;
+      font-weight: bold;
+      word-break: break-word;
+    }
+
+    .loading {
+      margin-top: 18px;
+      padding: 16px;
+      border-radius: 14px;
+      background: #f1f5f9;
+      color: #475569;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    /* ================= MULTIPLE RESULT ================= */
+
+    .result-count {
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+
+    .result-item {
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 13px;
+      padding: 14px;
+      margin-top: 9px;
+      cursor: pointer;
+    }
+
+    .result-item:active {
+      transform: scale(.99);
+    }
+
+    .result-item-name {
+      font-weight: bold;
+      line-height: 1.4;
+    }
+
+    .result-item-barcode {
+      font-size: 12px;
+      color: #888;
+      margin-top: 4px;
+    }
+
+    .result-item-price {
+      font-size: 20px;
+      font-weight: bold;
+      margin-top: 7px;
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 15px;
+      font-size: 12px;
+      color: #888;
+    }
+
+  </style>
+
 </head>
 
 <body>
@@ -464,8 +449,6 @@ input {
 
   <div class="card">
 
-    <!-- CAMERA -->
-
     <div id="reader">
 
       <div class="camera-message">
@@ -474,8 +457,6 @@ input {
 
     </div>
 
-    <!-- ZOOM -->
-
     <div id="zoomControl">
 
       <div class="zoom-title">
@@ -483,7 +464,7 @@ input {
       </div>
 
       <div class="zoom-help">
-        Auto Zoom akan membantu memperbesar barcode kecil.
+        Auto Zoom akan membantu membaca barcode kecil.
       </div>
 
       <div class="zoom-row">
@@ -498,7 +479,8 @@ input {
           min="1"
           max="3"
           step="0.1"
-          value="1">
+          value="1"
+        >
 
         <div class="zoom-label">
           3×
@@ -512,35 +494,25 @@ input {
 
     </div>
 
-    <!-- STATUS -->
-
     <div id="status" class="status">
       ⏳ Memuat data produk...
     </div>
 
-    <!-- START -->
-
     <button
       id="startButton"
       class="scan-button"
-      onclick="startScanner()">
-
+      onclick="startScanner()"
+    >
       📷 MULAI SCAN
-
     </button>
-
-    <!-- STOP -->
 
     <button
       id="stopButton"
       class="stop-button"
-      onclick="stopScanner()">
-
+      onclick="stopScanner()"
+    >
       ⏹ HENTIKAN SCAN
-
     </button>
-
-    <!-- SEARCH -->
 
     <div class="search-area">
 
@@ -557,24 +529,23 @@ input {
           autocomplete="off"
           autocapitalize="characters"
           spellcheck="false"
-          placeholder="AMZ003 / CHOCOLATE">
+          placeholder="AMZ003 / CHOCOLATE"
+        >
 
         <button
           class="check-button"
-          onclick="searchProduct()">
-
+          onclick="searchProduct()"
+        >
           CEK
-
         </button>
 
       </div>
 
       <button
         class="clear-button"
-        onclick="clearSearch()">
-
+        onclick="clearSearch()"
+      >
         HAPUS PENCARIAN
-
       </button>
 
     </div>
@@ -593,11 +564,11 @@ input {
 <script>
 
 /* =====================================================
-   API
+   KONFIGURASI
 ===================================================== */
 
 const API_URL =
-'https://script.google.com/macros/s/AKfycbw8Dpkd4Z7-oidp3Y-g_25jPFXa5swegCUe5eeW9KcR_lvdFD_BvJu9gqzrDDSJSPw/exec';
+  'https://script.google.com/macros/s/AKfycbw8Dpkd4Z7-oidp3Y-g_25jPFXa5swegCUe5eeW9KcR_lvdFD_BvJu9gqzrDDSJSPw/exec';
 
 
 /* =====================================================
@@ -607,63 +578,39 @@ const API_URL =
 let products = [];
 
 let codeReader = null;
-
 let scannerControls = null;
-
 let currentStream = null;
+
+let lastBarcode = '';
+let lastScanTime = 0;
 
 let scannerStarting = false;
 
-let lastBarcode = '';
-
-let lastScanTime = 0;
-
-
-/* =====================================================
-   LOCAL CACHE
-===================================================== */
-
-const PRODUCT_LOCAL_CACHE_KEY =
-  'SENTRAL_MAKMUR_PRODUCTS_V1';
-
-const PRODUCT_LOCAL_CACHE_TIME =
-  6 * 60 * 60 * 1000;
-
-
-/* =====================================================
-   ZOOM
-===================================================== */
-
 let zoomTrack = null;
-
 let zoomMin = 1;
-
 let zoomMax = 3;
-
 let zoomStep = 0.1;
-
 let zoomCurrent = 1;
 
 let autoZoomTimer = null;
-
 let autoZoomLevel = 1;
-
-const AUTO_ZOOM_MAX = 3;
-
-const AUTO_ZOOM_DELAY = 350;
-
-const AUTO_ZOOM_STEP = 0.7;
-
-
-/* =====================================================
-   AUDIO
-===================================================== */
 
 let audioContext = null;
 
 
 /* =====================================================
-   LOAD PRODUCTS
+   AUTO ZOOM
+===================================================== */
+
+const AUTO_ZOOM_MAX = 3;
+
+const AUTO_ZOOM_DELAY = 650;
+
+const AUTO_ZOOM_STEP = 0.5;
+
+
+/* =====================================================
+   LOAD PRODUK
 ===================================================== */
 
 function loadProducts() {
@@ -671,91 +618,11 @@ function loadProducts() {
   const status =
     document.getElementById('status');
 
-
-  /*
-   * COBA LOCAL CACHE DULU
-   */
-
-  try {
-
-    const saved =
-      localStorage.getItem(
-        PRODUCT_LOCAL_CACHE_KEY
-      );
-
-    if (saved) {
-
-      const parsed =
-        JSON.parse(saved);
-
-      if (
-        parsed &&
-        Array.isArray(parsed.data) &&
-        Date.now() - parsed.time <
-          PRODUCT_LOCAL_CACHE_TIME
-      ) {
-
-        products =
-          parsed.data;
-
-        status.innerText =
-          '✓ ' +
-          products.length +
-          ' produk siap digunakan';
-
-        /*
-         * Tetap update di belakang layar.
-         */
-
-        loadProductsFromServer(true);
-
-        return;
-
-      }
-
-    }
-
-  }
-
-  catch(error) {
-
-    console.log(
-      'Local cache tidak tersedia:',
-      error
-    );
-
-  }
-
-
-  loadProductsFromServer(false);
-
-}
-
-
-/* =====================================================
-   LOAD FROM SERVER
-===================================================== */
-
-function loadProductsFromServer(
-  silent
-) {
-
-  const status =
-    document.getElementById('status');
-
-
-  if (!silent) {
-
-    status.innerText =
-      '⏳ Memuat data produk...';
-
-  }
-
+  status.innerText =
+    '⏳ Memuat data produk...';
 
   const callbackName =
-    'produkCallback_' +
-    Date.now();
-
+    'produkCallback_' + Date.now();
 
   window[callbackName] =
     function(data) {
@@ -771,45 +638,12 @@ function loadProductsFromServer(
           products =
             data.data;
 
-
-          try {
-
-            localStorage.setItem(
-
-              PRODUCT_LOCAL_CACHE_KEY,
-
-              JSON.stringify({
-
-                time:
-                  Date.now(),
-
-                data:
-                  products
-
-              })
-
-            );
-
-          }
-
-          catch(error) {
-
-            console.log(
-              'Gagal menyimpan local cache:',
-              error
-            );
-
-          }
-
-
           status.innerText =
             '✓ ' +
             products.length +
             ' produk siap digunakan';
 
-        }
-
-        else if (!silent) {
+        } else {
 
           products = [];
 
@@ -826,93 +660,62 @@ function loadProductsFromServer(
 
       catch(error) {
 
-        console.error(
-          'ERROR LOAD PRODUK:',
-          error
+        products = [];
+
+        status.innerText =
+          '❌ Gagal membaca data produk';
+
+        tampilkanError(
+          'Gagal membaca data produk:<br><br>' +
+          aman(
+            error.message ||
+            String(error)
+          )
         );
-
-        if (!silent) {
-
-          tampilkanError(
-            'Gagal membaca data produk.'
-          );
-
-        }
 
       }
 
-
-      const script =
-        document.getElementById(
-          callbackName
-        );
-
-      if (script) {
-
-        script.remove();
-
-      }
-
-      delete window[
+      hapusCallbackScript(
         callbackName
-      ];
+      );
 
     };
 
 
   const script =
-    document.createElement(
-      'script'
-    );
-
+    document.createElement('script');
 
   script.id =
     callbackName;
 
-
   script.src =
     API_URL +
-    '?aksi=produk' +
-    '&callback=' +
+    '?callback=' +
     encodeURIComponent(
       callbackName
     );
 
-
   script.onerror =
     function() {
 
-      console.error(
-        'API PRODUK ERROR'
+      products = [];
+
+      status.innerText =
+        '❌ Data produk gagal dimuat';
+
+      tampilkanError(
+        'Tidak dapat mengambil data produk dari server Apps Script.'
       );
 
-
-      if (!silent) {
-
-        products = [];
-
-        status.innerText =
-          '❌ Data produk gagal dimuat';
-
-        tampilkanError(
-          'Tidak dapat mengambil data produk dari server.'
-        );
-
-      }
-
-
-      delete window[
+      hapusCallbackScript(
         callbackName
-      ];
+      );
 
     };
 
-
-  document
-    .body
-    .appendChild(
-      script
-    );
+  document.body.appendChild(
+    script
+  );
 
 }
 
@@ -931,14 +734,11 @@ async function startScanner() {
     return;
   }
 
-
   scannerStarting = true;
-
 
   try {
 
     aktifkanAudio();
-
 
     if (
       !navigator.mediaDevices ||
@@ -951,21 +751,21 @@ async function startScanner() {
 
     }
 
-
-    document
-      .getElementById(
+    const startButton =
+      document.getElementById(
         'startButton'
-      )
-      .style.display =
-        'none';
+      );
 
-
-    document
-      .getElementById(
+    const stopButton =
+      document.getElementById(
         'stopButton'
-      )
-      .style.display =
-        'block';
+      );
+
+    startButton.style.display =
+      'none';
+
+    stopButton.style.display =
+      'block';
 
 
     const reader =
@@ -973,9 +773,7 @@ async function startScanner() {
         'reader'
       );
 
-
-    reader.innerHTML =
-      '';
+    reader.innerHTML = '';
 
 
     const video =
@@ -983,22 +781,19 @@ async function startScanner() {
         'video'
       );
 
-
-    video.autoplay =
-      true;
-
-    video.muted =
-      true;
-
-    video.playsInline =
-      true;
-
+    video.autoplay = true;
+    video.muted = true;
+    video.playsInline = true;
 
     video.setAttribute(
       'playsinline',
       ''
     );
 
+    video.setAttribute(
+      'webkit-playsinline',
+      ''
+    );
 
     reader.appendChild(
       video
@@ -1010,10 +805,8 @@ async function startScanner() {
         'div'
       );
 
-
     scanBox.className =
       'scan-box';
-
 
     reader.appendChild(
       scanBox
@@ -1025,10 +818,8 @@ async function startScanner() {
         'div'
       );
 
-
     scanLine.className =
       'scan-line';
-
 
     reader.appendChild(
       scanLine
@@ -1040,14 +831,11 @@ async function startScanner() {
         'div'
       );
 
-
     hint.className =
       'scan-hint';
 
-
     hint.innerText =
       'Arahkan barcode ke dalam kotak';
-
 
     reader.appendChild(
       hint
@@ -1059,34 +847,27 @@ async function startScanner() {
         'div'
       );
 
-
     autoZoomStatus.className =
       'auto-zoom-status';
 
-
     autoZoomStatus.id =
       'autoZoomStatus';
-
-
-    autoZoomStatus.innerText =
-      '🔍 Auto Zoom';
-
 
     reader.appendChild(
       autoZoomStatus
     );
 
 
-    /* =================================================
+    /* ================================================
        ZXING
-    ================================================= */
+    ================================================ */
 
     codeReader =
       new ZXingBrowser
         .BrowserMultiFormatReader();
 
 
-    const devices =
+    let devices =
       await ZXingBrowser
         .BrowserCodeReader
         .listVideoInputDevices();
@@ -1104,15 +885,15 @@ async function startScanner() {
     }
 
 
+    /* ================================================
+       PILIH KAMERA BELAKANG
+    ================================================ */
+
     let deviceId =
       devices[
         devices.length - 1
       ].deviceId;
 
-
-    /*
-     * CARI KAMERA BELAKANG
-     */
 
     for (
       const device of devices
@@ -1121,8 +902,7 @@ async function startScanner() {
       const label =
         String(
           device.label || ''
-        )
-        .toLowerCase();
+        ).toLowerCase();
 
 
       if (
@@ -1142,9 +922,9 @@ async function startScanner() {
     }
 
 
-    /* =================================================
-       CAMERA
-    ================================================= */
+    /* ================================================
+       GET USER MEDIA
+    ================================================ */
 
     currentStream =
       await navigator
@@ -1154,29 +934,33 @@ async function startScanner() {
           video: {
 
             deviceId: {
-              exact:
-                deviceId
+              exact: deviceId
             },
 
             facingMode: {
-              ideal:
-                'environment'
+              ideal: 'environment'
             },
 
             width: {
-              ideal:
-                1920
+              ideal: 1920
             },
 
             height: {
-              ideal:
-                1080
+              ideal: 1080
+            },
+
+            frameRate: {
+              ideal: 30,
+              max: 30
+            },
+
+            focusMode: {
+              ideal: 'continuous'
             }
 
           },
 
-          audio:
-            false
+          audio: false
 
         });
 
@@ -1188,95 +972,36 @@ async function startScanner() {
     await video.play();
 
 
-    /*
-     * COBA CONTINUOUS FOCUS
-     */
+    /* ================================================
+       FOCUS + EXPOSURE + WHITE BALANCE
+    ================================================ */
 
-    try {
-
-      const track =
-        currentStream
-          .getVideoTracks()[0];
+    optimalkanKamera();
 
 
-      if (
-        track &&
-        track.getCapabilities
-      ) {
-
-        const capabilities =
-          track.getCapabilities();
-
-
-        if (
-          capabilities.focusMode &&
-          capabilities.focusMode
-            .includes('continuous')
-        ) {
-
-          await track.applyConstraints({
-
-            advanced: [
-
-              {
-                focusMode:
-                  'continuous'
-              }
-
-            ]
-
-          });
-
-        }
-
-      }
-
-    }
-
-    catch(error) {
-
-      console.log(
-        'Continuous focus tidak tersedia:',
-        error
-      );
-
-    }
-
+    /* ================================================
+       ZOOM
+    ================================================ */
 
     setupZoom();
 
 
     document
-      .getElementById(
-        'status'
-      )
+      .getElementById('status')
       .innerText =
-        '📷 Scanner aktif — arahkan barcode';
+      '📷 Scanner aktif — arahkan barcode';
 
 
-    /* =================================================
-       SCAN CONTINUOUS
-    ================================================= */
+    /* ================================================
+       SCAN
+    ================================================ */
 
     scannerControls =
       await codeReader
         .decodeFromStream(
-
           currentStream,
-
           video,
-
-          function(
-            result,
-            error
-          ) {
-
-            /*
-             * JANGAN STOP CAMERA
-             *
-             * Scanner tetap hidup setelah barcode
-             * ditemukan sehingga bisa scan lagi.
-             */
+          function(result, error) {
 
             if (!result) {
 
@@ -1304,14 +1029,9 @@ async function startScanner() {
               Date.now();
 
 
-            /*
-             * Barcode sama jangan diproses
-             * berulang-ulang dalam 1.5 detik.
-             */
-
             if (
               barcode === lastBarcode &&
-              now - lastScanTime < 1500
+              now - lastScanTime < 1200
             ) {
 
               return;
@@ -1329,47 +1049,26 @@ async function startScanner() {
             hentikanAutoZoom();
 
 
+            /* BIP LANGSUNG */
+
+            bunyiBerhasil();
+
+            getarBerhasil();
+
+
             document
               .getElementById(
                 'searchInput'
               )
               .value =
-                barcode;
+              barcode;
 
 
-            /*
-             * Cari langsung dari data lokal.
-             */
-
-            const product =
-              cariProdukBarcodeLocal(
-                barcode
-              );
-
-
-            if (product) {
-
-              tampilkanProdukCepat(
-                product
-              );
-
-
-              cekStokProduk(
-                product
-              );
-
-            }
-
-            else {
-
-              searchBarcode(
-                barcode
-              );
-
-            }
+            searchBarcode(
+              barcode
+            );
 
           }
-
         );
 
   }
@@ -1381,7 +1080,6 @@ async function startScanner() {
       error
     );
 
-
     tampilkanError(
       'Kamera tidak dapat digunakan.' +
       '<br><br>' +
@@ -1391,7 +1089,6 @@ async function startScanner() {
         ''
       )
     );
-
 
     stopScanner();
 
@@ -1408,6 +1105,100 @@ async function startScanner() {
 
 
 /* =====================================================
+   OPTIMALKAN KAMERA
+===================================================== */
+
+function optimalkanKamera() {
+
+  if (!currentStream) {
+    return;
+  }
+
+  const track =
+    currentStream.getVideoTracks()[0];
+
+  if (!track) {
+    return;
+  }
+
+  if (!track.getCapabilities) {
+    return;
+  }
+
+  const capabilities =
+    track.getCapabilities();
+
+  const advanced = {};
+
+
+  if (
+    capabilities.focusMode &&
+    capabilities.focusMode.includes(
+      'continuous'
+    )
+  ) {
+
+    advanced.focusMode =
+      'continuous';
+
+  }
+
+
+  if (
+    capabilities.exposureMode &&
+    capabilities.exposureMode.includes(
+      'continuous'
+    )
+  ) {
+
+    advanced.exposureMode =
+      'continuous';
+
+  }
+
+
+  if (
+    capabilities.whiteBalanceMode &&
+    capabilities.whiteBalanceMode.includes(
+      'continuous'
+    )
+  ) {
+
+    advanced.whiteBalanceMode =
+      'continuous';
+
+  }
+
+
+  if (
+    Object.keys(advanced).length
+  ) {
+
+    try {
+
+      track.applyConstraints({
+        advanced: [
+          advanced
+        ]
+      });
+
+    }
+
+    catch(error) {
+
+      console.log(
+        'Optimasi kamera tidak didukung:',
+        error
+      );
+
+    }
+
+  }
+
+}
+
+
+/* =====================================================
    AUDIO
 ===================================================== */
 
@@ -1417,11 +1208,16 @@ function aktifkanAudio() {
 
     if (!audioContext) {
 
+      const AudioCtx =
+        window.AudioContext ||
+        window.webkitAudioContext;
+
+      if (!AudioCtx) {
+        return;
+      }
+
       audioContext =
-        new (
-          window.AudioContext ||
-          window.webkitAudioContext
-        )();
+        new AudioCtx();
 
     }
 
@@ -1437,7 +1233,206 @@ function aktifkanAudio() {
 
   }
 
+  catch(error) {
+
+    console.log(
+      'Audio error:',
+      error
+    );
+
+  }
+
+}
+
+
+function bunyiBerhasil() {
+
+  try {
+
+    aktifkanAudio();
+
+    if (!audioContext) {
+      return;
+    }
+
+
+    const now =
+      audioContext.currentTime;
+
+
+    const oscillator =
+      audioContext.createOscillator();
+
+    const gain =
+      audioContext.createGain();
+
+
+    oscillator.type =
+      'sine';
+
+
+    oscillator.frequency.setValueAtTime(
+      1450,
+      now
+    );
+
+
+    gain.gain.setValueAtTime(
+      0.0001,
+      now
+    );
+
+
+    gain.gain.exponentialRampToValueAtTime(
+      0.45,
+      now + 0.01
+    );
+
+
+    gain.gain.exponentialRampToValueAtTime(
+      0.0001,
+      now + 0.18
+    );
+
+
+    oscillator.connect(
+      gain
+    );
+
+    gain.connect(
+      audioContext.destination
+    );
+
+
+    oscillator.start(
+      now
+    );
+
+    oscillator.stop(
+      now + 0.19
+    );
+
+  }
+
   catch(error) {}
+
+}
+
+
+function bunyiTidakDitemukan() {
+
+  try {
+
+    aktifkanAudio();
+
+    if (!audioContext) {
+      return;
+    }
+
+
+    bunyiNada(
+      650,
+      0
+    );
+
+
+    setTimeout(
+      function() {
+
+        bunyiNada(
+          450,
+          120
+        );
+
+      },
+      120
+    );
+
+  }
+
+  catch(error) {}
+
+}
+
+
+function bunyiNada(
+  frequency,
+  delay
+) {
+
+  setTimeout(
+    function() {
+
+      try {
+
+        if (!audioContext) {
+          return;
+        }
+
+
+        const now =
+          audioContext.currentTime;
+
+
+        const oscillator =
+          audioContext.createOscillator();
+
+        const gain =
+          audioContext.createGain();
+
+
+        oscillator.type =
+          'sine';
+
+
+        oscillator.frequency.setValueAtTime(
+          frequency,
+          now
+        );
+
+
+        gain.gain.setValueAtTime(
+          0.0001,
+          now
+        );
+
+
+        gain.gain.exponentialRampToValueAtTime(
+          0.3,
+          now + 0.01
+        );
+
+
+        gain.gain.exponentialRampToValueAtTime(
+          0.0001,
+          now + 0.12
+        );
+
+
+        oscillator.connect(
+          gain
+        );
+
+        gain.connect(
+          audioContext.destination
+        );
+
+
+        oscillator.start(
+          now
+        );
+
+        oscillator.stop(
+          now + 0.13
+        );
+
+      }
+
+      catch(error) {}
+
+    },
+    delay
+  );
 
 }
 
@@ -1451,7 +1446,7 @@ function getarBerhasil() {
     ) {
 
       navigator.vibrate(
-        [100]
+        100
       );
 
     }
@@ -1484,193 +1479,6 @@ function getarTidakDitemukan() {
 }
 
 
-function bunyiBerhasil() {
-
-  try {
-
-    aktifkanAudio();
-
-
-    if (!audioContext) {
-      return;
-    }
-
-
-    const oscillator =
-      audioContext
-        .createOscillator();
-
-
-    const gain =
-      audioContext
-        .createGain();
-
-
-    oscillator.type =
-      'sine';
-
-
-    oscillator.frequency.setValueAtTime(
-      1450,
-      audioContext.currentTime
-    );
-
-
-    gain.gain.setValueAtTime(
-      0.0001,
-      audioContext.currentTime
-    );
-
-
-    gain.gain.exponentialRampToValueAtTime(
-      0.55,
-      audioContext.currentTime + 0.01
-    );
-
-
-    gain.gain.exponentialRampToValueAtTime(
-      0.0001,
-      audioContext.currentTime + 0.20
-    );
-
-
-    oscillator.connect(
-      gain
-    );
-
-
-    gain.connect(
-      audioContext.destination
-    );
-
-
-    oscillator.start();
-
-
-    oscillator.stop(
-      audioContext.currentTime + 0.21
-    );
-
-  }
-
-  catch(error) {}
-
-}
-
-
-function bunyiTidakDitemukan() {
-
-  try {
-
-    aktifkanAudio();
-
-
-    if (!audioContext) {
-      return;
-    }
-
-
-    bunyiNada(
-      650,
-      0
-    );
-
-
-    setTimeout(
-      function() {
-
-        bunyiNada(
-          450,
-          0
-        );
-
-      },
-      150
-    );
-
-  }
-
-  catch(error) {}
-
-}
-
-
-function bunyiNada(
-  frequency,
-  delay
-) {
-
-  setTimeout(
-    function() {
-
-      try {
-
-        const oscillator =
-          audioContext
-            .createOscillator();
-
-
-        const gain =
-          audioContext
-            .createGain();
-
-
-        oscillator.type =
-          'sine';
-
-
-        oscillator.frequency.setValueAtTime(
-          frequency,
-          audioContext.currentTime
-        );
-
-
-        gain.gain.setValueAtTime(
-          0.0001,
-          audioContext.currentTime
-        );
-
-
-        gain.gain.exponentialRampToValueAtTime(
-          0.35,
-          audioContext.currentTime + 0.01
-        );
-
-
-        gain.gain.exponentialRampToValueAtTime(
-          0.0001,
-          audioContext.currentTime + 0.12
-        );
-
-
-        oscillator.connect(
-          gain
-        );
-
-
-        gain.connect(
-          audioContext.destination
-        );
-
-
-        oscillator.start();
-
-
-        oscillator.stop(
-          audioContext.currentTime + 0.13
-        );
-
-      }
-
-      catch(error) {}
-
-    },
-    delay
-  );
-
-}
-
-
 /* =====================================================
    ZOOM
 ===================================================== */
@@ -1681,7 +1489,6 @@ function setupZoom() {
     document.getElementById(
       'zoomControl'
     );
-
 
   const slider =
     document.getElementById(
@@ -1700,13 +1507,12 @@ function setupZoom() {
 
 
   const tracks =
-    currentStream
-      .getVideoTracks();
+    currentStream.getVideoTracks();
 
 
   if (
     !tracks ||
-    tracks.length === 0
+    !tracks.length
   ) {
 
     control.style.display =
@@ -1737,9 +1543,7 @@ function setupZoom() {
     zoomTrack.getCapabilities();
 
 
-  if (
-    !capabilities.zoom
-  ) {
+  if (!capabilities.zoom) {
 
     control.style.display =
       'none';
@@ -1777,10 +1581,8 @@ function setupZoom() {
   slider.min =
     zoomMin;
 
-
   slider.max =
     zoomMax;
-
 
   slider.step =
     zoomStep;
@@ -1788,8 +1590,8 @@ function setupZoom() {
 
   zoomCurrent =
     Math.max(
-      1,
-      zoomMin
+      zoomMin,
+      1
     );
 
 
@@ -1808,26 +1610,23 @@ function setupZoom() {
     zoomCurrent;
 
 
+  autoZoomLevel =
+    zoomCurrent;
+
+
   control.style.display =
     'block';
 
 
   updateZoomDisplay();
 
-
   applyZoom();
 
 }
 
 
-/* =====================================================
-   MANUAL ZOOM
-===================================================== */
-
 document
-  .getElementById(
-    'zoomSlider'
-  )
+  .getElementById('zoomSlider')
   .addEventListener(
     'input',
     function() {
@@ -1836,21 +1635,20 @@ document
         return;
       }
 
-
       hentikanAutoZoom();
-
 
       zoomCurrent =
         Number(
           this.value
         );
 
-
       zoomCurrent =
         roundZoom(
           zoomCurrent
         );
 
+      autoZoomLevel =
+        zoomCurrent;
 
       applyZoom();
 
@@ -1864,22 +1662,18 @@ function applyZoom() {
     return;
   }
 
-
   try {
 
     zoomTrack.applyConstraints({
 
       advanced: [
-
         {
           zoom:
             zoomCurrent
         }
-
       ]
 
     });
-
 
     updateZoomDisplay();
 
@@ -1907,9 +1701,9 @@ function jalankanAutoZoom() {
     return;
   }
 
-
   if (
-    zoomMax <= 1
+    zoomMax <=
+    zoomMin
   ) {
 
     return;
@@ -1942,26 +1736,27 @@ function jalankanAutoZoom() {
 
         if (
           autoZoomLevel <
-          AUTO_ZOOM_MAX
+          Math.min(
+            AUTO_ZOOM_MAX,
+            zoomMax
+          )
         ) {
 
           autoZoomLevel +=
             AUTO_ZOOM_STEP;
 
 
-          if (
-            autoZoomLevel >
-            zoomMax
-          ) {
-
-            autoZoomLevel =
-              zoomMax;
-
-          }
+          autoZoomLevel =
+            Math.min(
+              autoZoomLevel,
+              zoomMax
+            );
 
 
           zoomCurrent =
-            autoZoomLevel;
+            roundZoom(
+              autoZoomLevel
+            );
 
 
           const slider =
@@ -1980,8 +1775,20 @@ function jalankanAutoZoom() {
 
           applyZoom();
 
-
           tampilkanAutoZoom();
+
+
+          /* LANJUT AUTO ZOOM
+             sampai barcode terbaca */
+
+          if (
+            zoomCurrent <
+            zoomMax
+          ) {
+
+            jalankanAutoZoom();
+
+          }
 
         }
 
@@ -1996,8 +1803,8 @@ function resetAutoZoom() {
 
   autoZoomLevel =
     Math.max(
-      1,
-      zoomMin
+      zoomMin,
+      1
     );
 
 }
@@ -2011,15 +1818,12 @@ function hentikanAutoZoom() {
       autoZoomTimer
     );
 
-
     autoZoomTimer =
       null;
 
   }
 
-
   resetAutoZoom();
-
 
   sembunyikanAutoZoom();
 
@@ -2050,16 +1854,6 @@ function tampilkanAutoZoom() {
     ).toFixed(1) +
     '×';
 
-
-  setTimeout(
-    function() {
-
-      sembunyikanAutoZoom();
-
-    },
-    700
-  );
-
 }
 
 
@@ -2083,22 +1877,26 @@ function sembunyikanAutoZoom() {
 
 function updateZoomDisplay() {
 
-  document
-    .getElementById(
+  const element =
+    document.getElementById(
       'zoomValue'
-    )
-    .innerText =
+    );
+
+
+  if (element) {
+
+    element.innerText =
       Number(
         zoomCurrent
       ).toFixed(1) +
       '×';
 
+  }
+
 }
 
 
-function roundZoom(
-  value
-) {
+function roundZoom(value) {
 
   return Math.round(
     value * 10
@@ -2168,10 +1966,8 @@ function stopScanner() {
   currentStream =
     null;
 
-
   zoomTrack =
     null;
-
 
   scannerStarting =
     false;
@@ -2214,38 +2010,6 @@ function stopScanner() {
 
 
 /* =====================================================
-   CARI BARCODE LOCAL
-===================================================== */
-
-function cariProdukBarcodeLocal(
-  barcode
-) {
-
-  const target =
-    String(
-      barcode || ''
-    )
-    .trim()
-    .toUpperCase();
-
-
-  return products.find(
-    function(product) {
-
-      return String(
-        product.barcode || ''
-      )
-      .trim()
-      .toUpperCase() ===
-      target;
-
-    }
-  ) || null;
-
-}
-
-
-/* =====================================================
    MANUAL SEARCH
 ===================================================== */
 
@@ -2280,83 +2044,38 @@ function searchProduct() {
   }
 
 
-  /*
-   * 1. BARCODE EXACT
-   */
+  /* BARCODE */
 
-  const exactBarcode =
+  const exact =
     products.find(
       function(product) {
 
-        return String(
-          product.barcode || ''
-        )
-        .trim()
-        .toUpperCase() ===
-        keyword;
+        return (
+          String(
+            product.barcode || ''
+          )
+          .trim()
+          .toUpperCase()
+          ===
+          keyword
+        );
 
       }
     );
 
 
-  if (exactBarcode) {
+  if (exact) {
 
-    tampilkanProdukCepat(
-      exactBarcode
+    searchBarcode(
+      exact.barcode
     );
-
-
-    cekStokProduk(
-      exactBarcode
-    );
-
 
     return;
 
   }
 
 
-  /*
-   * 2. KODE ACCURATE EXACT
-   *
-   * Berguna untuk produk tanpa barcode.
-   */
-
-  const exactKode =
-    products.find(
-      function(product) {
-
-        return String(
-          product.kodeAccurate || ''
-        )
-        .trim()
-        .toUpperCase() ===
-        keyword;
-
-      }
-    );
-
-
-  if (exactKode) {
-
-    tampilkanProdukCepat(
-      exactKode
-    );
-
-
-    cekStokProduk(
-      exactKode
-    );
-
-
-    return;
-
-  }
-
-
-  /*
-   * 3. CARI NAMA
-   */
+  /* NAMA */
 
   const hasil =
     products.filter(
@@ -2381,11 +2100,6 @@ function searchProduct() {
     hasil.length === 0
   ) {
 
-    /*
-     * Kalau tidak ada di MASTER,
-     * tetap coba API.
-     */
-
     searchBarcode(
       keyword
     );
@@ -2399,15 +2113,32 @@ function searchProduct() {
     hasil.length === 1
   ) {
 
-    tampilkanProdukCepat(
-      hasil[0]
+    /*
+     * Untuk item tanpa barcode,
+     * langsung tampilkan data lokal
+     * jika sudah tersedia.
+     */
+
+    if (
+      !hasil[0].barcode &&
+      (
+        hasil[0].stock !== undefined ||
+        hasil[0].stok !== undefined
+      )
+    ) {
+
+      tampilkanProdukDenganStok(
+        hasil[0]
+      );
+
+      return;
+
+    }
+
+
+    searchBarcode(
+      hasil[0].barcode
     );
-
-
-    cekStokProduk(
-      hasil[0]
-    );
-
 
     return;
 
@@ -2422,333 +2153,7 @@ function searchProduct() {
 
 
 /* =====================================================
-   TAMPILKAN PRODUK CEPAT
-===================================================== */
-
-function tampilkanProdukCepat(
-  product
-) {
-
-  if (!product) {
-    return;
-  }
-
-
-  const nama =
-    product.name || '-';
-
-
-  const barcode =
-    product.barcode || '-';
-
-
-  const harga =
-    product.price || '-';
-
-
-  const kode =
-    product.kodeAccurate || '-';
-
-
-  document
-    .getElementById(
-      'result'
-    )
-    .innerHTML =
-
-    '<div class="product-card">' +
-
-      '<div class="product-name">' +
-        aman(nama) +
-      '</div>' +
-
-      '<div class="product-barcode">' +
-        'Barcode: ' +
-        aman(barcode) +
-      '</div>' +
-
-      '<div class="price">' +
-        'Rp ' +
-        aman(harga) +
-      '</div>' +
-
-      '<div id="stockArea" class="stock-box stok-aman">' +
-
-        '<div class="stock-label">' +
-          'STOK TERSEDIA' +
-        '</div>' +
-
-        '<div class="stock-number">' +
-          '⏳ Mengecek...' +
-        '</div>' +
-
-      '</div>' +
-
-      '<div class="accurate-code">' +
-        'Kode Accurate: ' +
-        aman(kode) +
-      '</div>' +
-
-    '</div>';
-
-}
-
-
-/* =====================================================
-   CEK STOK PRODUK
-===================================================== */
-
-function cekStokProduk(
-  product
-) {
-
-  if (!product) {
-    return;
-  }
-
-
-  const barcode =
-    String(
-      product.barcode || ''
-    )
-    .trim()
-    .toUpperCase();
-
-
-  const kodeAccurate =
-    String(
-      product.kodeAccurate || ''
-    )
-    .trim()
-    .toUpperCase();
-
-
-  if (
-    !barcode &&
-    !kodeAccurate
-  ) {
-
-    tampilkanError(
-      'Produk belum memiliki Barcode maupun Kode Accurate.'
-    );
-
-    return;
-
-  }
-
-
-  document
-    .getElementById(
-      'status'
-    )
-    .innerText =
-      '⏳ Mengecek stok Accurate...';
-
-
-  const callbackName =
-    'stokCallback_' +
-    Date.now();
-
-
-  window[callbackName] =
-    function(response) {
-
-      try {
-
-        if (
-          !response ||
-          response.success !== true ||
-          !response.data
-        ) {
-
-          bunyiTidakDitemukan();
-
-          getarTidakDitemukan();
-
-
-          tampilkanError(
-            aman(
-              response &&
-              response.error
-                ?
-                response.error
-                :
-                'Stok produk tidak ditemukan.'
-            )
-          );
-
-
-          document
-            .getElementById(
-              'status'
-            )
-            .innerText =
-              '❌ Stok tidak ditemukan';
-
-
-          return;
-
-        }
-
-
-        /*
-         * Harga dari MASTER tetap digunakan.
-         */
-
-        const data =
-          response.data;
-
-
-        data.nama =
-          product.name ||
-          data.nama ||
-          '';
-
-
-        data.harga =
-          product.price ||
-          data.harga ||
-          '-';
-
-
-        data.barcode =
-          product.barcode ||
-          data.barcode ||
-          '';
-
-
-        data.kodeAccurate =
-          product.kodeAccurate ||
-          data.kodeAccurate ||
-          '';
-
-
-        tampilkanProdukDenganStok(
-          data
-        );
-
-
-        document
-          .getElementById(
-            'status'
-          )
-          .innerText =
-            '✓ Produk ditemukan';
-
-
-      }
-
-      catch(error) {
-
-        console.error(
-          error
-        );
-
-
-        tampilkanError(
-          'Gagal membaca response server.'
-        );
-
-      }
-
-
-      hapusCallbackScript(
-        callbackName
-      );
-
-    };
-
-
-  const params = [];
-
-
-  if (barcode) {
-
-    params.push(
-      'barcode=' +
-      encodeURIComponent(
-        barcode
-      )
-    );
-
-  }
-
-
-  if (kodeAccurate) {
-
-    params.push(
-      'kodeAccurate=' +
-      encodeURIComponent(
-        kodeAccurate
-      )
-    );
-
-  }
-
-
-  params.push(
-    'aksi=stok'
-  );
-
-
-  params.push(
-    'callback=' +
-    encodeURIComponent(
-      callbackName
-    )
-  );
-
-
-  const script =
-    document.createElement(
-      'script'
-    );
-
-
-  script.id =
-    callbackName;
-
-
-  script.src =
-    API_URL +
-    '?' +
-    params.join('&');
-
-
-  script.onerror =
-    function() {
-
-      tampilkanError(
-        '❌ Tidak dapat terhubung ke server.'
-      );
-
-
-      document
-        .getElementById(
-          'status'
-        )
-        .innerText =
-          '❌ Gagal terhubung';
-
-
-      delete window[
-        callbackName
-      ];
-
-    };
-
-
-  document
-    .body
-    .appendChild(
-      script
-    );
-
-}
-
-
-/* =====================================================
-   BACKWARD COMPATIBILITY
+   SEARCH KE APPS SCRIPT
 ===================================================== */
 
 function searchBarcode(
@@ -2763,55 +2168,177 @@ function searchBarcode(
     .toUpperCase();
 
 
-  const product =
-    cariProdukBarcodeLocal(
-      barcode
-    );
-
-
-  if (product) {
-
-    tampilkanProdukCepat(
-      product
-    );
-
-
-    cekStokProduk(
-      product
-    );
-
-
+  if (!barcode) {
     return;
-
   }
 
 
-  /*
-   * Kalau tidak ada di MASTER,
-   * tetap kirim barcode ke backend.
-   */
+  document
+    .getElementById(
+      'status'
+    )
+    .innerText =
+      '⏳ Mengecek harga dan stok...';
 
-  cekStokProduk({
 
-    barcode:
-      barcode,
+  document
+    .getElementById(
+      'result'
+    )
+    .innerHTML =
+      '<div class="loading">' +
+      '⏳ Mengambil data produk...' +
+      '</div>';
 
-    name:
-      '',
 
-    price:
-      '',
+  const callbackName =
+    'stokCallback_' +
+    Date.now();
 
-    kodeAccurate:
-      ''
 
-  });
+  window[callbackName] =
+    function(response) {
+
+      try {
+
+        if (
+          !response ||
+          response.success !== true
+        ) {
+
+          bunyiTidakDitemukan();
+          getarTidakDitemukan();
+
+
+          const pesan =
+            response &&
+            response.error
+            ?
+            response.error
+            :
+            'Data produk tidak ditemukan.';
+
+
+          tampilkanError(
+            aman(
+              pesan
+            )
+          );
+
+
+          document
+            .getElementById(
+              'status'
+            )
+            .innerText =
+              '❌ Data tidak ditemukan';
+
+
+          return;
+
+        }
+
+
+        if (!response.data) {
+
+          tampilkanError(
+            'Data produk kosong.'
+          );
+
+          return;
+
+        }
+
+
+        tampilkanProdukDenganStok(
+          response.data
+        );
+
+
+        document
+          .getElementById(
+            'status'
+          )
+          .innerText =
+            '✓ Produk ditemukan';
+
+      }
+
+      catch(error) {
+
+        tampilkanError(
+          'Terjadi kesalahan:<br><br>' +
+          aman(
+            error.message ||
+            String(error)
+          )
+        );
+
+      }
+
+
+      hapusCallbackScript(
+        callbackName
+      );
+
+    };
+
+
+  const script =
+    document.createElement(
+      'script'
+    );
+
+
+  script.id =
+    callbackName;
+
+
+  script.src =
+    API_URL +
+    '?aksi=stok' +
+    '&barcode=' +
+    encodeURIComponent(
+      barcode
+    ) +
+    '&callback=' +
+    encodeURIComponent(
+      callbackName
+    );
+
+
+  script.onerror =
+    function() {
+
+      tampilkanError(
+        '❌ Tidak dapat terhubung ke server Apps Script.'
+      );
+
+
+      document
+        .getElementById(
+          'status'
+        )
+        .innerText =
+          '❌ Gagal terhubung ke server';
+
+
+      hapusCallbackScript(
+        callbackName
+      );
+
+    };
+
+
+  document.body.appendChild(
+    script
+  );
 
 }
 
 
 /* =====================================================
-   TAMPILKAN PRODUK + STOK
+   HASIL PRODUK
 ===================================================== */
 
 function tampilkanProdukDenganStok(
@@ -2820,29 +2347,31 @@ function tampilkanProdukDenganStok(
 
   const stok =
     Number(
-      data.stok || 0
+      data.stok ??
+      data.stock ??
+      0
     );
 
 
   const stokClass =
     stok > 0
-      ?
-      'stok-aman'
-      :
-      'stok-habis';
+    ?
+    'stok-aman'
+    :
+    'stok-habis';
 
 
   const stokText =
     stok > 0
-      ?
-      stok +
-      ' ' +
-      (
-        data.satuan ||
-        'PCS'
-      )
-      :
-      'HABIS';
+    ?
+    stok +
+    ' ' +
+    (
+      data.satuan ||
+      'PCS'
+    )
+    :
+    'HABIS';
 
 
   document
@@ -2855,21 +2384,26 @@ function tampilkanProdukDenganStok(
 
       '<div class="product-name">' +
         aman(
-          data.nama || ''
+          data.nama ||
+          data.name ||
+          ''
         ) +
       '</div>' +
 
       '<div class="product-barcode">' +
         'Barcode: ' +
         aman(
-          data.barcode || '-'
+          data.barcode ||
+          '-'
         ) +
       '</div>' +
 
       '<div class="price">' +
         'Rp ' +
         aman(
-          data.harga || '-'
+          data.harga ||
+          data.price ||
+          '-'
         ) +
       '</div>' +
 
@@ -2892,7 +2426,9 @@ function tampilkanProdukDenganStok(
       '<div class="accurate-code">' +
         'Kode Accurate: ' +
         aman(
-          data.kodeAccurate || '-'
+          data.kodeAccurate ||
+          data.no ||
+          '-'
         ) +
       '</div>' +
 
@@ -2911,9 +2447,9 @@ function tampilkanDaftar(
 
   let html =
     '<div class="result-count">' +
-      '🔎 Ditemukan ' +
-      hasil.length +
-      ' produk' +
+    '🔎 Ditemukan ' +
+    hasil.length +
+    ' produk' +
     '</div>';
 
 
@@ -2922,39 +2458,26 @@ function tampilkanDaftar(
 
 
   hasil.forEach(
-    function(
-      product,
-      index
-    ) {
-
-      const barcode =
-        product.barcode ||
-        '-';
-
-
-      const kode =
-        product.kodeAccurate ||
-        '-';
-
+    function(product, index) {
 
       html +=
 
         '<div class="result-item" ' +
-          'onclick="pilihProduk(' +
-          index +
-          ')">' +
+        'onclick="pilihProduk(' +
+        index +
+        ')">' +
 
           '<div class="result-item-name">' +
             aman(
-              product.name ||
-              '-'
+              product.name
             ) +
           '</div>' +
 
           '<div class="result-item-barcode">' +
             'Barcode: ' +
             aman(
-              barcode
+              product.barcode ||
+              '-'
             ) +
           '</div>' +
 
@@ -2962,14 +2485,8 @@ function tampilkanDaftar(
             'Rp ' +
             aman(
               product.price ||
+              product.harga ||
               '-'
-            ) +
-          '</div>' +
-
-          '<div class="result-item-code">' +
-            'Kode Accurate: ' +
-            aman(
-              kode
             ) +
           '</div>' +
 
@@ -3014,28 +2531,67 @@ function pilihProduk(
     )
     .value =
       String(
-        product.barcode ||
-        product.kodeAccurate ||
-        ''
+        product.barcode || ''
       )
       .toUpperCase();
 
 
   /*
-   * LANGSUNG TAMPILKAN HARGA
+   * Kalau item tidak punya barcode,
+   * jangan paksa cari berdasarkan barcode kosong.
    */
 
-  tampilkanProdukCepat(
-    product
-  );
+  if (
+    !product.barcode
+  ) {
+
+    if (
+      product.stock !== undefined ||
+      product.stok !== undefined
+    ) {
+
+      tampilkanProdukDenganStok(
+        product
+      );
+
+      return;
+
+    }
 
 
-  /*
-   * BARU AMBIL STOK
-   */
+    /*
+     * Cari berdasarkan ID/kode Accurate
+     * bila tersedia.
+     */
 
-  cekStokProduk(
-    product
+    if (
+      product.id ||
+      product.kodeAccurate ||
+      product.no
+    ) {
+
+      searchBarcode(
+        product.id ||
+        product.kodeAccurate ||
+        product.no
+      );
+
+      return;
+
+    }
+
+
+    tampilkanError(
+      'Produk ditemukan, tetapi data stok produk belum tersedia.'
+    );
+
+    return;
+
+  }
+
+
+  searchBarcode(
+    product.barcode
   );
 
 }
@@ -3096,6 +2652,41 @@ function tampilkanError(
 
 
 /* =====================================================
+   SAFE HTML
+===================================================== */
+
+function aman(
+  text
+) {
+
+  return String(
+    text
+  )
+  .replace(
+    /&/g,
+    '&amp;'
+  )
+  .replace(
+    /</g,
+    '&lt;'
+  )
+  .replace(
+    />/g,
+    '&gt;'
+  )
+  .replace(
+    /"/g,
+    '&quot;'
+  )
+  .replace(
+    /'/g,
+    '&#039;'
+  );
+
+}
+
+
+/* =====================================================
    CALLBACK CLEANUP
 ===================================================== */
 
@@ -3108,63 +2699,22 @@ function hapusCallbackScript(
       callbackName
     );
 
-
   if (script) {
-
     script.remove();
-
   }
 
-
-  delete window[
-    callbackName
-  ];
-
-}
-
-
-/* =====================================================
-   SAFE HTML
-===================================================== */
-
-function aman(
-  text
-) {
-
-  return String(
-    text
-  )
-
-  .replace(
-    /&/g,
-    '&amp;'
-  )
-
-  .replace(
-    /</g,
-    '&lt;'
-  )
-
-  .replace(
-    />/g,
-    '&gt;'
-  )
-
-  .replace(
-    /"/g,
-    '&quot;'
-  )
-
-  .replace(
-    /'/g,
-    '&#039;'
-  );
+  try {
+    delete window[
+      callbackName
+    ];
+  }
+  catch(error) {}
 
 }
 
 
 /* =====================================================
-   INPUT CAPITAL
+   INPUT
 ===================================================== */
 
 document
@@ -3181,10 +2731,6 @@ document
     }
   );
 
-
-/* =====================================================
-   ENTER
-===================================================== */
 
 document
   .getElementById(
@@ -3208,7 +2754,7 @@ document
 
 
 /* =====================================================
-   LOAD
+   LOAD AWAL
 ===================================================== */
 
 loadProducts();
