@@ -349,9 +349,7 @@
 
   <div class="card">
 
-    <!-- =========================
-         CAMERA
-    ========================= -->
+    <!-- CAMERA -->
 
     <div id="reader">
 
@@ -366,9 +364,7 @@
     </div>
 
 
-    <!-- =========================
-         ZOOM
-    ========================= -->
+    <!-- ZOOM -->
 
     <div id="zoomControl">
 
@@ -440,9 +436,7 @@
     </button>
 
 
-    <!-- =========================
-         SEARCH
-    ========================= -->
+    <!-- SEARCH -->
 
     <div class="search-area">
 
@@ -537,6 +531,13 @@ let zoomCurrent = 1;
 
 
 /* =========================================
+   AUDIO VARIABLES
+========================================= */
+
+let audioContext = null;
+
+
+/* =========================================
    LOAD PRODUCTS
 ========================================= */
 
@@ -621,6 +622,14 @@ function loadProducts() {
 async function startScanner() {
 
   try {
+
+    /*
+     * Aktifkan audio dari tombol MULAI SCAN.
+     * Ini membantu browser HP mengizinkan suara.
+     */
+
+    aktifkanAudio();
+
 
     if (
       !navigator.mediaDevices ||
@@ -790,9 +799,7 @@ async function startScanner() {
     await video.play();
 
 
-    /* =========================
-       SETUP ZOOM
-    ========================= */
+    /* SETUP ZOOM */
 
     setupZoom();
 
@@ -835,7 +842,10 @@ async function startScanner() {
               Date.now();
 
 
-            /* Hindari scan barcode sama berulang */
+            /*
+             * Hindari barcode yang sama
+             * terbaca berkali-kali.
+             */
 
             if (
               barcode === lastBarcode &&
@@ -895,6 +905,246 @@ async function startScanner() {
 
 
 /* =========================================
+   AUDIO
+========================================= */
+
+function aktifkanAudio() {
+
+  try {
+
+    if (!audioContext) {
+
+      audioContext =
+        new (
+          window.AudioContext ||
+          window.webkitAudioContext
+        )();
+
+    }
+
+
+    if (
+      audioContext.state === 'suspended'
+    ) {
+
+      audioContext.resume();
+
+    }
+
+  }
+
+  catch (error) {
+
+    console.log(
+      'Audio tidak tersedia:',
+      error
+    );
+
+  }
+
+}
+
+
+/* =========================================
+   BUNYI BERHASIL
+========================================= */
+
+function bunyiBerhasil() {
+
+  try {
+
+    aktifkanAudio();
+
+
+    if (!audioContext) {
+      return;
+    }
+
+
+    const oscillator =
+      audioContext.createOscillator();
+
+    const gain =
+      audioContext.createGain();
+
+
+    oscillator.type =
+      'sine';
+
+
+    oscillator.frequency.setValueAtTime(
+      1200,
+      audioContext.currentTime
+    );
+
+
+    gain.gain.setValueAtTime(
+      0.0001,
+      audioContext.currentTime
+    );
+
+
+    gain.gain.exponentialRampToValueAtTime(
+      0.18,
+      audioContext.currentTime + 0.01
+    );
+
+
+    gain.gain.exponentialRampToValueAtTime(
+      0.0001,
+      audioContext.currentTime + 0.12
+    );
+
+
+    oscillator.connect(gain);
+
+    gain.connect(
+      audioContext.destination
+    );
+
+
+    oscillator.start();
+
+    oscillator.stop(
+      audioContext.currentTime + 0.13
+    );
+
+  }
+
+  catch (error) {
+
+    console.log(
+      'Bunyi berhasil gagal:',
+      error
+    );
+
+  }
+
+}
+
+
+/* =========================================
+   BUNYI TIDAK DITEMUKAN
+========================================= */
+
+function bunyiTidakDitemukan() {
+
+  try {
+
+    aktifkanAudio();
+
+
+    if (!audioContext) {
+      return;
+    }
+
+
+    bunyiNada(
+      700,
+      0
+    );
+
+
+    setTimeout(
+      function() {
+
+        bunyiNada(
+          500,
+          0
+        );
+
+      },
+      130
+    );
+
+  }
+
+  catch (error) {
+
+    console.log(
+      'Bunyi error gagal:',
+      error
+    );
+
+  }
+
+}
+
+
+/* =========================================
+   NADA AUDIO
+========================================= */
+
+function bunyiNada(
+  frequency,
+  delay
+) {
+
+  setTimeout(
+    function() {
+
+      try {
+
+        const oscillator =
+          audioContext.createOscillator();
+
+        const gain =
+          audioContext.createGain();
+
+
+        oscillator.type =
+          'sine';
+
+
+        oscillator.frequency.setValueAtTime(
+          frequency,
+          audioContext.currentTime
+        );
+
+
+        gain.gain.setValueAtTime(
+          0.0001,
+          audioContext.currentTime
+        );
+
+
+        gain.gain.exponentialRampToValueAtTime(
+          0.14,
+          audioContext.currentTime + 0.01
+        );
+
+
+        gain.gain.exponentialRampToValueAtTime(
+          0.0001,
+          audioContext.currentTime + 0.10
+        );
+
+
+        oscillator.connect(gain);
+
+        gain.connect(
+          audioContext.destination
+        );
+
+
+        oscillator.start();
+
+        oscillator.stop(
+          audioContext.currentTime + 0.11
+        );
+
+      }
+
+      catch (error) {}
+
+    },
+    delay
+  );
+
+}
+
+
+/* =========================================
    SETUP ZOOM
 ========================================= */
 
@@ -941,11 +1191,6 @@ function setupZoom() {
     track;
 
 
-  /*
-   * Cek apakah browser
-   * menyediakan kemampuan zoom
-   */
-
   if (
     !track.getCapabilities
   ) {
@@ -990,20 +1235,12 @@ function setupZoom() {
     );
 
 
-  /*
-   * Batasi maksimal 3x
-   */
-
   zoomMax =
     Math.min(
       zoomMax,
       3
     );
 
-
-  /*
-   * Mulai dari 1x
-   */
 
   zoomCurrent =
     Math.max(
@@ -1017,7 +1254,6 @@ function setupZoom() {
 
 
   updateZoomDisplay();
-
 
   applyZoom();
 
@@ -1141,7 +1377,7 @@ function applyZoom() {
 
 
 /* =========================================
-   UPDATE ZOOM DISPLAY
+   UPDATE ZOOM
 ========================================= */
 
 function updateZoomDisplay() {
@@ -1248,7 +1484,7 @@ function stopScanner() {
 
 
 /* =========================================
-   SEARCH
+   SEARCH PRODUCT
 ========================================= */
 
 function searchProduct() {
@@ -1281,8 +1517,7 @@ function searchProduct() {
 
 
   /*
-   * PRIORITAS 1:
-   * Barcode cocok persis
+   * BARCODE PERSIS
    */
 
   const exact =
@@ -1312,8 +1547,7 @@ function searchProduct() {
 
 
   /*
-   * PRIORITAS 2:
-   * Cari nama produk
+   * NAMA PRODUK
    */
 
   const hasil =
@@ -1390,11 +1624,29 @@ function searchBarcode(barcode) {
 
   if (product) {
 
-    tampilkanProduk(product);
+    /*
+     * BUNYI BIP
+     * hanya jika produk ditemukan
+     */
+
+    bunyiBerhasil();
+
+    tampilkanProduk(
+      product
+    );
 
   }
 
   else {
+
+    /*
+     * BUNYI BIP-BIP
+     * jika barcode terbaca
+     * tetapi produk tidak ada
+     */
+
+    bunyiTidakDitemukan();
+
 
     tampilkanError(
       'Barcode tidak ditemukan.' +
@@ -1518,7 +1770,9 @@ function pilihProduk(index) {
     ).toUpperCase();
 
 
-  tampilkanProduk(product);
+  tampilkanProduk(
+    product
+  );
 
 }
 
@@ -1634,7 +1888,7 @@ document
 
 
 /* =========================================
-   LOAD DATA SAAT HALAMAN DIBUKA
+   LOAD DATA
 ========================================= */
 
 loadProducts();
