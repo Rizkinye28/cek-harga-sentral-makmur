@@ -1,14 +1,20 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
+
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0">
 
   <title>Cek Harga - Sentral Makmur</title>
 
   <script src="https://unpkg.com/@zxing/browser@0.1.5/umd/zxing-browser.min.js"></script>
 
   <style>
+
     * {
       box-sizing: border-box;
     }
@@ -21,34 +27,38 @@
     }
 
     .container {
-      max-width: 500px;
+      max-width: 520px;
       margin: auto;
-      padding: 20px;
+      padding: 18px;
     }
 
     .title {
       text-align: center;
       font-size: 26px;
       font-weight: bold;
-      margin-top: 10px;
+      margin-top: 8px;
     }
 
     .subtitle {
       text-align: center;
       color: #777;
-      margin-bottom: 20px;
+      margin-bottom: 18px;
     }
 
     .card {
       background: white;
-      padding: 18px;
+      padding: 16px;
       border-radius: 18px;
       box-shadow: 0 4px 15px rgba(0,0,0,.08);
     }
 
+    /* =========================
+       CAMERA
+    ========================= */
+
     #reader {
       width: 100%;
-      height: 300px;
+      height: 330px;
       background: #111;
       border-radius: 15px;
       overflow: hidden;
@@ -70,20 +80,59 @@
       color: white;
       text-align: center;
       padding: 25px;
-      z-index: 2;
+      z-index: 10;
+    }
+
+    .scan-box {
+      position: absolute;
+      left: 5%;
+      right: 5%;
+      top: 30%;
+      height: 40%;
+      border: 2px solid white;
+      border-radius: 8px;
+      z-index: 20;
+      pointer-events: none;
+
+      box-shadow:
+        0 0 0 9999px rgba(0,0,0,.18);
     }
 
     .scan-line {
       position: absolute;
-      left: 10%;
-      right: 10%;
+      left: 6%;
+      right: 6%;
       top: 50%;
       height: 2px;
       background: white;
+      z-index: 21;
       box-shadow: 0 0 8px white;
-      z-index: 5;
       pointer-events: none;
     }
+
+    /* =========================
+       ZOOM
+    ========================= */
+
+    .zoom-controls {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .zoom-button {
+      flex: 1;
+      padding: 10px;
+      margin: 0;
+      background: #333;
+      color: white;
+      border-radius: 10px;
+      font-size: 15px;
+    }
+
+    /* =========================
+       BUTTON
+    ========================= */
 
     button {
       width: 100%;
@@ -107,6 +156,10 @@
       display: none;
     }
 
+    /* =========================
+       MANUAL
+    ========================= */
+
     .manual {
       display: flex;
       gap: 8px;
@@ -120,6 +173,8 @@
       border: 1px solid #ccc;
       border-radius: 12px;
       font-size: 16px;
+
+      text-transform: uppercase;
     }
 
     .check-button {
@@ -128,6 +183,10 @@
       background: #1f4e78;
       color: white;
     }
+
+    /* =========================
+       RESULT
+    ========================= */
 
     .result {
       margin-top: 18px;
@@ -165,110 +224,283 @@
       color: #777;
     }
 
+    .success-message {
+      margin-top: 12px;
+      padding: 10px;
+      border-radius: 10px;
+      background: #eef8f1;
+      color: #18794e;
+      text-align: center;
+      font-size: 14px;
+      font-weight: bold;
+    }
+
     .footer {
       text-align: center;
       margin-top: 15px;
       font-size: 12px;
       color: #888;
     }
+
   </style>
+
 </head>
+
 
 <body>
 
+
 <div class="container">
+
 
   <div class="title">
     SENTRAL MAKMUR
   </div>
 
+
   <div class="subtitle">
     CEK HARGA PRODUK
   </div>
 
+
   <div class="card">
+
+
+    <!-- =====================
+         CAMERA
+    ====================== -->
 
     <div id="reader">
 
-      <div id="cameraMessage" class="camera-message">
+      <div
+        id="cameraMessage"
+        class="camera-message">
+
         Tekan MULAI SCAN untuk membuka kamera
+
       </div>
 
     </div>
+
+
+    <!-- =====================
+         ZOOM
+    ====================== -->
+
+    <div
+      id="zoomControls"
+      class="zoom-controls"
+      style="display:none;">
+
+      <button
+        class="zoom-button"
+        onclick="zoomOut()">
+
+        − Zoom
+
+      </button>
+
+
+      <button
+        class="zoom-button"
+        onclick="zoomReset()">
+
+        1×
+
+      </button>
+
+
+      <button
+        class="zoom-button"
+        onclick="zoomIn()">
+
+        + Zoom
+
+      </button>
+
+    </div>
+
+
+    <!-- =====================
+         START
+    ====================== -->
 
     <button
       id="startButton"
       class="scan-button"
       onclick="startScanner()">
+
       📷 MULAI SCAN
+
     </button>
+
+
+    <!-- =====================
+         STOP
+    ====================== -->
 
     <button
       id="stopButton"
       class="stop-button"
       onclick="stopScanner()">
+
       ⏹ HENTIKAN SCAN
+
     </button>
+
+
+    <!-- =====================
+         MANUAL
+    ====================== -->
 
     <div class="manual">
 
       <input
         id="barcodeInput"
         type="text"
-        placeholder="Barcode: AMZ003 / 123456"
-        autocomplete="off">
+        inputmode="text"
+        autocomplete="off"
+        autocapitalize="characters"
+        spellcheck="false"
+        placeholder="Ketik barcode manual">
 
       <button
         class="check-button"
         onclick="checkManual()">
+
         CEK
+
       </button>
 
     </div>
 
+
     <div id="result"></div>
 
+
   </div>
 
+
   <div class="footer">
+
     Scan barcode untuk melihat harga jual satuan
+
   </div>
+
 
 </div>
 
+
 <script>
 
+
+/* =====================================================
+   VARIABEL
+===================================================== */
+
 let codeReader = null;
+
 let scannerControls = null;
 
+let currentVideoTrack = null;
 
-/* =========================
+let currentZoom = 1;
+
+let isScanning = false;
+
+let lastBarcode = "";
+
+let lastScanTime = 0;
+
+
+/* =====================================================
+   FORMAT BARCODE
+===================================================== */
+
+const FORMATS = [
+
+  ZXingBrowser.BarcodeFormat.EAN_13,
+
+  ZXingBrowser.BarcodeFormat.EAN_8,
+
+  ZXingBrowser.BarcodeFormat.UPC_A,
+
+  ZXingBrowser.BarcodeFormat.UPC_E,
+
+  ZXingBrowser.BarcodeFormat.CODE_39,
+
+  ZXingBrowser.BarcodeFormat.CODE_93,
+
+  ZXingBrowser.BarcodeFormat.CODE_128,
+
+  ZXingBrowser.BarcodeFormat.ITF,
+
+  ZXingBrowser.BarcodeFormat.QR_CODE
+
+];
+
+
+/* =====================================================
    MULAI SCANNER
-========================= */
+===================================================== */
 
 async function startScanner() {
 
+
+  if (isScanning) {
+    return;
+  }
+
+
+  isScanning = true;
+
+
   const reader =
-    document.getElementById("reader");
+    document.getElementById(
+      "reader"
+    );
+
 
   const startButton =
-    document.getElementById("startButton");
+    document.getElementById(
+      "startButton"
+    );
+
 
   const stopButton =
-    document.getElementById("stopButton");
+    document.getElementById(
+      "stopButton"
+    );
+
 
   const message =
-    document.getElementById("cameraMessage");
+    document.getElementById(
+      "cameraMessage"
+    );
 
-  startButton.style.display = "none";
-  stopButton.style.display = "block";
+
+  startButton.style.display =
+    "none";
+
+
+  stopButton.style.display =
+    "block";
+
 
   message.innerHTML =
-    "Memuat scanner...";
+    "Membuka kamera...";
+
 
   try {
 
-    if (!window.ZXingBrowser) {
+
+    /* =====================
+       CEK ZXING
+    ====================== */
+
+    if (
+      !window.ZXingBrowser
+    ) {
 
       throw new Error(
         "Scanner barcode gagal dimuat."
@@ -276,14 +508,30 @@ async function startScanner() {
 
     }
 
+
+    /* =====================
+       READER
+    ====================== */
+
     codeReader =
-      new ZXingBrowser.BrowserMultiFormatReader();
+      new ZXingBrowser
+        .BrowserMultiFormatReader();
+
+
+    /* =====================
+       KAMERA
+    ====================== */
 
     const devices =
-      await ZXingBrowser.BrowserCodeReader
+      await ZXingBrowser
+        .BrowserCodeReader
         .listVideoInputDevices();
 
-    if (!devices.length) {
+
+    if (
+      !devices ||
+      devices.length === 0
+    ) {
 
       throw new Error(
         "Kamera tidak ditemukan."
@@ -291,316 +539,973 @@ async function startScanner() {
 
     }
 
+
+    /* =====================
+       PILIH KAMERA BELAKANG
+    ====================== */
+
     let deviceId =
       devices[0].deviceId;
 
-    /*
-     * Prioritaskan kamera belakang
-     */
 
-    for (const device of devices) {
+    for (
+      const device of devices
+    ) {
+
 
       const label =
-        String(device.label || "")
-          .toLowerCase();
+        String(
+          device.label || ""
+        ).toLowerCase();
+
 
       if (
-        label.includes("back") ||
-        label.includes("rear") ||
-        label.includes("environment") ||
-        label.includes("belakang")
+
+        label.includes(
+          "back"
+        ) ||
+
+        label.includes(
+          "rear"
+        ) ||
+
+        label.includes(
+          "environment"
+        ) ||
+
+        label.includes(
+          "belakang"
+        )
+
       ) {
 
         deviceId =
           device.deviceId;
 
         break;
+
       }
+
     }
+
+
+    /* =====================
+       BERSIHKAN CAMERA
+    ====================== */
 
     reader.innerHTML = "";
 
-    const video =
-      document.createElement("video");
 
-    video.autoplay = true;
-    video.muted = true;
-    video.playsInline = true;
+    /* =====================
+       VIDEO
+    ====================== */
+
+    const video =
+      document.createElement(
+        "video"
+      );
+
+
+    video.autoplay =
+      true;
+
+
+    video.muted =
+      true;
+
+
+    video.playsInline =
+      true;
+
 
     video.setAttribute(
       "playsinline",
       ""
     );
 
-    video.style.width = "100%";
-    video.style.height = "100%";
-    video.style.objectFit = "cover";
 
-    reader.appendChild(video);
+    video.setAttribute(
+      "webkit-playsinline",
+      ""
+    );
+
+
+    video.style.width =
+      "100%";
+
+
+    video.style.height =
+      "100%";
+
+
+    video.style.objectFit =
+      "cover";
+
+
+    reader.appendChild(
+      video
+    );
+
+
+    /* =====================
+       SCAN BOX
+    ====================== */
+
+    const scanBox =
+      document.createElement(
+        "div"
+      );
+
+
+    scanBox.className =
+      "scan-box";
+
+
+    reader.appendChild(
+      scanBox
+    );
+
+
+    /* =====================
+       SCAN LINE
+    ====================== */
 
     const scanLine =
-      document.createElement("div");
+      document.createElement(
+        "div"
+      );
+
 
     scanLine.className =
       "scan-line";
 
-    reader.appendChild(scanLine);
+
+    reader.appendChild(
+      scanLine
+    );
+
+
+    /* =====================
+       START ZXING
+    ====================== */
 
     scannerControls =
-      await codeReader.decodeFromVideoDevice(
-        deviceId,
-        video,
-        function(result) {
+      await codeReader
+        .decodeFromVideoDevice(
 
-          if (result) {
+          deviceId,
+
+          video,
+
+          function(
+            result,
+            error
+          ) {
+
+
+            if (!result) {
+              return;
+            }
+
+
+            /*
+             * UBAH KE HURUF KAPITAL
+             */
 
             const barcode =
-              result.getText();
+              String(
+                result.getText()
+              ).trim()
+              .toUpperCase();
+
+
+            /*
+             * Hindari scan berulang
+             */
+
+            const now =
+              Date.now();
+
+
+            if (
+
+              barcode ===
+              lastBarcode &&
+
+              now -
+              lastScanTime <
+              2000
+
+            ) {
+
+              return;
+
+            }
+
+
+            lastBarcode =
+              barcode;
+
+
+            lastScanTime =
+              now;
+
 
             console.log(
-              "Barcode:",
+              "BARCODE:",
               barcode
             );
 
-            stopScanner();
+
+            /*
+             * Masukkan ke input
+             */
 
             document
               .getElementById(
                 "barcodeInput"
               )
-              .value = barcode;
+              .value =
+              barcode;
 
-            checkManual();
+
+            /*
+             * Cari harga
+             */
+
+            cariHarga(
+              barcode
+            );
+
           }
 
+        );
+
+
+    /* =====================
+       AMBIL TRACK CAMERA
+    ====================== */
+
+    try {
+
+
+      const stream =
+        video.srcObject;
+
+
+      if (stream) {
+
+
+        const tracks =
+          stream.getVideoTracks();
+
+
+        if (
+          tracks.length
+        ) {
+
+          currentVideoTrack =
+            tracks[0];
+
         }
-      );
+
+      }
+
+    }
+
+    catch (e) {}
+
+
+    /* =====================
+       CEK ZOOM
+    ====================== */
+
+    if (
+      currentVideoTrack
+    ) {
+
+
+      const capabilities =
+        currentVideoTrack
+          .getCapabilities();
+
+
+      if (
+
+        capabilities &&
+
+        capabilities.zoom
+
+      ) {
+
+
+        currentZoom =
+          capabilities.zoom.min ||
+          1;
+
+
+        document
+          .getElementById(
+            "zoomControls"
+          )
+          .style.display =
+          "flex";
+
+
+        applyZoom();
+
+      }
+
+    }
+
 
   }
 
   catch (error) {
 
-    console.error(error);
 
-    tampilkanError(
-      "Kamera/scanner tidak dapat digunakan.<br><br>" +
-      String(error.message || error)
+    console.error(
+      "Scanner error:",
+      error
     );
 
+
+    tampilkanError(
+
+      "Kamera/scanner tidak dapat digunakan." +
+
+      "<br><br>" +
+
+      aman(
+        error.message ||
+        error.name ||
+        error
+      )
+
+    );
+
+
     stopScanner();
+
   }
+
 }
 
 
-/* =========================
-   STOP
-========================= */
+/* =====================================================
+   ZOOM
+===================================================== */
+
+function applyZoom() {
+
+
+  if (
+    !currentVideoTrack
+  ) {
+
+    return;
+
+  }
+
+
+  try {
+
+
+    const capabilities =
+      currentVideoTrack
+        .getCapabilities();
+
+
+    if (
+
+      !capabilities ||
+
+      !capabilities.zoom
+
+    ) {
+
+      return;
+
+    }
+
+
+    const min =
+      capabilities.zoom.min;
+
+
+    const max =
+      capabilities.zoom.max;
+
+
+    currentZoom =
+      Math.max(
+
+        min,
+
+        Math.min(
+          max,
+          currentZoom
+        )
+
+      );
+
+
+    currentVideoTrack
+      .applyConstraints({
+
+        advanced: [
+
+          {
+            zoom:
+              currentZoom
+          }
+
+        ]
+
+      });
+
+
+  }
+
+  catch (e) {
+
+    console.log(
+      "Zoom tidak didukung."
+    );
+
+  }
+
+}
+
+
+function zoomIn() {
+
+
+  if (
+    !currentVideoTrack
+  ) {
+
+    return;
+
+  }
+
+
+  try {
+
+
+    const c =
+      currentVideoTrack
+        .getCapabilities();
+
+
+    const step =
+      c.zoom.step ||
+      0.1;
+
+
+    currentZoom +=
+      step * 2;
+
+
+    applyZoom();
+
+
+  }
+
+  catch (e) {}
+
+}
+
+
+function zoomOut() {
+
+
+  if (
+    !currentVideoTrack
+  ) {
+
+    return;
+
+  }
+
+
+  try {
+
+
+    const c =
+      currentVideoTrack
+        .getCapabilities();
+
+
+    const step =
+      c.zoom.step ||
+      0.1;
+
+
+    currentZoom -=
+      step * 2;
+
+
+    applyZoom();
+
+
+  }
+
+  catch (e) {}
+
+}
+
+
+function zoomReset() {
+
+
+  if (
+    !currentVideoTrack
+  ) {
+
+    return;
+
+  }
+
+
+  try {
+
+
+    const c =
+      currentVideoTrack
+        .getCapabilities();
+
+
+    currentZoom =
+      c.zoom.min ||
+      1;
+
+
+    applyZoom();
+
+
+  }
+
+  catch (e) {}
+
+}
+
+
+/* =====================================================
+   STOP SCANNER
+===================================================== */
 
 function stopScanner() {
 
+
   try {
 
-    if (scannerControls) {
+    if (
+      scannerControls
+    ) {
+
       scannerControls.stop();
+
     }
 
-  } catch (e) {}
+  }
 
-  scannerControls = null;
+  catch (e) {}
+
+
+  scannerControls =
+    null;
+
 
   try {
 
-    if (codeReader) {
+    if (
+      codeReader
+    ) {
+
       codeReader.reset();
+
     }
 
-  } catch (e) {}
+  }
 
-  codeReader = null;
+  catch (e) {}
 
-  document.getElementById(
-    "stopButton"
-  ).style.display = "none";
 
-  document.getElementById(
-    "startButton"
-  ).style.display = "block";
+  codeReader =
+    null;
+
+
+  currentVideoTrack =
+    null;
+
+
+  isScanning =
+    false;
+
+
+  document
+    .getElementById(
+      "stopButton"
+    )
+    .style.display =
+    "none";
+
+
+  document
+    .getElementById(
+      "startButton"
+    )
+    .style.display =
+    "block";
+
+
+  document
+    .getElementById(
+      "zoomControls"
+    )
+    .style.display =
+    "none";
+
 
   const reader =
-    document.getElementById("reader");
+    document.getElementById(
+      "reader"
+    );
+
 
   reader.innerHTML =
+
     '<div id="cameraMessage" class="camera-message">' +
-    'Tekan MULAI SCAN untuk membuka kamera' +
+
+      'Tekan MULAI SCAN untuk membuka kamera' +
+
     '</div>';
+
 }
 
 
-/* =========================
+/* =====================================================
+   INPUT MANUAL
+===================================================== */
+
+document
+  .getElementById(
+    "barcodeInput"
+  )
+  .addEventListener(
+    "input",
+    function() {
+
+      this.value =
+        this.value
+          .toUpperCase();
+
+    }
+  );
+
+
+/* =====================================================
    CEK MANUAL
-========================= */
+===================================================== */
 
 function checkManual() {
 
-  const barcode =
+
+  const input =
     document
-      .getElementById("barcodeInput")
-      .value
-      .trim();
+      .getElementById(
+        "barcodeInput"
+      );
+
+
+  const barcode =
+    String(
+      input.value || ""
+    )
+      .trim()
+      .toUpperCase();
+
+
+  /*
+   * Pastikan input tetap kapital
+   */
+
+  input.value =
+    barcode;
+
 
   if (!barcode) {
+
 
     tampilkanError(
       "Masukkan barcode terlebih dahulu."
     );
 
+
     return;
+
   }
 
-  cariHarga(barcode);
+
+  cariHarga(
+    barcode
+  );
+
 }
 
 
-/* =========================
+/* =====================================================
    CARI HARGA
-========================= */
+===================================================== */
 
-function cariHarga(barcode) {
+function cariHarga(
+  barcode
+) {
 
-  document.getElementById(
-    "result"
-  ).innerHTML =
+
+  document
+    .getElementById(
+      "result"
+    )
+    .innerHTML =
+
     '<div class="loading">' +
-    '🔎 Mencari harga...' +
+
+      '🔎 Mencari harga...' +
+
     '</div>';
 
+
   /*
-   * Untuk sementara kita tes koneksi
-   * ke Google Apps Script.
-   *
-   * Nanti URL Web App kamu dimasukkan
-   * di sini.
+   * URL GOOGLE APPS SCRIPT
    */
 
   const API_URL =
+
     "https://script.google.com/macros/s/AKfycbzCIC_CqDz406f9DCpg9hihD_Jgqw5b-yfwjOrNm7F-eRwUeR-D4uSOyi3KqZRTVpw/exec";
 
+
   fetch(
+
     API_URL +
+
     "?barcode=" +
-    encodeURIComponent(barcode)
+
+    encodeURIComponent(
+      barcode
+    )
+
   )
 
-  .then(response =>
-    response.json()
+  .then(
+    response =>
+      response.json()
   )
 
-  .then(data =>
-    tampilkanHasil(data)
+  .then(
+    data => {
+
+      tampilkanHasil(
+        data
+      );
+
+    }
+
   )
 
-  .catch(error => {
+  .catch(
 
-    console.error(error);
+    error => {
 
-    tampilkanError(
-      "Gagal mengambil data harga."
-    );
 
-  });
+      console.error(
+        error
+      );
+
+
+      tampilkanError(
+        "Gagal mengambil data harga."
+      );
+
+
+    }
+
+  );
+
 }
 
 
-/* =========================
+/* =====================================================
    HASIL
-========================= */
+===================================================== */
 
-function tampilkanHasil(data) {
+function tampilkanHasil(
+  data
+) {
 
-  if (data.ok) {
 
-    document.getElementById(
-      "result"
-    ).innerHTML =
+  if (
+    data.ok
+  ) {
+
+
+    document
+      .getElementById(
+        "result"
+      )
+      .innerHTML =
+
 
       '<div class="result">' +
 
-      '<div class="product-name">' +
-      aman(data.name) +
-      '</div>' +
 
-      '<div class="price">' +
-      'Rp ' +
-      aman(data.price) +
-      '</div>' +
+        '<div class="product-name">' +
+
+          aman(
+            data.name
+          ) +
+
+        '</div>' +
+
+
+        '<div class="price">' +
+
+          'Rp ' +
+
+          aman(
+            data.price
+          ) +
+
+        '</div>' +
+
+
+        '<div class="success-message">' +
+
+          '✓ Produk ditemukan' +
+
+        '</div>' +
+
 
       '</div>';
+
 
   }
 
   else {
 
+
     tampilkanError(
+
       aman(
+
         data.message ||
+
         "Produk tidak ditemukan."
+
       )
+
     );
 
+
   }
+
 }
 
 
-/* =========================
+/* =====================================================
    ERROR
-========================= */
+===================================================== */
 
-function tampilkanError(pesan) {
+function tampilkanError(
+  pesan
+) {
 
-  document.getElementById(
-    "result"
-  ).innerHTML =
+
+  document
+    .getElementById(
+      "result"
+    )
+    .innerHTML =
+
 
     '<div class="error">' +
-    pesan +
+
+      pesan +
+
     '</div>';
+
 }
 
 
-/* =========================
+/* =====================================================
    AMAN
-========================= */
+===================================================== */
 
-function aman(text) {
+function aman(
+  text
+) {
 
-  return String(text)
 
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
+  return String(
+    text
+  )
+
+    .replace(
+      /&/g,
+      "&amp;"
+    )
+
+    .replace(
+      /</g,
+      "&lt;"
+    )
+
+    .replace(
+      />/g,
+      "&gt;"
+    )
+
+    .replace(
+      /"/g,
+      "&quot;"
+    )
+
+    .replace(
+      /'/g,
+      "&#039;"
+    );
+
 }
 
 
-/* =========================
+/* =====================================================
    ENTER
-========================= */
+===================================================== */
 
 document
-  .getElementById("barcodeInput")
+  .getElementById(
+    "barcodeInput"
+  )
   .addEventListener(
     "keydown",
     function(event) {
 
-      if (event.key === "Enter") {
+      if (
+        event.key === "Enter"
+      ) {
+
         checkManual();
+
       }
 
     }
   );
 
+
 </script>
 
+
 </body>
+
 </html>
