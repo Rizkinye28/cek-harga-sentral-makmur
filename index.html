@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Cek Harga - Sentral Makmur</title>
+
+  <script src="https://unpkg.com/@zxing/browser@0.1.5/umd/index.min.js"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: #f4f5f7;
+      font-family: Arial, sans-serif;
+      color: #222;
+    }
+
+    .container {
+      max-width: 500px;
+      margin: auto;
+      padding: 20px;
+    }
+
+    .title {
+      text-align: center;
+      font-size: 26px;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #777;
+      margin-bottom: 20px;
+    }
+
+    .card {
+      background: white;
+      padding: 18px;
+      border-radius: 18px;
+      box-shadow: 0 4px 15px rgba(0,0,0,.08);
+    }
+
+    #reader {
+      width: 100%;
+      height: 300px;
+      background: #111;
+      border-radius: 15px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    #reader video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .camera-message {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      text-align: center;
+      padding: 25px;
+      z-index: 2;
+    }
+
+    .scan-line {
+      position: absolute;
+      left: 10%;
+      right: 10%;
+      top: 50%;
+      height: 2px;
+      background: white;
+      box-shadow: 0 0 8px white;
+      z-index: 5;
+      pointer-events: none;
+    }
+
+    button {
+      width: 100%;
+      padding: 15px;
+      margin-top: 12px;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .scan-button {
+      background: #1f4e78;
+      color: white;
+    }
+
+    .stop-button {
+      background: #ddd;
+      color: #222;
+      display: none;
+    }
+
+    .manual {
+      display: flex;
+      gap: 8px;
+      margin-top: 15px;
+    }
+
+    input {
+      flex: 1;
+      min-width: 0;
+      padding: 14px;
+      border: 1px solid #ccc;
+      border-radius: 12px;
+      font-size: 16px;
+    }
+
+    .check-button {
+      width: auto;
+      margin-top: 0;
+      background: #1f4e78;
+      color: white;
+    }
+
+    .result {
+      margin-top: 18px;
+      padding: 20px;
+      border-radius: 15px;
+      text-align: center;
+      background: #eef8f1;
+    }
+
+    .product-name {
+      font-size: 19px;
+      font-weight: bold;
+      line-height: 1.4;
+    }
+
+    .price {
+      font-size: 38px;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+
+    .error {
+      margin-top: 18px;
+      padding: 16px;
+      border-radius: 14px;
+      background: #fff1f1;
+      color: #b42318;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    .loading {
+      margin-top: 18px;
+      text-align: center;
+      color: #777;
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 15px;
+      font-size: 12px;
+      color: #888;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <div class="title">
+    SENTRAL MAKMUR
+  </div>
+
+  <div class="subtitle">
+    CEK HARGA PRODUK
+  </div>
+
+  <div class="card">
+
+    <div id="reader">
+
+      <div id="cameraMessage" class="camera-message">
+        Tekan MULAI SCAN untuk membuka kamera
+      </div>
+
+    </div>
+
+    <button
+      id="startButton"
+      class="scan-button"
+      onclick="startScanner()">
+      📷 MULAI SCAN
+    </button>
+
+    <button
+      id="stopButton"
+      class="stop-button"
+      onclick="stopScanner()">
+      ⏹ HENTIKAN SCAN
+    </button>
+
+    <div class="manual">
+
+      <input
+        id="barcodeInput"
+        type="text"
+        placeholder="Barcode: AMZ003 / 123456"
+        autocomplete="off">
+
+      <button
+        class="check-button"
+        onclick="checkManual()">
+        CEK
+      </button>
+
+    </div>
+
+    <div id="result"></div>
+
+  </div>
+
+  <div class="footer">
+    Scan barcode untuk melihat harga jual satuan
+  </div>
+
+</div>
+
+<script>
+
+let codeReader = null;
+let scannerControls = null;
+
+
+/* =========================
+   MULAI SCANNER
+========================= */
+
+async function startScanner() {
+
+  const reader =
+    document.getElementById("reader");
+
+  const startButton =
+    document.getElementById("startButton");
+
+  const stopButton =
+    document.getElementById("stopButton");
+
+  const message =
+    document.getElementById("cameraMessage");
+
+  startButton.style.display = "none";
+  stopButton.style.display = "block";
+
+  message.innerHTML =
+    "Memuat scanner...";
+
+  try {
+
+    if (!window.ZXingBrowser) {
+
+      throw new Error(
+        "Scanner barcode gagal dimuat."
+      );
+
+    }
+
+    codeReader =
+      new ZXingBrowser.BrowserMultiFormatReader();
+
+    const devices =
+      await ZXingBrowser.BrowserCodeReader
+        .listVideoInputDevices();
+
+    if (!devices.length) {
+
+      throw new Error(
+        "Kamera tidak ditemukan."
+      );
+
+    }
+
+    let deviceId =
+      devices[0].deviceId;
+
+    /*
+     * Prioritaskan kamera belakang
+     */
+
+    for (const device of devices) {
+
+      const label =
+        String(device.label || "")
+          .toLowerCase();
+
+      if (
+        label.includes("back") ||
+        label.includes("rear") ||
+        label.includes("environment") ||
+        label.includes("belakang")
+      ) {
+
+        deviceId =
+          device.deviceId;
+
+        break;
+      }
+    }
+
+    reader.innerHTML = "";
+
+    const video =
+      document.createElement("video");
+
+    video.autoplay = true;
+    video.muted = true;
+    video.playsInline = true;
+
+    video.setAttribute(
+      "playsinline",
+      ""
+    );
+
+    video.style.width = "100%";
+    video.style.height = "100%";
+    video.style.objectFit = "cover";
+
+    reader.appendChild(video);
+
+    const scanLine =
+      document.createElement("div");
+
+    scanLine.className =
+      "scan-line";
+
+    reader.appendChild(scanLine);
+
+    scannerControls =
+      await codeReader.decodeFromVideoDevice(
+        deviceId,
+        video,
+        function(result) {
+
+          if (result) {
+
+            const barcode =
+              result.getText();
+
+            console.log(
+              "Barcode:",
+              barcode
+            );
+
+            stopScanner();
+
+            document
+              .getElementById(
+                "barcodeInput"
+              )
+              .value = barcode;
+
+            checkManual();
+          }
+
+        }
+      );
+
+  }
+
+  catch (error) {
+
+    console.error(error);
+
+    tampilkanError(
+      "Kamera/scanner tidak dapat digunakan.<br><br>" +
+      String(error.message || error)
+    );
+
+    stopScanner();
+  }
+}
+
+
+/* =========================
+   STOP
+========================= */
+
+function stopScanner() {
+
+  try {
+
+    if (scannerControls) {
+      scannerControls.stop();
+    }
+
+  } catch (e) {}
+
+  scannerControls = null;
+
+  try {
+
+    if (codeReader) {
+      codeReader.reset();
+    }
+
+  } catch (e) {}
+
+  codeReader = null;
+
+  document.getElementById(
+    "stopButton"
+  ).style.display = "none";
+
+  document.getElementById(
+    "startButton"
+  ).style.display = "block";
+
+  const reader =
+    document.getElementById("reader");
+
+  reader.innerHTML =
+    '<div id="cameraMessage" class="camera-message">' +
+    'Tekan MULAI SCAN untuk membuka kamera' +
+    '</div>';
+}
+
+
+/* =========================
+   CEK MANUAL
+========================= */
+
+function checkManual() {
+
+  const barcode =
+    document
+      .getElementById("barcodeInput")
+      .value
+      .trim();
+
+  if (!barcode) {
+
+    tampilkanError(
+      "Masukkan barcode terlebih dahulu."
+    );
+
+    return;
+  }
+
+  cariHarga(barcode);
+}
+
+
+/* =========================
+   CARI HARGA
+========================= */
+
+function cariHarga(barcode) {
+
+  document.getElementById(
+    "result"
+  ).innerHTML =
+    '<div class="loading">' +
+    '🔎 Mencari harga...' +
+    '</div>';
+
+  /*
+   * Untuk sementara kita tes koneksi
+   * ke Google Apps Script.
+   *
+   * Nanti URL Web App kamu dimasukkan
+   * di sini.
+   */
+
+  const API_URL =
+    "MASUKKAN_URL_APPS_SCRIPT_DI_SINI";
+
+  fetch(
+    API_URL +
+    "?barcode=" +
+    encodeURIComponent(barcode)
+  )
+
+  .then(response =>
+    response.json()
+  )
+
+  .then(data =>
+    tampilkanHasil(data)
+  )
+
+  .catch(error => {
+
+    console.error(error);
+
+    tampilkanError(
+      "Gagal mengambil data harga."
+    );
+
+  });
+}
+
+
+/* =========================
+   HASIL
+========================= */
+
+function tampilkanHasil(data) {
+
+  if (data.ok) {
+
+    document.getElementById(
+      "result"
+    ).innerHTML =
+
+      '<div class="result">' +
+
+      '<div class="product-name">' +
+      aman(data.name) +
+      '</div>' +
+
+      '<div class="price">' +
+      'Rp ' +
+      aman(data.price) +
+      '</div>' +
+
+      '</div>';
+
+  }
+
+  else {
+
+    tampilkanError(
+      aman(
+        data.message ||
+        "Produk tidak ditemukan."
+      )
+    );
+
+  }
+}
+
+
+/* =========================
+   ERROR
+========================= */
+
+function tampilkanError(pesan) {
+
+  document.getElementById(
+    "result"
+  ).innerHTML =
+
+    '<div class="error">' +
+    pesan +
+    '</div>';
+}
+
+
+/* =========================
+   AMAN
+========================= */
+
+function aman(text) {
+
+  return String(text)
+
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+
+/* =========================
+   ENTER
+========================= */
+
+document
+  .getElementById("barcodeInput")
+  .addEventListener(
+    "keydown",
+    function(event) {
+
+      if (event.key === "Enter") {
+        checkManual();
+      }
+
+    }
+  );
+
+</script>
+
+</body>
+</html>
