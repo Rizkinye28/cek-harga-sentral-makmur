@@ -82,8 +82,9 @@ body {
   color: white;
   text-align: center;
   padding: 25px;
-  z-index: 50;
 }
+
+/* SCAN BOX */
 
 .scan-box {
   position: absolute;
@@ -123,25 +124,27 @@ body {
   pointer-events: none;
 }
 
-.camera-name {
+/* CAMERA STATUS */
+
+.camera-status {
   position: absolute;
-  top: 10px;
-  left: 10px;
-  right: 10px;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
   background: rgba(0,0,0,.65);
   color: white;
-  text-align: center;
-  padding: 7px;
-  border-radius: 15px;
+  padding: 7px 12px;
+  border-radius: 20px;
   font-size: 12px;
   z-index: 30;
+  white-space: nowrap;
 }
 
 /* AUTO ZOOM */
 
 .auto-zoom-status {
   position: absolute;
-  top: 48px;
+  top: 50px;
   left: 50%;
   transform: translateX(-50%);
   background: rgba(0,0,0,.65);
@@ -151,7 +154,6 @@ body {
   font-size: 12px;
   z-index: 30;
   display: none;
-  pointer-events: none;
 }
 
 /* ZOOM */
@@ -263,12 +265,6 @@ button {
 .stop-button {
   background: #ddd;
   color: #222;
-  display: none;
-}
-
-.switch-button {
-  background: #444;
-  color: white;
   display: none;
 }
 
@@ -462,13 +458,18 @@ CEK HARGA & STOK PRODUK
 
 <div class="card">
 
+<!-- CAMERA -->
+
 <div id="reader">
 
 <div class="camera-message">
-Tekan MULAI SCAN untuk membuka kamera
+Tekan MULAI SCAN untuk membuka kamera belakang
 </div>
 
 </div>
+
+
+<!-- ZOOM -->
 
 <div id="zoomControl">
 
@@ -506,9 +507,15 @@ value="1">
 
 </div>
 
+
+<!-- STATUS -->
+
 <div id="status" class="status">
 Memuat data produk...
 </div>
+
+
+<!-- START -->
 
 <button
 id="startButton"
@@ -519,14 +526,8 @@ onclick="startScanner()">
 
 </button>
 
-<button
-id="switchButton"
-class="switch-button"
-onclick="gantiKamera()">
 
-🔄 GANTI KAMERA
-
-</button>
+<!-- STOP -->
 
 <button
 id="stopButton"
@@ -536,6 +537,9 @@ onclick="stopScanner()">
 ⏹ HENTIKAN SCAN
 
 </button>
+
+
+<!-- SEARCH -->
 
 <div class="search-area">
 
@@ -574,6 +578,7 @@ HAPUS PENCARIAN
 
 </div>
 
+
 <div id="result"></div>
 
 </div>
@@ -589,17 +594,17 @@ Scan barcode atau cari nama produk
 
 <script>
 
-/* =========================================
-   URL API
-========================================= */
+/* =====================================================
+   URL API GOOGLE APPS SCRIPT
+===================================================== */
 
 const API_URL =
 'https://script.google.com/macros/s/AKfycbzCIC_CqDz406f9DCpg9hihD_Jgqw5b-yfwjOrNm7F-eRwUeR-D4uSOyi3KqZRTVpw/exec';
 
 
-/* =========================================
+/* =====================================================
    VARIABLES
-========================================= */
+===================================================== */
 
 let products = [];
 
@@ -608,21 +613,6 @@ let codeReader = null;
 let scannerControls = null;
 
 let currentStream = null;
-
-let currentVideo = null;
-
-let cameraDevices = [];
-
-let currentCameraIndex = 0;
-
-let lastBarcode = '';
-
-let lastScanTime = 0;
-
-
-/* =========================================
-   ZOOM
-========================================= */
 
 let zoomTrack = null;
 
@@ -634,28 +624,22 @@ let zoomStep = 0.1;
 
 let zoomCurrent = 1;
 
-
-/* =========================================
-   AUTO ZOOM
-========================================= */
-
 let autoZoomTimer = null;
 
 let autoZoomLevel = 1;
 
-const AUTO_ZOOM_MAX = 3;
+let lastBarcode = '';
 
-
-/* =========================================
-   AUDIO
-========================================= */
+let lastScanTime = 0;
 
 let audioContext = null;
 
+const AUTO_ZOOM_MAX = 3;
 
-/* =========================================
+
+/* =====================================================
    LOAD PRODUCTS
-========================================= */
+===================================================== */
 
 function loadProducts() {
 
@@ -722,9 +706,10 @@ document.body.appendChild(script);
 }
 
 
-/* =========================================
+/* =====================================================
    START SCANNER
-========================================= */
+   KAMERA BELAKANG
+===================================================== */
 
 async function startScanner() {
 
@@ -743,6 +728,9 @@ throw new Error(
 
 }
 
+
+/* TOMBOL */
+
 document
 .getElementById('startButton')
 .style.display = 'none';
@@ -751,83 +739,16 @@ document
 .getElementById('stopButton')
 .style.display = 'block';
 
-document
-.getElementById('switchButton')
-.style.display = 'block';
 
-
-/*
- * PENTING:
- * Pertama-tama minta kamera BELAKANG
- * menggunakan facingMode environment.
- *
- * Jangan memilih devices[0].
- */
-
-let stream = null;
-
-try {
-
-stream =
-await navigator.mediaDevices.getUserMedia({
-
-video: {
-
-facingMode: {
-ideal: 'environment'
-},
-
-width: {
-ideal: 1920
-},
-
-height: {
-ideal: 1080
-}
-
-},
-
-audio: false
-
-});
-
-}
-catch (firstError) {
-
-console.log(
-'Environment camera gagal:',
-firstError
-);
-
-
-/*
- * Fallback terakhir.
- */
-
-stream =
-await navigator.mediaDevices.getUserMedia({
-
-video: true,
-
-audio: false
-
-});
-
-}
-
-
-currentStream =
-stream;
-
-
-/* =========================================
-   BUAT VIDEO
-========================================= */
+/* READER */
 
 const reader =
 document.getElementById('reader');
 
 reader.innerHTML = '';
+
+
+/* VIDEO */
 
 const video =
 document.createElement('video');
@@ -840,181 +761,32 @@ video.playsInline = true;
 
 video.setAttribute(
 'playsinline',
-'true'
-);
+'');
 
 video.setAttribute(
 'webkit-playsinline',
-'true'
-);
+'');
 
 reader.appendChild(video);
 
-currentVideo =
-video;
 
-video.srcObject =
-stream;
+/* STATUS KAMERA */
 
-await video.play();
+const cameraStatus =
+document.createElement('div');
 
+cameraStatus.className =
+'camera-status';
 
-/* =========================================
-   DETEKSI DEVICE
-========================================= */
+cameraStatus.innerText =
+'📷 Kamera belakang';
 
-await updateCameraDevices();
-
-
-/* =========================================
-   LABEL KAMERA
-========================================= */
-
-tampilkanNamaKamera();
-
-
-/* =========================================
-   OVERLAY
-========================================= */
-
-buatOverlay();
-
-
-/* =========================================
-   ZOOM
-========================================= */
-
-setupZoom();
-
-
-/* =========================================
-   STATUS
-========================================= */
-
-document
-.getElementById('status')
-.innerText =
-'📷 Kamera belakang aktif';
-
-
-/* =========================================
-   ZXING
-========================================= */
-
-codeReader =
-new ZXingBrowser
-.BrowserMultiFormatReader();
-
-
-/*
- * Gunakan stream yang SUDAH kita dapatkan.
- * Jadi ZXing tidak memilih kamera sendiri.
- */
-
-scannerControls =
-await codeReader.decodeFromStream(
-currentStream,
-currentVideo,
-function(result, error) {
-
-if (!result) {
-
-jalankanAutoZoom();
-
-return;
-
-}
-
-
-const barcode =
-String(
-result.getText()
-)
-.trim()
-.toUpperCase();
-
-
-if (!barcode) {
-
-jalankanAutoZoom();
-
-return;
-
-}
-
-
-const now =
-Date.now();
-
-
-if (
-barcode === lastBarcode &&
-now - lastScanTime < 2000
-) {
-
-return;
-
-}
-
-
-lastBarcode =
-barcode;
-
-lastScanTime =
-now;
-
-
-hentikanAutoZoom();
-
-bunyiBerhasil();
-
-getarBerhasil();
-
-document
-.getElementById('searchInput')
-.value =
-barcode;
-
-searchBarcode(barcode);
-
-}
+reader.appendChild(
+cameraStatus
 );
 
-}
 
-catch (error) {
-
-console.error(
-'KAMERA ERROR:',
-error
-);
-
-tampilkanError(
-'Kamera tidak dapat digunakan.' +
-'<br><br>' +
-aman(
-error.message ||
-error.name ||
-''
-)
-);
-
-stopScanner();
-
-}
-
-}
-
-
-/* =========================================
-   OVERLAY CAMERA
-========================================= */
-
-function buatOverlay() {
-
-const reader =
-document.getElementById('reader');
-
+/* SCAN BOX */
 
 const scanBox =
 document.createElement('div');
@@ -1022,8 +794,12 @@ document.createElement('div');
 scanBox.className =
 'scan-box';
 
-reader.appendChild(scanBox);
+reader.appendChild(
+scanBox
+);
 
+
+/* SCAN LINE */
 
 const scanLine =
 document.createElement('div');
@@ -1031,8 +807,12 @@ document.createElement('div');
 scanLine.className =
 'scan-line';
 
-reader.appendChild(scanLine);
+reader.appendChild(
+scanLine
+);
 
+
+/* HINT */
 
 const hint =
 document.createElement('div');
@@ -1043,8 +823,12 @@ hint.className =
 hint.innerText =
 'Arahkan barcode ke dalam kotak';
 
-reader.appendChild(hint);
+reader.appendChild(
+hint
+);
 
+
+/* AUTO ZOOM */
 
 const autoZoomStatus =
 document.createElement('div');
@@ -1058,314 +842,35 @@ autoZoomStatus.id =
 autoZoomStatus.innerText =
 '🔍 Auto Zoom';
 
-reader.appendChild(autoZoomStatus);
+reader.appendChild(
+autoZoomStatus
+);
 
 
-const cameraName =
-document.createElement('div');
+/* =====================================================
+   BAGIAN PALING PENTING:
+   PAKSA CAMERA ENVIRONMENT / BELAKANG
+===================================================== */
 
-cameraName.className =
-'camera-name';
-
-cameraName.id =
-'cameraName';
-
-cameraName.innerText =
-'📷 Kamera belakang';
-
-reader.appendChild(cameraName);
-
-}
+let stream = null;
 
 
-/* =========================================
-   UPDATE DEVICE
-========================================= */
-
-async function updateCameraDevices() {
+/*
+ * Percobaan pertama:
+ * exact environment.
+ *
+ * Ini meminta kamera belakang secara tegas.
+ */
 
 try {
 
-const devices =
-await navigator.mediaDevices.enumerateDevices();
-
-cameraDevices =
-devices.filter(
-function(device) {
-
-return device.kind ===
-'videoinput';
-
-}
-);
-
-
-/*
- * Setelah permission kamera diberikan,
- * label kamera biasanya sudah muncul.
- */
-
-console.log(
-'CAMERA DEVICES:',
-cameraDevices
-);
-
-}
-
-catch (error) {
-
-console.log(
-'Gagal membaca kamera:',
-error
-);
-
-}
-
-}
-
-
-/* =========================================
-   NAMA KAMERA
-========================================= */
-
-function tampilkanNamaKamera() {
-
-const element =
-document.getElementById(
-'cameraName'
-);
-
-if (!element) {
-return;
-}
-
-if (!currentStream) {
-return;
-}
-
-const track =
-currentStream
-.getVideoTracks()[0];
-
-if (!track) {
-return;
-}
-
-const settings =
-track.getSettings();
-
-const label =
-track.label || '';
-
-const lower =
-label.toLowerCase();
-
-
-if (
-lower.includes('back') ||
-lower.includes('rear') ||
-lower.includes('environment') ||
-lower.includes('camera 0')
-) {
-
-element.innerText =
-'📷 KAMERA BELAKANG';
-
-}
-else if (
-lower.includes('front') ||
-lower.includes('user')
-) {
-
-element.innerText =
-'🤳 KAMERA DEPAN';
-
-}
-else {
-
-element.innerText =
-'📷 ' +
-(label || 'KAMERA AKTIF');
-
-}
-
-}
-
-
-/* =========================================
-   GANTI KAMERA
-========================================= */
-
-async function gantiKamera() {
-
-try {
-
-hentikanAutoZoom();
-
-
-/*
- * Ambil semua kamera setelah permission.
- */
-
-await updateCameraDevices();
-
-
-if (
-cameraDevices.length < 2
-) {
-
-tampilkanError(
-'Hanya 1 kamera yang terdeteksi oleh browser.'
-);
-
-return;
-
-}
-
-
-/*
- * Cari kamera yang berbeda dari sekarang.
- */
-
-const currentTrack =
-currentStream &&
-currentStream.getVideoTracks()[0];
-
-const currentDeviceId =
-currentTrack
-?
-currentTrack.getSettings().deviceId
-:
-null;
-
-
-let targetDevice = null;
-
-
-/*
- * Prioritas kamera belakang.
- */
-
-for (
-const device of cameraDevices
-) {
-
-const label =
-String(
-device.label || ''
-)
-.toLowerCase();
-
-
-if (
-device.deviceId !==
-currentDeviceId &&
-(
-label.includes('back') ||
-label.includes('rear') ||
-label.includes('environment')
-)
-) {
-
-targetDevice =
-device;
-
-break;
-
-}
-
-}
-
-
-/*
- * Kalau tidak ketemu,
- * pilih kamera lain.
- */
-
-if (!targetDevice) {
-
-targetDevice =
-cameraDevices.find(
-function(device) {
-
-return device.deviceId !==
-currentDeviceId;
-
-}
-);
-
-}
-
-
-if (!targetDevice) {
-
-tampilkanError(
-'Tidak ada kamera lain yang bisa digunakan.'
-);
-
-return;
-
-}
-
-
-/*
- * Matikan stream lama.
- */
-
-if (scannerControls) {
-
-try {
-scannerControls.stop();
-}
-catch(e) {}
-
-scannerControls =
-null;
-
-}
-
-if (codeReader) {
-
-try {
-codeReader.reset();
-}
-catch(e) {}
-
-codeReader =
-null;
-
-}
-
-if (currentStream) {
-
-currentStream
-.getTracks()
-.forEach(
-function(track) {
-track.stop();
-}
-);
-
-}
-
-currentStream =
-null;
-
-
-/*
- * Buka kamera pilihan.
- */
-
-const newStream =
-await navigator
-.mediaDevices
-.getUserMedia({
+stream =
+await navigator.mediaDevices.getUserMedia({
 
 video: {
 
-deviceId: {
-exact:
-targetDevice.deviceId
+facingMode: {
+exact: 'environment'
 },
 
 width: {
@@ -1382,43 +887,130 @@ audio: false
 
 });
 
-
-currentStream =
-newStream;
-
-
-currentVideo.srcObject =
-newStream;
-
-await currentVideo.play();
+}
 
 
 /*
- * Reset zoom.
+ * Jika exact ditolak browser,
+ * coba environment biasa.
  */
 
-zoomTrack =
-null;
+catch (firstError) {
+
+console.warn(
+'Exact environment gagal:',
+firstError
+);
+
+stream =
+await navigator.mediaDevices.getUserMedia({
+
+video: {
+
+facingMode: 'environment',
+
+width: {
+ideal: 1920
+},
+
+height: {
+ideal: 1080
+}
+
+},
+
+audio: false
+
+});
+
+}
+
+
+currentStream =
+stream;
+
+
+/* =====================================================
+   CEK KAMERA YANG AKTIF
+===================================================== */
+
+const tracks =
+stream.getVideoTracks();
+
+if (
+!tracks ||
+tracks.length === 0
+) {
+
+throw new Error(
+'Kamera tidak ditemukan.'
+);
+
+}
+
+const activeTrack =
+tracks[0];
+
+const settings =
+activeTrack.getSettings();
+
+console.log(
+'Kamera aktif:',
+activeTrack.label
+);
+
+console.log(
+'Camera settings:',
+settings
+);
+
+
+/* =====================================================
+   TAMPILKAN VIDEO
+===================================================== */
+
+video.srcObject =
+stream;
+
+await video.play();
+
+
+/* =====================================================
+   ZOOM
+===================================================== */
 
 setupZoom();
 
-tampilkanNamaKamera();
+
+/* STATUS */
+
+document
+.getElementById('status')
+.innerText =
+'📷 Kamera belakang aktif';
 
 
-/*
- * Jalankan ZXing lagi.
- */
+/* =====================================================
+   ZXING
+===================================================== */
 
 codeReader =
 new ZXingBrowser
 .BrowserMultiFormatReader();
 
 
+/*
+ * Decode langsung dari stream
+ * yang sudah kita paksa menjadi environment.
+ */
+
 scannerControls =
-await codeReader
-.decodeFromStream(
-currentStream,
-currentVideo,
+await codeReader.decodeFromStream(
+
+stream,
+
+video,
+
 function(result, error) {
 
 if (!result) {
@@ -1439,7 +1031,11 @@ result.getText()
 
 
 if (!barcode) {
+
+jalankanAutoZoom();
+
 return;
+
 }
 
 
@@ -1463,55 +1059,62 @@ barcode;
 lastScanTime =
 now;
 
+
 hentikanAutoZoom();
+
 
 bunyiBerhasil();
 
 getarBerhasil();
+
 
 document
 .getElementById('searchInput')
 .value =
 barcode;
 
-searchBarcode(barcode);
 
-}
+searchBarcode(
+barcode
 );
 
+}
 
-document
-.getElementById('status')
-.innerText =
-'📷 Kamera diganti';
+);
 
 }
 
-catch(error) {
+catch (error) {
 
 console.error(
-'GANTI KAMERA ERROR:',
+'CAMERA ERROR:',
 error
 );
 
 tampilkanError(
-'Gagal mengganti kamera.' +
+
+'❌ Kamera tidak dapat digunakan.' +
+
 '<br><br>' +
+
 aman(
 error.message ||
 error.name ||
 ''
 )
+
 );
 
-}
+stopScanner();
 
 }
 
+}
 
-/* =========================================
+
+/* =====================================================
    AUDIO
-========================================= */
+===================================================== */
 
 function aktifkanAudio() {
 
@@ -1538,27 +1141,39 @@ audioContext.resume();
 
 }
 
-catch(error) {}
+catch (error) {
+
+console.log(
+'Audio tidak tersedia:',
+error
+);
+
+}
 
 }
 
 
-/* =========================================
+/* =====================================================
    GETAR
-========================================= */
+===================================================== */
 
 function getarBerhasil() {
 
 try {
 
-if ('vibrate' in navigator) {
+if (
+'vibrate' in navigator
+) {
 
-navigator.vibrate([100]);
+navigator.vibrate(
+[100]
+);
 
 }
 
 }
-catch(error) {}
+
+catch (error) {}
 
 }
 
@@ -1567,7 +1182,9 @@ function getarTidakDitemukan() {
 
 try {
 
-if ('vibrate' in navigator) {
+if (
+'vibrate' in navigator
+) {
 
 navigator.vibrate(
 [80,70,80]
@@ -1576,14 +1193,15 @@ navigator.vibrate(
 }
 
 }
-catch(error) {}
+
+catch (error) {}
 
 }
 
 
-/* =========================================
+/* =====================================================
    BUNYI BERHASIL
-========================================= */
+===================================================== */
 
 function bunyiBerhasil() {
 
@@ -1637,14 +1255,15 @@ audioContext.currentTime + 0.21
 );
 
 }
-catch(error) {}
+
+catch (error) {}
 
 }
 
 
-/* =========================================
-   BUNYI ERROR
-========================================= */
+/* =====================================================
+   BUNYI TIDAK DITEMUKAN
+===================================================== */
 
 function bunyiTidakDitemukan() {
 
@@ -1656,20 +1275,33 @@ if (!audioContext) {
 return;
 }
 
-bunyiNada(650,0);
+bunyiNada(
+650,
+0
+);
 
 setTimeout(
 function() {
-bunyiNada(450,150);
+
+bunyiNada(
+450,
+150
+);
+
 },
 150
 );
 
 }
-catch(error) {}
+
+catch (error) {}
 
 }
 
+
+/* =====================================================
+   NADA
+===================================================== */
 
 function bunyiNada(
 frequency,
@@ -1723,7 +1355,8 @@ audioContext.currentTime + 0.13
 );
 
 }
-catch(error) {}
+
+catch (error) {}
 
 },
 delay
@@ -1732,9 +1365,9 @@ delay
 }
 
 
-/* =========================================
+/* =====================================================
    SETUP ZOOM
-========================================= */
+===================================================== */
 
 function setupZoom() {
 
@@ -1762,7 +1395,7 @@ currentStream.getVideoTracks();
 
 if (
 !tracks ||
-!tracks.length
+tracks.length === 0
 ) {
 
 control.style.display =
@@ -1778,6 +1411,7 @@ tracks[0];
 zoomTrack =
 track;
 
+
 if (!track.getCapabilities) {
 
 control.style.display =
@@ -1790,6 +1424,7 @@ return;
 const capabilities =
 track.getCapabilities();
 
+
 if (!capabilities.zoom) {
 
 control.style.display =
@@ -1798,6 +1433,7 @@ control.style.display =
 return;
 
 }
+
 
 zoomMin =
 Number(
@@ -1814,11 +1450,13 @@ Number(
 capabilities.zoom.step || 0.1
 );
 
+
 zoomMax =
 Math.min(
 zoomMax,
 3
 );
+
 
 slider.min =
 zoomMin;
@@ -1829,14 +1467,27 @@ zoomMax;
 slider.step =
 zoomStep;
 
+
 zoomCurrent =
 Math.max(
 1,
 zoomMin
 );
 
+
+if (
+zoomCurrent > zoomMax
+) {
+
+zoomCurrent =
+zoomMax;
+
+}
+
+
 slider.value =
 zoomCurrent;
+
 
 control.style.display =
 'block';
@@ -1848,12 +1499,14 @@ applyZoom();
 }
 
 
-/* =========================================
+/* =====================================================
    SLIDER
-========================================= */
+===================================================== */
 
 document
-.getElementById('zoomSlider')
+.getElementById(
+'zoomSlider'
+)
 .addEventListener(
 'input',
 function() {
@@ -1865,7 +1518,9 @@ return;
 hentikanAutoZoom();
 
 zoomCurrent =
-Number(this.value);
+Number(
+this.value
+);
 
 zoomCurrent =
 roundZoom(
@@ -1878,9 +1533,9 @@ applyZoom();
 );
 
 
-/* =========================================
+/* =====================================================
    APPLY ZOOM
-========================================= */
+===================================================== */
 
 function applyZoom() {
 
@@ -1904,7 +1559,8 @@ zoomCurrent
 updateZoomDisplay();
 
 }
-catch(error) {
+
+catch (error) {
 
 console.log(
 'Zoom tidak tersedia:',
@@ -1916,9 +1572,9 @@ error
 }
 
 
-/* =========================================
+/* =====================================================
    AUTO ZOOM
-========================================= */
+===================================================== */
 
 function jalankanAutoZoom() {
 
@@ -1926,13 +1582,18 @@ if (!zoomTrack) {
 return;
 }
 
-if (zoomMax <= 1) {
+if (
+zoomMax <= 1
+) {
+
 return;
+
 }
 
 if (autoZoomTimer) {
 return;
 }
+
 
 autoZoomTimer =
 setTimeout(
@@ -1940,6 +1601,7 @@ function() {
 
 autoZoomTimer =
 null;
+
 
 if (
 !zoomTrack ||
@@ -1950,6 +1612,7 @@ return;
 
 }
 
+
 if (
 autoZoomLevel <
 AUTO_ZOOM_MAX
@@ -1957,6 +1620,7 @@ AUTO_ZOOM_MAX
 
 autoZoomLevel +=
 0.5;
+
 
 if (
 autoZoomLevel >
@@ -1968,8 +1632,10 @@ zoomMax;
 
 }
 
+
 zoomCurrent =
 autoZoomLevel;
+
 
 const slider =
 document.getElementById(
@@ -1978,6 +1644,7 @@ document.getElementById(
 
 slider.value =
 zoomCurrent;
+
 
 applyZoom();
 
@@ -1992,9 +1659,9 @@ tampilkanAutoZoom();
 }
 
 
-/* =========================================
+/* =====================================================
    RESET AUTO ZOOM
-========================================= */
+===================================================== */
 
 function resetAutoZoom() {
 
@@ -2007,9 +1674,9 @@ zoomMin
 }
 
 
-/* =========================================
+/* =====================================================
    STOP AUTO ZOOM
-========================================= */
+===================================================== */
 
 function hentikanAutoZoom() {
 
@@ -2031,9 +1698,9 @@ sembunyikanAutoZoom();
 }
 
 
-/* =========================================
-   AUTO ZOOM STATUS
-========================================= */
+/* =====================================================
+   TAMPILKAN AUTO ZOOM
+===================================================== */
 
 function tampilkanAutoZoom() {
 
@@ -2057,6 +1724,7 @@ zoomCurrent
 .toFixed(1) +
 '×';
 
+
 setTimeout(
 function() {
 
@@ -2068,6 +1736,10 @@ sembunyikanAutoZoom();
 
 }
 
+
+/* =====================================================
+   SEMBUNYIKAN AUTO ZOOM
+===================================================== */
 
 function sembunyikanAutoZoom() {
 
@@ -2086,14 +1758,16 @@ element.style.display =
 }
 
 
-/* =========================================
+/* =====================================================
    UPDATE ZOOM
-========================================= */
+===================================================== */
 
 function updateZoomDisplay() {
 
 document
-.getElementById('zoomValue')
+.getElementById(
+'zoomValue'
+)
 .innerText =
 Number(
 zoomCurrent
@@ -2104,11 +1778,13 @@ zoomCurrent
 }
 
 
-/* =========================================
-   ROUND
-========================================= */
+/* =====================================================
+   ROUND ZOOM
+===================================================== */
 
-function roundZoom(value) {
+function roundZoom(
+value
+) {
 
 return Math.round(
 value * 10
@@ -2117,13 +1793,14 @@ value * 10
 }
 
 
-/* =========================================
+/* =====================================================
    STOP SCANNER
-========================================= */
+===================================================== */
 
 function stopScanner() {
 
 hentikanAutoZoom();
+
 
 try {
 
@@ -2134,10 +1811,13 @@ scannerControls.stop();
 }
 
 }
-catch(e) {}
+
+catch (e) {}
+
 
 scannerControls =
 null;
+
 
 try {
 
@@ -2148,10 +1828,13 @@ codeReader.reset();
 }
 
 }
-catch(e) {}
+
+catch (e) {}
+
 
 codeReader =
 null;
+
 
 if (currentStream) {
 
@@ -2159,54 +1842,64 @@ currentStream
 .getTracks()
 .forEach(
 function(track) {
+
 track.stop();
+
 }
 );
 
 }
 
-currentStream =
-null;
 
-currentVideo =
+currentStream =
 null;
 
 zoomTrack =
 null;
 
+
 document
-.getElementById('zoomControl')
+.getElementById(
+'zoomControl'
+)
 .style.display =
 'none';
 
+
 document
-.getElementById('stopButton')
+.getElementById(
+'stopButton'
+)
 .style.display =
 'none';
 
-document
-.getElementById('switchButton')
-.style.display =
-'none';
 
 document
-.getElementById('startButton')
+.getElementById(
+'startButton'
+)
 .style.display =
 'block';
 
+
 document
-.getElementById('reader')
+.getElementById(
+'reader'
+)
 .innerHTML =
+
 '<div class="camera-message">' +
-'Tekan MULAI SCAN untuk membuka kamera' +
+
+'Tekan MULAI SCAN untuk membuka kamera belakang' +
+
 '</div>';
 
 }
 
 
-/* =========================================
-   SEARCH PRODUCT
-========================================= */
+/* =====================================================
+   SEARCH MANUAL
+===================================================== */
 
 function searchProduct() {
 
@@ -2222,8 +1915,10 @@ input.value || ''
 .trim()
 .toUpperCase();
 
+
 input.value =
 keyword;
+
 
 if (!keyword) {
 
@@ -2236,22 +1931,29 @@ return;
 }
 
 
+/* CARI BARCODE */
+
 const exact =
 products.find(
 function(product) {
 
 return (
+
 String(
 product.barcode || ''
 )
 .trim()
 .toUpperCase()
+
 ===
+
 keyword
+
 );
 
 }
 );
+
 
 if (exact) {
 
@@ -2263,6 +1965,8 @@ return;
 
 }
 
+
+/* CARI NAMA */
 
 const hasil =
 products.filter(
@@ -2281,6 +1985,7 @@ keyword
 }
 );
 
+
 if (
 hasil.length === 0
 ) {
@@ -2296,6 +2001,7 @@ return;
 
 }
 
+
 if (
 hasil.length === 1
 ) {
@@ -2308,6 +2014,7 @@ return;
 
 }
 
+
 tampilkanDaftar(
 hasil
 );
@@ -2315,9 +2022,9 @@ hasil
 }
 
 
-/* =========================================
+/* =====================================================
    SEARCH BARCODE
-========================================= */
+===================================================== */
 
 function searchBarcode(
 barcode
@@ -2330,18 +2037,24 @@ barcode || ''
 .trim()
 .toUpperCase();
 
+
 if (!barcode) {
 return;
 }
 
+
 document
-.getElementById('status')
+.getElementById(
+'status'
+)
 .innerText =
 '⏳ Mengecek harga dan stok Accurate...';
+
 
 const callbackName =
 'stokCallback_' +
 Date.now();
+
 
 window[callbackName] =
 function(response) {
@@ -2358,16 +2071,26 @@ bunyiTidakDitemukan();
 getarTidakDitemukan();
 
 tampilkanError(
+
 response &&
 response.error
+
 ?
-aman(response.error)
+
+aman(
+response.error
+)
+
 :
+
 'Data produk tidak ditemukan.'
+
 );
 
 document
-.getElementById('status')
+.getElementById(
+'status'
+)
 .innerText =
 '❌ Produk tidak ditemukan';
 
@@ -2375,19 +2098,30 @@ return;
 
 }
 
+
+const data =
+response.data;
+
+
 tampilkanProdukDenganStok(
-response.data
+data
 );
 
+
 document
-.getElementById('status')
+.getElementById(
+'status'
+)
 .innerText =
 '✓ Produk ditemukan';
 
 }
-catch(error) {
 
-console.error(error);
+catch (error) {
+
+console.error(
+error
+);
 
 tampilkanError(
 'Terjadi kesalahan saat membaca data.'
@@ -2395,13 +2129,16 @@ tampilkanError(
 
 }
 
+
 const script =
 document.getElementById(
 callbackName
 );
 
 if (script) {
+
 script.remove();
+
 }
 
 delete window[
@@ -2419,17 +2156,25 @@ document.createElement(
 script.id =
 callbackName;
 
+
 script.src =
+
 API_URL +
+
 '?aksi=stok' +
+
 '&barcode=' +
+
 encodeURIComponent(
 barcode
 ) +
+
 '&callback=' +
+
 encodeURIComponent(
 callbackName
 );
+
 
 script.onerror =
 function() {
@@ -2439,7 +2184,9 @@ tampilkanError(
 );
 
 document
-.getElementById('status')
+.getElementById(
+'status'
+)
 .innerText =
 '❌ Gagal mengambil stok';
 
@@ -2448,6 +2195,7 @@ callbackName
 ];
 
 };
+
 
 document
 .body
@@ -2458,9 +2206,9 @@ script
 }
 
 
-/* =========================================
-   SHOW PRODUCT
-========================================= */
+/* =====================================================
+   TAMPILKAN PRODUK
+===================================================== */
 
 function tampilkanProdukDenganStok(
 data
@@ -2471,6 +2219,7 @@ Number(
 data.stok || 0
 );
 
+
 const stokClass =
 stok > 0
 ?
@@ -2478,53 +2227,87 @@ stok > 0
 :
 'stok-habis';
 
+
 const stokText =
 stok > 0
+
 ?
+
 stok +
 ' ' +
 (data.satuan || 'PCS')
+
 :
+
 'HABIS';
 
 
 document
-.getElementById('result')
+.getElementById(
+'result'
+)
 .innerHTML =
 
 '<div class="product-card">' +
 
 '<div class="product-name">' +
-aman(data.nama || '') +
+
+aman(
+data.nama || ''
+) +
+
 '</div>' +
 
 '<div class="product-barcode">' +
+
 'Barcode: ' +
-aman(data.barcode || '') +
+
+aman(
+data.barcode || ''
+) +
+
 '</div>' +
 
 '<div class="price">' +
+
 'Rp ' +
-aman(data.harga || '-') +
+
+aman(
+data.harga || '-'
+) +
+
 '</div>' +
 
 '<div class="stock-box ' +
+
 stokClass +
+
 '">' +
 
 '<div class="stock-label">' +
+
 'STOK TERSEDIA' +
+
 '</div>' +
 
 '<div class="stock-number">' +
-aman(stokText) +
+
+aman(
+stokText
+) +
+
 '</div>' +
 
 '</div>' +
 
 '<div class="accurate-code">' +
+
 'Kode Accurate: ' +
-aman(data.kodeAccurate || '-') +
+
+aman(
+data.kodeAccurate || '-'
+) +
+
 '</div>' +
 
 '</div>';
@@ -2532,42 +2315,66 @@ aman(data.kodeAccurate || '-') +
 }
 
 
-/* =========================================
+/* =====================================================
    MULTIPLE RESULT
-========================================= */
+===================================================== */
 
 function tampilkanDaftar(
 hasil
 ) {
 
 let html =
+
 '<div class="result-count">' +
+
 '🔎 Ditemukan ' +
+
 hasil.length +
+
 ' produk' +
+
 '</div>';
+
 
 hasil.forEach(
 function(product,index) {
 
 html +=
+
 '<div class="result-item" ' +
+
 'onclick="pilihProduk(' +
+
 index +
+
 ')">' +
 
 '<div class="result-item-name">' +
-aman(product.name) +
+
+aman(
+product.name
+) +
+
 '</div>' +
 
 '<div class="result-item-barcode">' +
+
 'Barcode: ' +
-aman(product.barcode) +
+
+aman(
+product.barcode
+) +
+
 '</div>' +
 
 '<div class="result-item-price">' +
+
 'Rp ' +
-aman(product.price) +
+
+aman(
+product.price
+) +
+
 '</div>' +
 
 '</div>';
@@ -2575,37 +2382,50 @@ aman(product.price) +
 }
 );
 
+
 window.hasilPencarian =
 hasil;
 
+
 document
-.getElementById('result')
+.getElementById(
+'result'
+)
 .innerHTML =
 html;
 
 }
 
 
-/* =========================================
+/* =====================================================
    PILIH PRODUK
-========================================= */
+===================================================== */
 
-function pilihProduk(index) {
+function pilihProduk(
+index
+) {
 
 const product =
-window.hasilPencarian[index];
+window.hasilPencarian[
+index
+];
+
 
 if (!product) {
 return;
 }
 
+
 document
-.getElementById('searchInput')
+.getElementById(
+'searchInput'
+)
 .value =
 String(
 product.barcode || ''
 )
 .toUpperCase();
+
 
 searchBarcode(
 product.barcode
@@ -2614,68 +2434,99 @@ product.barcode
 }
 
 
-/* =========================================
+/* =====================================================
    CLEAR
-========================================= */
+===================================================== */
 
 function clearSearch() {
 
 document
-.getElementById('searchInput')
+.getElementById(
+'searchInput'
+)
 .value =
 '';
 
+
 document
-.getElementById('result')
+.getElementById(
+'result'
+)
 .innerHTML =
 '';
 
 }
 
 
-/* =========================================
+/* =====================================================
    ERROR
-========================================= */
+===================================================== */
 
-function tampilkanError(message) {
+function tampilkanError(
+message
+) {
 
 document
-.getElementById('result')
+.getElementById(
+'result'
+)
 .innerHTML =
+
 '<div class="error">' +
+
 message +
+
 '</div>';
 
 }
 
 
-/* =========================================
-   SAFE
-========================================= */
+/* =====================================================
+   SAFE TEXT
+===================================================== */
 
-function aman(text) {
+function aman(
+text
+) {
 
 return String(text)
 
-.replace(/&/g,'&amp;')
+.replace(
+/&/g,
+'&amp;'
+)
 
-.replace(/</g,'&lt;')
+.replace(
+/</g,
+'&lt;'
+)
 
-.replace(/>/g,'&gt;')
+.replace(
+/>/g,
+'&gt;'
+)
 
-.replace(/"/g,'&quot;')
+.replace(
+/"/g,
+'&quot;'
+)
 
-.replace(/'/g,'&#039;');
+.replace(
+/'/g,
+'&#039;'
+);
 
 }
 
 
-/* =========================================
-   INPUT
-========================================= */
+/* =====================================================
+   INPUT KAPITAL
+===================================================== */
 
 document
-.getElementById('searchInput')
+.getElementById(
+'searchInput'
+)
 .addEventListener(
 'input',
 function() {
@@ -2687,12 +2538,14 @@ this.value.toUpperCase();
 );
 
 
-/* =========================================
+/* =====================================================
    ENTER
-========================================= */
+===================================================== */
 
 document
-.getElementById('searchInput')
+.getElementById(
+'searchInput'
+)
 .addEventListener(
 'keydown',
 function(event) {
@@ -2709,9 +2562,9 @@ searchProduct();
 );
 
 
-/* =========================================
-   LOAD
-========================================= */
+/* =====================================================
+   LOAD DATA
+===================================================== */
 
 loadProducts();
 
