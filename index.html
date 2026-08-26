@@ -6,11 +6,11 @@
 
 <meta
 name="viewport"
-content="width=device-width, initial-scale=1"
+content="width=device-width, initial-scale=1.0"
 
 >
 
-  <title>Sentral Makmur - Cek Harga & Stok</title>
+  <title>Cek Harga & Stok — Sentral Makmur</title>
 
   <style>
     * {
@@ -19,142 +19,425 @@ content="width=device-width, initial-scale=1"
 
     body {
       margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f5f5f5;
+      font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+      background:
+        linear-gradient(
+          135deg,
+          #f5f5f5,
+          #ffffff
+        );
+
       color: #222;
+      min-height: 100vh;
     }
 
     .container {
+      width: 100%;
       max-width: 700px;
-      margin: auto;
-      padding: 30px 20px;
+      margin: 0 auto;
+      padding: 24px 16px 50px;
     }
 
-    h1 {
+    /* =========================
+       HEADER
+    ========================= */
+
+    .header {
       text-align: center;
-      margin-bottom: 8px;
+      margin-bottom: 28px;
     }
 
-    .subtitle {
-      text-align: center;
+    .logo {
+      width: 80px;
+      height: 80px;
+
+      margin: 0 auto 14px;
+
+      border-radius: 20px;
+
+      background: #111;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      color: white;
+
+      font-size: 26px;
+      font-weight: 800;
+
+      box-shadow:
+        0 8px 25px
+        rgba(0,0,0,.12);
+    }
+
+    .header h1 {
+      margin: 0;
+
+      font-size: 26px;
+      font-weight: 800;
+    }
+
+    .header p {
+      margin: 7px 0 0;
+
       color: #777;
-      margin-bottom: 25px;
+
+      font-size: 14px;
     }
+
+    /* =========================
+       SEARCH
+    ========================= */
 
     .search-box {
-      display: flex;
-      gap: 10px;
+      background: white;
+
+      border-radius: 18px;
+
+      padding: 14px;
+
+      box-shadow:
+        0 8px 30px
+        rgba(0,0,0,.08);
+
       margin-bottom: 20px;
     }
 
-    input {
+    .search-row {
+      display: flex;
+      gap: 9px;
+    }
+
+    .search-input {
       flex: 1;
-      padding: 15px;
-      border: 1px solid #ddd;
-      border-radius: 10px;
+
+      min-width: 0;
+
+      border: 2px solid #e5e5e5;
+
+      border-radius: 13px;
+
+      padding:
+        14px 15px;
+
       font-size: 16px;
+
       outline: none;
+
+      transition:
+        border-color .2s,
+        box-shadow .2s;
     }
 
-    input:focus {
+    .search-input:focus {
       border-color: #111;
+
+      box-shadow:
+        0 0 0 3px
+        rgba(0,0,0,.06);
     }
 
-    button {
-      padding: 15px 20px;
+    .search-button {
       border: none;
-      border-radius: 10px;
-      cursor: pointer;
-      font-weight: bold;
+
+      border-radius: 13px;
+
+      padding:
+        0 20px;
+
       background: #111;
+
       color: white;
-      min-width: 90px;
+
+      font-size: 15px;
+
+      font-weight: 700;
+
+      cursor: pointer;
+
+      transition:
+        transform .15s,
+        opacity .15s;
     }
 
-    button:hover {
-      opacity: 0.85;
+    .search-button:hover {
+      opacity: .9;
     }
 
-    button:disabled {
-      opacity: 0.6;
-      cursor: wait;
+    .search-button:active {
+      transform: scale(.97);
     }
 
-    #status {
+    .search-button:disabled {
+      opacity: .5;
+      cursor: not-allowed;
+    }
+
+    .reset-button {
+      width: 100%;
+
+      margin-top: 9px;
+
+      border: none;
+
+      background: #f1f1f1;
+
+      color: #555;
+
+      border-radius: 11px;
+
+      padding: 10px;
+
+      font-size: 13px;
+
+      cursor: pointer;
+    }
+
+    /* =========================
+       STATUS
+    ========================= */
+
+    .status {
       text-align: center;
-      margin: 15px 0;
+
+      padding: 16px;
+
       color: #777;
+
+      font-size: 14px;
+
+      display: none;
     }
 
-    .product {
+    .loading {
+      display: block;
+    }
+
+    .error {
+      display: block;
+
+      background: #fff1f1;
+
+      color: #c62828;
+
+      border-radius: 13px;
+
+      margin-bottom: 15px;
+    }
+
+    /* =========================
+       RESULT
+    ========================= */
+
+    .results {
+      display: flex;
+
+      flex-direction: column;
+
+      gap: 12px;
+    }
+
+    .product-card {
       background: white;
-      border-radius: 14px;
+
+      border-radius: 17px;
+
       padding: 18px;
-      margin-bottom: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+
+      box-shadow:
+        0 7px 25px
+        rgba(0,0,0,.07);
+
+      animation:
+        fadeIn .25s ease;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform:
+          translateY(5px);
+      }
+
+      to {
+        opacity: 1;
+        transform:
+          translateY(0);
+      }
     }
 
     .product-name {
-      font-size: 18px;
-      font-weight: bold;
-      margin-bottom: 12px;
+      font-size: 17px;
+
+      font-weight: 800;
+
+      line-height: 1.4;
+
+      margin-bottom: 8px;
     }
 
-    .row {
-      display: flex;
-      justify-content: space-between;
-      gap: 20px;
-      padding: 6px 0;
-      color: #555;
+    .product-code {
+      color: #888;
+
+      font-size: 12px;
+
+      margin-bottom: 16px;
     }
 
-    .row span:last-child {
-      text-align: right;
-      word-break: break-word;
+    .product-info {
+      display: grid;
+
+      grid-template-columns:
+        repeat(3, 1fr);
+
+      gap: 9px;
+    }
+
+    .info-box {
+      background: #f7f7f7;
+
+      border-radius: 12px;
+
+      padding: 12px 9px;
+
+      text-align: center;
+    }
+
+    .info-label {
+      display: block;
+
+      color: #888;
+
+      font-size: 11px;
+
+      margin-bottom: 5px;
+    }
+
+    .info-value {
+      display: block;
+
+      font-size: 15px;
+
+      font-weight: 800;
     }
 
     .price {
-      font-size: 20px;
-      font-weight: bold;
       color: #111;
     }
 
     .stock {
-      font-weight: bold;
+      color: #16803c;
     }
 
-    .error {
-      background: #fff0f0;
-      color: #c00;
-      padding: 15px;
-      border-radius: 10px;
-      text-align: center;
+    .stock.empty {
+      color: #c62828;
     }
+
+    .stock.zero {
+      color: #c62828;
+    }
+
+    /* =========================
+       EMPTY
+    ========================= */
 
     .empty {
       background: white;
-      padding: 20px;
-      border-radius: 14px;
+
+      border-radius: 17px;
+
+      padding: 30px 20px;
+
       text-align: center;
+
+      box-shadow:
+        0 7px 25px
+        rgba(0,0,0,.06);
+
       color: #777;
     }
 
-    @media (max-width: 500px) {
+    .empty-icon {
+      font-size: 38px;
+
+      margin-bottom: 10px;
+    }
+
+    .empty-title {
+      color: #333;
+
+      font-weight: 700;
+
+      margin-bottom: 5px;
+    }
+
+    .empty-text {
+      font-size: 13px;
+
+      line-height: 1.5;
+    }
+
+    /* =========================
+       FOOTER
+    ========================= */
+
+    .footer {
+      text-align: center;
+
+      margin-top: 35px;
+
+      color: #aaa;
+
+      font-size: 11px;
+    }
+
+    /* =========================
+       MOBILE
+    ========================= */
+
+    @media (
+      max-width: 480px
+    ) {
 
       .container {
-        padding: 20px 15px;
+        padding:
+          20px 12px 40px;
       }
 
-      .search-box {
-        flex-direction: column;
+      .header h1 {
+        font-size: 23px;
       }
 
-      button {
-        width: 100%;
+      .search-row {
+        gap: 7px;
       }
 
-      .row {
-        align-items: flex-start;
+      .search-input {
+        padding:
+          13px 12px;
+
+        font-size: 15px;
+      }
+
+      .search-button {
+        padding:
+          0 16px;
+
+        font-size: 14px;
+      }
+
+      .product-info {
+        grid-template-columns:
+          repeat(3, 1fr);
+      }
+
+      .info-value {
+        font-size: 14px;
       }
     }
   </style>
@@ -166,108 +449,218 @@ content="width=device-width, initial-scale=1"
   <div class="container">
 
 ```
-<h1>Sentral Makmur</h1>
+<!-- HEADER -->
 
-<div class="subtitle">
-  Cek Harga & Stok Produk
+<div class="header">
+
+  <div class="logo">
+    SM
+  </div>
+
+  <h1>
+    Sentral Makmur
+  </h1>
+
+  <p>
+    Cek Harga & Stok Produk
+  </p>
+
 </div>
+
+
+<!-- SEARCH -->
 
 <div class="search-box">
 
-  <input
-    type="text"
-    id="keyword"
-    placeholder="Cari nama atau kode produk..."
-    autocomplete="off"
-  >
+  <div class="search-row">
+
+    <input
+      id="searchInput"
+      class="search-input"
+      type="search"
+      placeholder="Cari nama, kode, atau barcode..."
+      autocomplete="off"
+    >
+
+    <button
+      id="searchButton"
+      class="search-button"
+      onclick="cariProduk()"
+    >
+      Cari
+    </button>
+
+  </div>
 
   <button
-    id="btnCari"
-    onclick="cariProduk()"
+    class="reset-button"
+    onclick="resetPencarian()"
   >
-    CARI
+    Reset
   </button>
 
 </div>
 
-<div id="status">
-  Silakan cari produk.
+
+<!-- STATUS -->
+
+<div
+  id="status"
+  class="status"
+></div>
+
+
+<!-- RESULTS -->
+
+<div
+  id="results"
+  class="results"
+>
+
+  <div class="empty">
+
+    <div class="empty-icon">
+      🔎
+    </div>
+
+    <div class="empty-title">
+      Cari produk
+    </div>
+
+    <div class="empty-text">
+      Ketik nama barang, kode Accurate,
+      atau barcode untuk melihat
+      harga dan stok.
+    </div>
+
+  </div>
+
 </div>
 
-<div id="hasil"></div>
+
+<!-- FOOTER -->
+
+<div class="footer">
+  Sentral Makmur • API Harga & Stok
+</div>
 ```
 
   </div>
 
   <script>
 
+    /*
+    =====================================================
+    KONFIGURASI API
+    =====================================================
+    */
+
     const API_URL =
       'https://script.google.com/macros/s/AKfycbw8Dpkd4Z7-oidp3Y-g_25jPFXa5swegCUe5eeW9KcR_lvdFD_BvJu9gqzrDDSJSPw/exec';
 
 
     /*
-     * ENTER = CARI
-     */
+    =====================================================
+    ELEMENT
+    =====================================================
+    */
 
-    document
-      .getElementById('keyword')
-      .addEventListener(
-        'keydown',
-        function(event) {
+    const searchInput =
+      document.getElementById(
+        'searchInput'
+      );
 
-          if (event.key === 'Enter') {
-            cariProduk();
-          }
+    const searchButton =
+      document.getElementById(
+        'searchButton'
+      );
 
-        }
+    const results =
+      document.getElementById(
+        'results'
+      );
+
+    const status =
+      document.getElementById(
+        'status'
       );
 
 
     /*
-     * CARI PRODUK
-     */
+    =====================================================
+    ENTER UNTUK CARI
+    =====================================================
+    */
+
+    searchInput.addEventListener(
+      'keydown',
+      function(event) {
+
+        if (
+          event.key === 'Enter'
+        ) {
+
+          event.preventDefault();
+
+          cariProduk();
+
+        }
+
+      }
+    );
+
+
+    /*
+    =====================================================
+    CARI PRODUK
+    =====================================================
+    */
 
     async function cariProduk() {
 
-      const input =
-        document.getElementById('keyword');
-
-      const status =
-        document.getElementById('status');
-
-      const hasil =
-        document.getElementById('hasil');
-
-      const button =
-        document.getElementById('btnCari');
-
-
       const keyword =
-        input.value.trim();
+        searchInput.value
+          .trim();
 
 
       if (!keyword) {
 
-        status.textContent =
-          'Masukkan nama atau kode produk.';
+        tampilkanPesan(
+          'Masukkan nama, kode, atau barcode produk.',
+          true
+        );
 
-        hasil.innerHTML = '';
-
-        input.focus();
+        searchInput.focus();
 
         return;
 
       }
 
 
-      status.textContent =
-        'Mencari produk...';
+      if (
+        !API_URL ||
+        API_URL.includes(
+          'GANTI_DENGAN'
+        )
+      ) {
 
-      hasil.innerHTML = '';
+        tampilkanPesan(
+          'URL Web App Apps Script belum dipasang di index.html.',
+          true
+        );
 
-      button.disabled = true;
+        return;
 
-      button.textContent = '...';
+      }
+
+
+      setLoading(
+        true
+      );
+
+
+      results.innerHTML =
+        '';
 
 
       try {
@@ -275,69 +668,32 @@ content="width=device-width, initial-scale=1"
         const url =
           API_URL +
           '?aksi=cari&keyword=' +
-          encodeURIComponent(keyword);
+          encodeURIComponent(
+            keyword
+          ) +
+          '&callback=handleSearch';
 
 
-        const response =
-          await fetch(url);
-
-
-        if (!response.ok) {
-
-          throw new Error(
-            'Server error HTTP ' +
-            response.status
-          );
-
-        }
-
-
-        const data =
-          await response.json();
-
-
-        console.log(
-          'Response API:',
-          data
-        );
-
-
-        if (!data.success) {
-
-          throw new Error(
-            data.error ||
-            'Gagal mencari produk.'
-          );
-
-        }
-
-
-        tampilkanProduk(
-          data.data || []
+        await requestJSONP(
+          url
         );
 
       }
 
       catch (error) {
 
-        console.error(error);
+        console.error(
+          error
+        );
 
-        status.textContent = '';
+        setLoading(
+          false
+        );
 
-        hasil.innerHTML =
-          '<div class="error">' +
-          escapeHtml(
-            error.message
-          ) +
-          '</div>';
-
-      }
-
-      finally {
-
-        button.disabled = false;
-
-        button.textContent = 'CARI';
+        tampilkanPesan(
+          'Gagal terhubung ke server. Coba lagi.',
+          true
+        );
 
       }
 
@@ -345,230 +701,427 @@ content="width=device-width, initial-scale=1"
 
 
     /*
-     * HILANGKAN DUPLIKAT
-     */
+    =====================================================
+    JSONP
+    =====================================================
+    */
 
-    function hapusDuplikat(products) {
+    function requestJSONP(
+      url
+    ) {
 
-      const map =
-        new Map();
+      return new Promise(
+        function(
+          resolve,
+          reject
+        ) {
 
-
-      products.forEach(
-        function(product) {
-
-          const id =
-            String(
-              product.id ||
-              product.kodeAccurate ||
-              product.no ||
-              product.nama ||
-              ''
+          const callbackName =
+            'jsonp_' +
+            Date.now() +
+            '_' +
+            Math.floor(
+              Math.random() * 100000
             );
 
 
-          if (!map.has(id)) {
-
-            map.set(
-              id,
-              product
+          const script =
+            document.createElement(
+              'script'
             );
+
+
+          let selesai =
+            false;
+
+
+          const timeout =
+            setTimeout(
+              function() {
+
+                if (
+                  selesai
+                ) {
+                  return;
+                }
+
+                selesai = true;
+
+                cleanup();
+
+                reject(
+                  new Error(
+                    'Request timeout'
+                  )
+                );
+
+              },
+              15000
+            );
+
+
+          window[
+            callbackName
+          ] =
+            function(data) {
+
+              if (
+                selesai
+              ) {
+                return;
+              }
+
+              selesai = true;
+
+              clearTimeout(
+                timeout
+              );
+
+              cleanup();
+
+              handleSearch(
+                data
+              );
+
+              resolve(
+                data
+              );
+
+            };
+
+
+          function cleanup() {
+
+            try {
+
+              delete window[
+                callbackName
+              ];
+
+            }
+
+            catch (error) {
+
+              window[
+                callbackName
+              ] =
+                undefined;
+
+            }
+
+
+            if (
+              script.parentNode
+            ) {
+
+              script.parentNode
+                .removeChild(
+                  script
+                );
+
+            }
 
           }
+
+
+          script.src =
+            url +
+            '&callback=' +
+            callbackName;
+
+
+          script.onerror =
+            function() {
+
+              if (
+                selesai
+              ) {
+                return;
+              }
+
+              selesai = true;
+
+              clearTimeout(
+                timeout
+              );
+
+              cleanup();
+
+              reject(
+                new Error(
+                  'Network error'
+                )
+              );
+
+            };
+
+
+          document
+            .head
+            .appendChild(
+              script
+            );
 
         }
       );
 
-
-      return Array.from(
-        map.values()
-      );
-
     }
 
 
     /*
-     * TAMPILKAN HASIL
-     */
+    =====================================================
+    HANDLE RESPONSE
+    =====================================================
+    */
 
-    function tampilkanProduk(products) {
+    function handleSearch(
+      response
+    ) {
 
-      const status =
-        document.getElementById('status');
-
-      const hasil =
-        document.getElementById('hasil');
+      setLoading(
+        false
+      );
 
 
       if (
-        !products ||
-        products.length === 0
+        !response
       ) {
 
-        status.textContent =
-          '';
-
-        hasil.innerHTML =
-          '<div class="empty">' +
-          'Produk tidak ditemukan.' +
-          '</div>';
+        tampilkanPesan(
+          'Server tidak memberikan response.',
+          true
+        );
 
         return;
 
       }
 
 
-      /*
-       * Buang data duplikat
-       */
-
-      const uniqueProducts =
-        hapusDuplikat(
-          products
-        );
-
-
-      /*
-       * Batasi tampilan
-       * agar website tetap ringan.
-       */
-
-      const tampil =
-        uniqueProducts.slice(
-          0,
-          30
-        );
-
-
-      status.textContent =
-        uniqueProducts.length +
-        ' produk ditemukan.';
-
-
-      hasil.innerHTML =
-        tampil
-          .map(
-            function(product) {
-
-              const nama =
-                product.nama ||
-                product.name ||
-                '-';
-
-
-              const harga =
-                product.harga ||
-                product.price ||
-                '-';
-
-
-              const stok =
-                product.stok ??
-                product.stock ??
-                0;
-
-
-              const barcode =
-                product.barcode ||
-                '-';
-
-
-              const kode =
-                product.kodeAccurate ||
-                product.no ||
-                '-';
-
-
-              const satuan =
-                product.satuan ||
-                'PCS';
-
-
-              return `
-
-                <div class="product">
-
-                  <div class="product-name">
-                    ${escapeHtml(nama)}
-                  </div>
-
-                  <div class="row">
-
-                    <span>
-                      Harga
-                    </span>
-
-                    <span class="price">
-                      Rp ${escapeHtml(harga)}
-                    </span>
-
-                  </div>
-
-                  <div class="row">
-
-                    <span>
-                      Stok
-                    </span>
-
-                    <span class="stock">
-                      ${escapeHtml(String(stok))}
-                      ${escapeHtml(satuan)}
-                    </span>
-
-                  </div>
-
-                  <div class="row">
-
-                    <span>
-                      Barcode
-                    </span>
-
-                    <span>
-                      ${escapeHtml(barcode)}
-                    </span>
-
-                  </div>
-
-                  <div class="row">
-
-                    <span>
-                      Kode
-                    </span>
-
-                    <span>
-                      ${escapeHtml(kode)}
-                    </span>
-
-                  </div>
-
-                </div>
-
-              `;
-
-            }
-          )
-          .join('');
-
-
-      /*
-       * Kalau hasil lebih dari 30
-       */
-
       if (
-        uniqueProducts.length > 30
+        response.success !== true
       ) {
 
-        hasil.innerHTML +=
+        tampilkanPesan(
+          response.error ||
+          'Produk tidak ditemukan.',
+          true
+        );
 
-          '<div class="empty">' +
+        return;
 
-          'Menampilkan 30 dari ' +
+      }
 
-          uniqueProducts.length +
 
-          ' hasil. Persempit kata pencarian untuk hasil yang lebih spesifik.' +
+      const data =
+        Array.isArray(
+          response.data
+        )
+          ? response.data
+          : [];
 
-          '</div>';
+
+      if (
+        data.length === 0
+      ) {
+
+        tampilkanKosong();
+
+        return;
+
+      }
+
+
+      tampilkanProduk(
+        data
+      );
+
+    }
+
+
+    /*
+    =====================================================
+    TAMPILKAN PRODUK
+    =====================================================
+    */
+
+    function tampilkanProduk(
+      products
+    ) {
+
+      results.innerHTML =
+        '';
+
+
+      products.forEach(
+        function(product) {
+
+          const card =
+            document.createElement(
+              'div'
+            );
+
+
+          card.className =
+            'product-card';
+
+
+          const nama =
+            product.nama ||
+            product.name ||
+            'Produk tanpa nama';
+
+
+          const kode =
+            product.kodeAccurate ||
+            product.no ||
+            '-';
+
+
+          const barcode =
+            product.barcode ||
+            '-';
+
+
+          const harga =
+            product.harga ||
+            product.price ||
+            '-';
+
+
+          const stok =
+            product.stok ??
+            product.stock ??
+            0;
+
+
+          const satuan =
+            product.satuan ||
+            'PCS';
+
+
+          let stockClass =
+            'stock';
+
+
+          if (
+            Number(stok) <= 0
+          ) {
+
+            stockClass +=
+              ' zero';
+
+          }
+
+
+          card.innerHTML = `
+
+            <div class="product-name">
+              ${escapeHTML(nama)}
+            </div>
+
+            <div class="product-code">
+              Kode:
+              ${escapeHTML(kode)}
+              &nbsp; • &nbsp;
+              Barcode:
+              ${escapeHTML(barcode)}
+            </div>
+
+            <div class="product-info">
+
+              <div class="info-box">
+
+                <span class="info-label">
+                  HARGA
+                </span>
+
+                <span
+                  class="info-value price"
+                >
+                  Rp ${escapeHTML(
+                    String(harga)
+                  )}
+                </span>
+
+              </div>
+
+
+              <div class="info-box">
+
+                <span class="info-label">
+                  STOK
+                </span>
+
+                <span
+                  class="info-value ${stockClass}"
+                >
+                  ${escapeHTML(
+                    String(stok)
+                  )}
+                </span>
+
+              </div>
+
+
+              <div class="info-box">
+
+                <span class="info-label">
+                  SATUAN
+                </span>
+
+                <span
+                  class="info-value"
+                >
+                  ${escapeHTML(
+                    String(satuan)
+                  )}
+                </span>
+
+              </div>
+
+            </div>
+
+          `;
+
+
+          results.appendChild(
+            card
+          );
+
+        }
+      );
+
+
+      if (
+        products.length >= 50
+      ) {
+
+        const info =
+          document.createElement(
+            'div'
+          );
+
+
+        info.style.textAlign =
+          'center';
+
+        info.style.color =
+          '#999';
+
+        info.style.fontSize =
+          '12px';
+
+        info.style.padding =
+          '8px';
+
+
+        info.textContent =
+          'Menampilkan maksimal 50 hasil.';
+
+
+        results.appendChild(
+          info
+        );
 
       }
 
@@ -576,12 +1129,167 @@ content="width=device-width, initial-scale=1"
 
 
     /*
-     * AMANKAN HTML
-     */
+    =====================================================
+    PESAN KOSONG
+    =====================================================
+    */
 
-    function escapeHtml(value) {
+    function tampilkanKosong() {
 
-      return String(value)
+      results.innerHTML = `
+
+        <div class="empty">
+
+          <div class="empty-icon">
+            📦
+          </div>
+
+          <div class="empty-title">
+            Produk tidak ditemukan
+          </div>
+
+          <div class="empty-text">
+            Coba gunakan nama produk,
+            kode Accurate, atau barcode
+            yang berbeda.
+          </div>
+
+        </div>
+
+      `;
+
+    }
+
+
+    /*
+    =====================================================
+    PESAN
+    =====================================================
+    */
+
+    function tampilkanPesan(
+      message,
+      error
+    ) {
+
+      status.textContent =
+        message;
+
+      status.className =
+        'status' +
+        (
+          error
+            ? ' error'
+            : ''
+        );
+
+      status.style.display =
+        'block';
+
+    }
+
+
+    /*
+    =====================================================
+    LOADING
+    =====================================================
+    */
+
+    function setLoading(
+      loading
+    ) {
+
+      if (
+        loading
+      ) {
+
+        status.textContent =
+          'Mencari produk...';
+
+        status.className =
+          'status loading';
+
+        status.style.display =
+          'block';
+
+        searchButton.disabled =
+          true;
+
+        searchButton.textContent =
+          '...';
+
+      }
+
+      else {
+
+        status.style.display =
+          'none';
+
+        searchButton.disabled =
+          false;
+
+        searchButton.textContent =
+          'Cari';
+
+      }
+
+    }
+
+
+    /*
+    =====================================================
+    RESET
+    =====================================================
+    */
+
+    function resetPencarian() {
+
+      searchInput.value =
+        '';
+
+      results.innerHTML = `
+
+        <div class="empty">
+
+          <div class="empty-icon">
+            🔎
+          </div>
+
+          <div class="empty-title">
+            Cari produk
+          </div>
+
+          <div class="empty-text">
+            Ketik nama barang, kode Accurate,
+            atau barcode untuk melihat
+            harga dan stok.
+          </div>
+
+        </div>
+
+      `;
+
+      status.style.display =
+        'none';
+
+      searchInput.focus();
+
+    }
+
+
+    /*
+    =====================================================
+    ESCAPE HTML
+    =====================================================
+    */
+
+    function escapeHTML(
+      value
+    ) {
+
+      return String(
+        value ?? ''
+      )
         .replace(
           /&/g,
           '&amp;'
