@@ -732,7 +732,6 @@ footer {
   class="result-card"
 >
 
-
   <div
     id="emptyState"
     class="empty"
@@ -947,7 +946,7 @@ let zoomCanUse = false;
 
 let autoZoomTimer = null;
 
-let barcodeDetectorTimer = null;
+let barcodeDetectionTimer = null;
 
 let barcodeCurrentlyVisible = false;
 
@@ -1169,16 +1168,289 @@ searchInput.addEventListener(
 
 
 /* =========================================================
-   NORMALISASI
+   NORMALISASI UMUM
 ========================================================= */
 
 function normalisasi(value) {
 
   return String(
-    value || ''
+    value ?? ''
   )
     .trim()
     .toUpperCase();
+
+}
+
+
+/* =========================================================
+   NORMALISASI BARCODE
+========================================================= */
+
+/*
+ * BAGIAN INI YANG DIPERBAIKI.
+ *
+ * Barcode hasil kamera dan barcode dari Google Sheet
+ * bisa memiliki format berbeda walaupun nilainya sama.
+ *
+ * Contoh:
+ *
+ * Kamera:
+ * 8991234567890
+ *
+ * Master:
+ * "8991234567890"
+ *
+ * Master bisa juga:
+ * 8991234567890.0
+ *
+ * Atau:
+ * "899 123 456 7890"
+ *
+ * Atau:
+ * "899-123-456-7890"
+ *
+ * Semuanya akan dicoba sebagai barcode yang sama.
+ */
+
+function normalisasiBarcode(value) {
+
+  if (
+    value === null ||
+    value === undefined
+  ) {
+
+    return '';
+
+  }
+
+  let text =
+    String(value)
+      .trim()
+      .toUpperCase();
+
+  if (!text) {
+    return '';
+  }
+
+
+  /*
+   * Hilangkan spasi.
+   */
+
+  text =
+    text.replace(/\s+/g, '');
+
+
+  /*
+   * Jika barcode angka dan terbaca sebagai
+   * angka desimal dengan .0 dari Google Sheet,
+   * ubah menjadi bilangan bulat.
+   *
+   * Contoh:
+   *
+   * 8991234567890.0
+   *
+   * menjadi:
+   *
+   * 8991234567890
+   */
+
+  if (
+    /^\d+\.0+$/.test(text)
+  ) {
+
+    text =
+      text.replace(/\.0+$/, '');
+
+  }
+
+
+  /*
+   * Barcode numeric:
+   *
+   * 899-123-456
+   *
+   * dibandingkan juga dengan:
+   *
+   * 899123456
+   *
+   * Ini hanya dilakukan kalau isinya
+   * memang angka + separator.
+   */
+
+  const numericOnly =
+    text.replace(
+      /[^0-9]/g,
+      ''
+    );
+
+
+  /*
+   * Kalau seluruh karakter memang
+   * angka/separator, gunakan versi angka.
+   */
+
+  if (
+    numericOnly &&
+    /^[0-9.\-_/]+$/.test(text)
+  ) {
+
+    return numericOnly;
+
+  }
+
+
+  /*
+   * Untuk barcode alphanumeric,
+   * jangan buang hurufnya.
+   */
+
+  return text;
+
+}
+
+
+/* =========================================================
+   VARIAN BARCODE
+========================================================= */
+
+function buatVarianBarcode(value) {
+
+  const hasil = [];
+
+  if (
+    value === null ||
+    value === undefined
+  ) {
+
+    return hasil;
+
+  }
+
+
+  const original =
+    String(value)
+      .trim()
+      .toUpperCase();
+
+  if (!original) {
+    return hasil;
+  }
+
+
+  /*
+   * Versi normal.
+   */
+
+  const normal =
+    normalisasiBarcode(original);
+
+  if (normal) {
+
+    hasil.push(normal);
+
+  }
+
+
+  /*
+   * Versi tanpa karakter selain angka.
+   */
+
+  const numeric =
+    original.replace(
+      /[^0-9]/g,
+      ''
+    );
+
+  if (
+    numeric &&
+    !hasil.includes(numeric)
+  ) {
+
+    hasil.push(numeric);
+
+  }
+
+
+  /*
+   * Versi menghapus .0
+   */
+
+  const tanpaDesimal =
+    original.replace(
+      /\.0+$/,
+      ''
+    );
+
+  if (
+    tanpaDesimal &&
+    !hasil.includes(tanpaDesimal)
+  ) {
+
+    hasil.push(
+      tanpaDesimal
+    );
+
+  }
+
+
+  return hasil;
+
+}
+
+
+/* =========================================================
+   BARCODE SAMA
+========================================================= */
+
+function barcodeSama(
+  barcodeA,
+  barcodeB
+) {
+
+  const varianA =
+    buatVarianBarcode(
+      barcodeA
+    );
+
+  const varianB =
+    buatVarianBarcode(
+      barcodeB
+    );
+
+
+  if (
+    !varianA.length ||
+    !varianB.length
+  ) {
+
+    return false;
+
+  }
+
+
+  for (
+    const a of varianA
+  ) {
+
+    for (
+      const b of varianB
+    ) {
+
+      if (
+        a === b
+      ) {
+
+        return true;
+
+      }
+
+    }
+
+  }
+
+
+  return false;
 
 }
 
@@ -1252,70 +1524,172 @@ async function cari() {
 
   tampilLoading();
 
+
   try {
 
     const master =
       await ambilMasterCache();
+
 
     const target =
       normalisasi(
         keyword
       );
 
+
+    /*
+     * BARCODE TARGET
+     *
+     * Dibuat terpisah supaya pencarian barcode
+     * tidak hanya bergantung pada string mentah.
+     */
+
+    const targetBarcode =
+      normalisasiBarcode(
+        keyword
+      );
+
+
     const hasil =
       master.filter(
         function(item) {
 
-          const barcode =
-            normalisasi(
-              item.barcode
-            );
+          /*
+           * Ambil berbagai kemungkinan nama field
+           * tanpa mengubah struktur Master Produk lama.
+           */
+
+          const barcodeValue =
+            item.barcode ??
+            item.Barcode ??
+            item.BARCODE ??
+            item.kodeBarcode ??
+            item.kode_barcode ??
+            '';
+
 
           const nama =
             normalisasi(
-              item.nama ||
-              item.name
+              item.nama ??
+              item.name ??
+              item.Nama ??
+              ''
             );
+
 
           const kode =
             normalisasi(
-              item.kodeAccurate ||
-              item.no
+              item.kodeAccurate ??
+              item.kode ??
+              item.no ??
+              item.KodeAccurate ??
+              ''
             );
+
 
           const id =
             normalisasi(
-              item.id
+              item.id ??
+              ''
             );
+
+
+          /*
+           * Pencocokan barcode baru.
+           *
+           * Ini bagian terpenting.
+           */
+
+          const cocokBarcode =
+            barcodeSama(
+              barcodeValue,
+              keyword
+            );
+
+
+          /*
+           * Pencocokan lama tetap dipertahankan.
+           */
+
+          const cocokBarcodeNormal =
+            targetBarcode &&
+            normalisasiBarcode(
+              barcodeValue
+            ) === targetBarcode;
+
+
+          const cocokKode =
+            kode === target;
+
+
+          const cocokId =
+            id === target;
+
+
+          const cocokNama =
+            nama.includes(target);
+
+
+          const cocokKodeSebagian =
+            kode.includes(target);
+
+
+          const cocokBarcodeSebagian =
+            normalisasiBarcode(
+              barcodeValue
+            ).includes(
+              targetBarcode
+            );
+
 
           return (
 
-            barcode === target
+            cocokBarcode
 
             ||
 
-            kode === target
+            cocokBarcodeNormal
 
             ||
 
-            id === target
+            cocokKode
 
             ||
 
-            barcode.includes(target)
+            cocokId
 
             ||
 
-            nama.includes(target)
+            cocokNama
 
             ||
 
-            kode.includes(target)
+            cocokKodeSebagian
+
+            ||
+
+            cocokBarcodeSebagian
 
           );
 
         }
       );
+
+
+    console.log(
+      'Pencarian:',
+      keyword
+    );
+
+    console.log(
+      'Barcode target:',
+      targetBarcode
+    );
+
+    console.log(
+      'Jumlah hasil:',
+      hasil.length
+    );
 
 
     if (
@@ -1407,6 +1781,21 @@ function tampilDaftarHasil(
         'result-item';
 
 
+      const barcode =
+        item.barcode ??
+        item.Barcode ??
+        item.BARCODE ??
+        item.kodeBarcode ??
+        '-';
+
+
+      const kode =
+        item.kodeAccurate ??
+        item.kode ??
+        item.no ??
+        '-';
+
+
       div.innerHTML =
 
         '<div class="result-item-name">' +
@@ -1424,16 +1813,13 @@ function tampilDaftarHasil(
         'Barcode: ' +
 
         escapeHtml(
-          item.barcode ||
-          '-'
+          barcode
         ) +
 
         ' • Kode: ' +
 
         escapeHtml(
-          item.kodeAccurate ||
-          item.no ||
-          '-'
+          kode
         ) +
 
         '</div>';
@@ -1510,21 +1896,36 @@ async function tampilProduk(
     }
 
 
-    if (item.barcode) {
+    const barcode =
+      item.barcode ??
+      item.Barcode ??
+      item.BARCODE ??
+      item.kodeBarcode ??
+      '';
+
+
+    const kode =
+      item.kodeAccurate ??
+      item.kode ??
+      item.no ??
+      '';
+
+
+    if (barcode) {
 
       params.set(
         'barcode',
-        item.barcode
+        barcode
       );
 
     }
 
 
-    if (item.kodeAccurate) {
+    if (kode) {
 
       params.set(
         'kode',
-        item.kodeAccurate
+        kode
       );
 
     }
@@ -1571,6 +1972,7 @@ async function tampilProduk(
       'productBarcode'
     ).textContent =
       data.barcode ||
+      barcode ||
       '-';
 
 
@@ -1578,6 +1980,7 @@ async function tampilProduk(
       'productCode'
     ).textContent =
       data.kodeAccurate ||
+      kode ||
       '-';
 
 
@@ -1900,19 +2303,6 @@ async function bukaScanner() {
     );
 
 
-    /*
-     * =====================================================
-     * MULAI PEMBACA BARCODE
-     *
-     * PENTING:
-     *
-     * BarcodeDetector sekarang dipakai sebagai
-     * PEMBACA BARCODE sebenarnya.
-     *
-     * Bukan sekadar mendeteksi "ada objek".
-     * =====================================================
-     */
-
     mulaiBarcodeScanner();
 
   }
@@ -1943,23 +2333,8 @@ async function bukaScanner() {
 
 async function mulaiBarcodeScanner() {
 
-  /*
-   * Bersihkan scanner sebelumnya.
-   */
-
   hentikanBarcodeScanner();
 
-
-  /*
-   * =====================================================
-   * PRIORITAS 1
-   *
-   * BarcodeDetector browser.
-   *
-   * Kalau tersedia, detector ini langsung mencari
-   * barcode DAN mengembalikan rawValue.
-   * =====================================================
-   */
 
   if (
     'BarcodeDetector' in window
@@ -2035,14 +2410,6 @@ async function mulaiBarcodeScanner() {
 
   }
 
-
-  /*
-   * =====================================================
-   * PRIORITAS 2
-   *
-   * ZXing fallback.
-   * =====================================================
-   */
 
   barcodeDetectionSupported =
     false;
@@ -2148,10 +2515,6 @@ function mulaiNativeBarcodeDetector(
 
     try {
 
-      /*
-       * BarcodeDetector membaca frame kamera.
-       */
-
       const results =
         await detector.detect(
           video
@@ -2162,11 +2525,6 @@ function mulaiNativeBarcodeDetector(
         results &&
         results.length > 0
       ) {
-
-        /*
-         * Ambil barcode pertama yang memiliki
-         * rawValue.
-         */
 
         let rawValue =
           '';
@@ -2193,20 +2551,9 @@ function mulaiNativeBarcodeDetector(
         }
 
 
-        /*
-         * =================================================
-         * BARCODE BENAR-BENAR TERBACA
-         * =================================================
-         */
-
         if (
           rawValue
         ) {
-
-          /*
-           * Jangan proses barcode yang sama
-           * berulang-ulang.
-           */
 
           if (
             rawValue ===
@@ -2239,10 +2586,6 @@ function mulaiNativeBarcodeDetector(
             'Barcode berhasil dibaca';
 
 
-          /*
-           * STOP SCANNER
-           */
-
           scanning =
             false;
 
@@ -2250,16 +2593,11 @@ function mulaiNativeBarcodeDetector(
           hentikanBarcodeScanner();
 
 
-          /*
-           * STOP KAMERA
-           */
-
           tutupScanner();
 
 
           /*
-           * MASUKKAN HASIL BARCODE
-           * KE SEARCH INPUT
+           * MASUKKAN HASIL SCAN
            */
 
           searchInput.value =
@@ -2271,14 +2609,8 @@ function mulaiNativeBarcodeDetector(
 
 
           /*
-           * =================================================
-           * CARI PRODUK
-           *
-           * INI BAGIAN YANG MEMPERBAIKI MASALAH UTAMA.
-           *
-           * Barcode hasil kamera langsung dikirim ke
-           * fungsi cari() yang sama dengan pencarian manual.
-           * =================================================
+           * CARI DENGAN FUNGSI CARI YANG
+           * SUDAH DIPERBAIKI NORMALISASINYA.
            */
 
           await cari();
@@ -2291,10 +2623,6 @@ function mulaiNativeBarcodeDetector(
       }
 
 
-      /*
-       * Tidak ada barcode yang berhasil dibaca.
-       */
-
       barcodeCurrentlyVisible =
         false;
 
@@ -2302,14 +2630,9 @@ function mulaiNativeBarcodeDetector(
       cameraStatus.textContent =
         'Mencari barcode...';
 
-
     }
 
     catch(error) {
-
-      /*
-       * Jangan spam console terlalu banyak.
-       */
 
       if (
         error &&
@@ -2345,19 +2668,8 @@ function mulaiNativeBarcodeDetector(
   }
 
 
-  /*
-   * Jalankan detector.
-   */
-
   scanFrame();
 
-
-  /*
-   * Auto zoom terpisah dari detector.
-   *
-   * Jadi zoom TIDAK lagi dipicu oleh
-   * "barcode terlihat".
-   */
 
   mulaiAutoZoomStabil();
 
@@ -2439,10 +2751,6 @@ function mulaiZXingScanner() {
             'Barcode berhasil dibaca';
 
 
-          /*
-           * STOP SCANNER
-           */
-
           scanning =
             false;
 
@@ -2450,16 +2758,8 @@ function mulaiZXingScanner() {
           hentikanBarcodeScanner();
 
 
-          /*
-           * STOP KAMERA
-           */
-
           tutupScanner();
 
-
-          /*
-           * MASUKKAN BARCODE
-           */
 
           searchInput.value =
             text;
@@ -2468,10 +2768,6 @@ function mulaiZXingScanner() {
           clearBtn.style.display =
             'block';
 
-
-          /*
-           * CARI PRODUK
-           */
 
           cari();
 
@@ -2483,11 +2779,6 @@ function mulaiZXingScanner() {
       }
     );
 
-
-    /*
-     * ZXing fallback menggunakan auto zoom
-     * berdasarkan waktu, bukan detector palsu.
-     */
 
     mulaiAutoZoomStabil();
 
@@ -2512,23 +2803,6 @@ function mulaiZXingScanner() {
 /* =========================================================
    AUTO ZOOM STABIL
 ========================================================= */
-
-/*
- * Prinsip baru:
- *
- * 1X
- * ↓ setelah beberapa detik belum terbaca
- * 2X
- * ↓ setelah beberapa detik belum terbaca
- * 3X
- *
- * TIDAK ADA:
- *
- * 1X → 2X → 1X → 3X → 2X
- *
- * Selama scanner masih mencari barcode,
- * zoom hanya boleh NAIK.
- */
 
 function mulaiAutoZoomStabil() {
 
@@ -2565,10 +2839,6 @@ function mulaiAutoZoomStabil() {
 
     }
 
-
-    /*
-     * Kalau sudah 3X, berhenti.
-     */
 
     if (
       currentZoom >=
@@ -2624,11 +2894,6 @@ function mulaiAutoZoomStabil() {
         'Mencari barcode...';
 
 
-      /*
-       * Kalau masih belum ketemu,
-       * baru naik lagi setelah jeda.
-       */
-
       autoZoomTimer =
         setTimeout(
           naikTahap,
@@ -2639,11 +2904,6 @@ function mulaiAutoZoomStabil() {
 
   }
 
-
-  /*
-   * Beri kesempatan kamera membaca
-   * pada 1X terlebih dahulu.
-   */
 
   autoZoomTimer =
     setTimeout(
@@ -2888,10 +3148,6 @@ zoomRange.addEventListener(
     }
 
 
-    /*
-     * User mengambil alih zoom.
-     */
-
     manualZoomMode =
       true;
 
@@ -2973,23 +3229,11 @@ function tutupScanner() {
     false;
 
 
-  /*
-   * STOP BARCODE SCANNER
-   */
-
   hentikanBarcodeScanner();
 
 
-  /*
-   * STOP AUTO ZOOM
-   */
-
   hentikanAutoZoom();
 
-
-  /*
-   * STOP ZXING
-   */
 
   if (
     codeReader
@@ -3016,10 +3260,6 @@ function tutupScanner() {
   codeReader =
     null;
 
-
-  /*
-   * STOP STREAM
-   */
 
   if (
     currentStream
@@ -3050,10 +3290,6 @@ function tutupScanner() {
   }
 
 
-  /*
-   * STOP VIDEO
-   */
-
   try {
 
     video.pause();
@@ -3066,10 +3302,6 @@ function tutupScanner() {
   video.srcObject =
     null;
 
-
-  /*
-   * RESET
-   */
 
   currentStream =
     null;
@@ -3098,10 +3330,6 @@ function tutupScanner() {
     'Zoom 1×';
 
 
-  /*
-   * HIDE
-   */
-
   scannerCard.style.display =
     'none';
 
@@ -3117,7 +3345,7 @@ function escapeHtml(
 ) {
 
   return String(
-    value || ''
+    value ?? ''
   )
     .replace(
       /&/g,
