@@ -1533,6 +1533,78 @@ async function cari(dariScan = false) {
       await ambilMasterCache();
 
 
+// =====================================================
+// MODE SCAN BARCODE
+// SCAN HARUS EXACT MATCH
+// =====================================================
+
+if (dariScan) {
+
+  const barcodeHasil =
+    master.filter(function(item) {
+
+      const barcodeValue =
+        item.barcode ??
+        item.Barcode ??
+        item.BARCODE ??
+        item.kodeBarcode ??
+        item.kode_barcode ??
+        '';
+
+      return barcodeSama(
+        barcodeValue,
+        keyword
+      );
+
+    });
+
+  console.log(
+    'SCAN BARCODE:',
+    keyword
+  );
+
+  console.log(
+    'HASIL EXACT BARCODE:',
+    barcodeHasil
+  );
+
+
+  if (barcodeHasil.length === 0) {
+
+    tampilError(
+      'Barcode ' +
+      keyword +
+      ' tidak ditemukan.'
+    );
+
+    return;
+
+  }
+
+
+  // Kalau ada lebih dari satu baris dengan
+  // barcode yang SAMA PERSIS, tampilkan semuanya.
+  // Kalau barcode unik, langsung tampilkan produknya.
+
+  if (barcodeHasil.length === 1) {
+
+    await tampilProduk(
+      barcodeHasil[0]
+    );
+
+    return;
+
+  }
+
+
+  tampilDaftarHasil(
+    barcodeHasil
+  );
+
+  return;
+
+}
+
     const target =
       normalisasi(
         keyword
