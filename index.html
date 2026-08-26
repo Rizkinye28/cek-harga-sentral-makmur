@@ -3,3378 +3,3311 @@
 
 <head>
 
-<meta charset="UTF-8">
-
-<meta
-  name="viewport"
-  content="width=device-width, initial-scale=1.0"
->
-
-<title>Sentral Makmur - Cek Harga & Stok</title>
-
-<script src="https://unpkg.com/@zxing/library@0.21.2/umd/index.min.js"></script>
-
-<style>
-
-/* =========================================================
-   DASAR
-========================================================= */
-
-* {
-  box-sizing: border-box;
-}
-
-body {
-  margin: 0;
-  font-family: Arial, Helvetica, sans-serif;
-  background: #f7f7f7;
-  color: #151515;
-}
-
-.container {
-  width: min(100% - 32px, 900px);
-  margin: 0 auto;
-}
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Sentral Makmur - Cek Harga & Stok</title>
+
+  <!-- ZXing Barcode Scanner -->
+  <script src="https://unpkg.com/@zxing/library@0.21.2/umd/index.min.js"></script>
+
+  <style>
+
+    /* =========================================================
+       DASAR
+    ========================================================= */
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #f7f7f7;
+      color: #151515;
+    }
 
-
-/* =========================================================
-   HEADER
-========================================================= */
-
-header {
-  text-align: center;
-  padding: 28px 0 22px;
-}
-
-.logo {
-  width: 82px;
-  height: 82px;
-  margin: 0 auto 15px;
-  border-radius: 24px;
-  background: #111;
-  color: white;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  font-size: 32px;
-  font-weight: 800;
-
-  box-shadow: 0 10px 25px rgba(0,0,0,.12);
-}
+    .container {
+      width: min(100% - 32px, 900px);
+      margin: 0 auto;
+    }
+
+
+    /* =========================================================
+       HEADER
+    ========================================================= */
+
+    header {
+      text-align: center;
+      padding: 18px 0 18px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 32px;
+      font-weight: 800;
+    }
+
+    .subtitle {
+      margin-top: 7px;
+      color: #777;
+      font-size: 17px;
+    }
 
-h1 {
-  margin: 0;
-  font-size: 32px;
-}
-
-.subtitle {
-  margin-top: 7px;
-  color: #777;
-  font-size: 17px;
-}
 
+    /* =========================================================
+       SEARCH
+    ========================================================= */
 
-/* =========================================================
-   SEARCH
-========================================================= */
+    .search-card {
+      background: white;
+      border-radius: 22px;
+      padding: 20px;
+      box-shadow: 0 10px 35px rgba(0,0,0,.08);
+    }
 
-.search-card {
-  background: white;
-  border-radius: 22px;
-  padding: 20px;
-  box-shadow: 0 10px 35px rgba(0,0,0,.08);
-}
+    .search-row {
+      display: flex;
+      gap: 10px;
+    }
 
-.search-row {
-  display: flex;
-  gap: 10px;
-}
+    .search-input-wrap {
+      flex: 1;
+      position: relative;
+    }
 
-.search-input-wrap {
-  flex: 1;
-  position: relative;
-}
+    input {
+      width: 100%;
+      height: 56px;
+      padding: 0 48px 0 17px;
 
-input {
-  width: 100%;
-  height: 56px;
-  padding: 0 48px 0 17px;
+      border: 2px solid #ddd;
+      border-radius: 15px;
 
-  border: 2px solid #ddd;
-  border-radius: 15px;
+      font-size: 17px;
+      outline: none;
+    }
 
-  font-size: 17px;
-  outline: none;
-}
+    input:focus {
+      border-color: #111;
+    }
 
-input:focus {
-  border-color: #111;
-}
+    .clear {
+      position: absolute;
+      right: 13px;
+      top: 50%;
+      transform: translateY(-50%);
 
-.clear {
-  position: absolute;
-  right: 13px;
-  top: 50%;
-  transform: translateY(-50%);
+      border: none;
+      background: transparent;
 
-  border: none;
-  background: transparent;
+      font-size: 25px;
+      color: #777;
 
-  font-size: 25px;
-  color: #777;
+      cursor: pointer;
+      display: none;
+    }
 
-  cursor: pointer;
-  display: none;
-}
+    button {
+      border: none;
+      border-radius: 15px;
 
-button {
-  border: none;
-  border-radius: 15px;
+      padding: 0 23px;
 
-  padding: 0 23px;
+      font-size: 16px;
+      font-weight: 700;
 
-  font-size: 16px;
-  font-weight: 700;
+      cursor: pointer;
+    }
 
-  cursor: pointer;
-}
+    .btn-black {
+      background: #111;
+      color: white;
+    }
 
-.btn-black {
-  background: #111;
-  color: white;
-}
+    .btn-gray {
+      background: #eee;
+      color: #555;
+    }
 
-.btn-gray {
-  background: #eee;
-  color: #555;
-}
+    .action-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
 
-.action-row {
-  display: flex;
-  gap: 10px;
-  margin-top: 10px;
-}
+    .action-row button {
+      height: 50px;
+      flex: 1;
+    }
 
-.action-row button {
-  height: 50px;
-  flex: 1;
-}
 
+    /* =========================================================
+       SCANNER
+    ========================================================= */
 
-/* =========================================================
-   SCANNER
-========================================================= */
+    .scanner-card {
+      margin-top: 16px;
 
-.scanner-card {
-  margin-top: 16px;
+      background: #111;
+      border-radius: 22px;
 
-  background: #111;
-  border-radius: 22px;
+      padding: 14px;
 
-  padding: 14px;
+      display: none;
+    }
 
-  display: none;
-}
+    .scanner-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
 
-.scanner-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+      color: white;
 
-  color: white;
+      margin-bottom: 10px;
+    }
 
-  margin-bottom: 10px;
-}
+    .scanner-title {
+      font-size: 16px;
+      font-weight: 700;
+    }
 
-.scanner-title {
-  font-size: 16px;
-  font-weight: 700;
-}
+    .close-camera {
+      background: #333;
+      color: white;
 
-.close-camera {
-  background: #333;
-  color: white;
+      padding: 8px 13px;
+      border-radius: 9px;
 
-  padding: 8px 13px;
-  border-radius: 9px;
+      font-size: 13px;
+    }
 
-  font-size: 13px;
-}
 
+    /* =========================================================
+       VIDEO
+    ========================================================= */
 
-/* =========================================================
-   VIDEO
-========================================================= */
+    .video-wrap {
+      position: relative;
 
-.video-wrap {
-  position: relative;
+      width: 100%;
+      max-width: 500px;
 
-  width: 100%;
+      margin: 0 auto;
 
-  /* KOTAK SCAN DIPERKECIL */
-  max-width: 520px;
+      overflow: hidden;
 
-  margin: 0 auto;
+      border-radius: 16px;
 
-  overflow: hidden;
+      background: #000;
 
-  border-radius: 16px;
+      aspect-ratio: 4 / 3;
+    }
 
-  background: #000;
+    video {
+      width: 100%;
+      height: 100%;
 
-  aspect-ratio: 4 / 3;
-}
+      display: block;
 
-video {
-  width: 100%;
-  height: 100%;
+      object-fit: cover;
 
-  display: block;
+      background: #000;
+    }
 
-  object-fit: cover;
 
-  background: #000;
-}
+    /* =========================================================
+       AREA SCAN
+    ========================================================= */
 
+    .scan-box {
+      position: absolute;
 
-/* =========================================================
-   AREA SCAN
-========================================================= */
+      width: 58%;
+      height: 26%;
 
-.scan-box {
-  position: absolute;
+      left: 21%;
+      top: 37%;
 
-  width: 70%;
-  height: 30%;
+      border: 2px solid rgba(255,255,255,.95);
 
-  left: 15%;
-  top: 35%;
+      border-radius: 12px;
 
-  border: 2px solid rgba(255,255,255,.95);
+      pointer-events: none;
 
-  border-radius: 12px;
+      box-shadow:
+        0 0 0 9999px rgba(0,0,0,.18);
+    }
 
-  pointer-events: none;
+    .scan-box::before,
+    .scan-box::after {
+      content: "";
 
-  box-shadow:
-    0 0 0 9999px rgba(0,0,0,.18);
-}
+      position: absolute;
 
-.scan-box::before,
-.scan-box::after {
-  content: "";
+      width: 24px;
+      height: 24px;
 
-  position: absolute;
+      border-color: white;
+      border-style: solid;
+    }
 
-  width: 24px;
-  height: 24px;
+    .scan-box::before {
+      left: -2px;
+      top: -2px;
 
-  border-color: white;
-  border-style: solid;
-}
+      border-width: 4px 0 0 4px;
+      border-radius: 7px 0 0 0;
+    }
 
-.scan-box::before {
-  left: -2px;
-  top: -2px;
+    .scan-box::after {
+      right: -2px;
+      bottom: -2px;
 
-  border-width: 4px 0 0 4px;
-  border-radius: 7px 0 0 0;
-}
+      border-width: 0 4px 4px 0;
+      border-radius: 0 0 7px 0;
+    }
 
-.scan-box::after {
-  right: -2px;
-  bottom: -2px;
+    .scan-text {
+      position: absolute;
 
-  border-width: 0 4px 4px 0;
-  border-radius: 0 0 7px 0;
-}
+      left: 0;
+      right: 0;
 
-.scan-text {
-  position: absolute;
+      bottom: -38px;
 
-  left: 0;
-  right: 0;
+      text-align: center;
 
-  bottom: -38px;
+      color: white;
 
-  text-align: center;
+      font-size: 13px;
+      font-weight: 600;
 
-  color: white;
+      text-shadow: 0 1px 3px #000;
+    }
 
-  font-size: 13px;
-  font-weight: 600;
 
-  text-shadow: 0 1px 3px #000;
-}
+    /* =========================================================
+       STATUS KAMERA
+    ========================================================= */
 
+    .camera-status {
+      text-align: center;
 
-/* =========================================================
-   STATUS KAMERA
-========================================================= */
+      color: #bbb;
 
-.camera-status {
-  text-align: center;
+      font-size: 13px;
 
-  color: #bbb;
+      margin-top: 12px;
 
-  font-size: 13px;
+      min-height: 18px;
+    }
 
-  margin-top: 12px;
+    .zoom-status {
+      text-align: center;
 
-  min-height: 18px;
-}
+      color: #fff;
 
-.zoom-status {
-  text-align: center;
+      font-size: 13px;
 
-  color: #fff;
+      margin-top: 5px;
 
-  font-size: 13px;
+      font-weight: 700;
+    }
 
-  margin-top: 5px;
 
-  font-weight: 700;
-}
+    /* =========================================================
+       MANUAL ZOOM
+    ========================================================= */
 
+    .zoom-control {
+      max-width: 500px;
+      margin: 13px auto 0;
 
-/* =========================================================
-   MANUAL ZOOM
-========================================================= */
+      color: white;
 
-.zoom-control {
-  max-width: 520px;
-  margin: 13px auto 0;
+      font-size: 13px;
+    }
 
-  color: white;
+    .zoom-control input {
+      width: 100%;
 
-  font-size: 13px;
-}
+      height: auto;
 
-.zoom-control input {
-  width: 100%;
+      padding: 0;
 
-  height: auto;
+      border: none;
+    }
 
-  padding: 0;
 
-  border: none;
-}
+    /* =========================================================
+       HASIL
+    ========================================================= */
 
+    .result-card {
+      margin-top: 16px;
 
-/* =========================================================
-   HASIL
-========================================================= */
+      background: white;
 
-.result-card {
-  margin-top: 16px;
+      border-radius: 22px;
 
-  background: white;
+      padding: 27px;
 
-  border-radius: 22px;
+      min-height: 210px;
 
-  padding: 27px;
+      box-shadow: 0 10px 35px rgba(0,0,0,.07);
+    }
 
-  min-height: 210px;
+    .empty {
+      text-align: center;
 
-  box-shadow: 0 10px 35px rgba(0,0,0,.07);
-}
+      color: #777;
 
-.empty {
-  text-align: center;
+      padding: 30px 10px;
+    }
 
-  color: #777;
+    .empty-icon {
+      font-size: 45px;
 
-  padding: 30px 10px;
-}
+      margin-bottom: 10px;
+    }
 
-.empty-icon {
-  font-size: 45px;
+    .empty-title {
+      font-size: 21px;
 
-  margin-bottom: 10px;
-}
+      font-weight: 700;
 
-.empty-title {
-  font-size: 21px;
+      color: #333;
 
-  font-weight: 700;
+      margin-bottom: 7px;
+    }
 
-  color: #333;
+    .product {
+      display: none;
+    }
 
-  margin-bottom: 7px;
-}
+    .product-name {
+      font-size: 26px;
 
-.product {
-  display: none;
-}
+      font-weight: 800;
 
-.product-name {
-  font-size: 26px;
+      margin-bottom: 18px;
+    }
 
-  font-weight: 800;
+    .info-grid {
+      display: grid;
 
-  margin-bottom: 18px;
-}
+      grid-template-columns: repeat(2, 1fr);
 
-.info-grid {
-  display: grid;
+      gap: 11px;
+    }
 
-  grid-template-columns: repeat(2, 1fr);
+    .info {
+      background: #f5f5f5;
 
-  gap: 11px;
-}
+      border-radius: 14px;
 
-.info {
-  background: #f5f5f5;
+      padding: 15px;
+    }
 
-  border-radius: 14px;
+    .label {
+      font-size: 12px;
 
-  padding: 15px;
-}
+      color: #777;
 
-.label {
-  font-size: 12px;
+      margin-bottom: 6px;
+    }
 
-  color: #777;
+    .value {
+      font-size: 18px;
 
-  margin-bottom: 6px;
-}
+      font-weight: 700;
 
-.value {
-  font-size: 18px;
+      word-break: break-word;
+    }
 
-  font-weight: 700;
+    .stock {
+      background: #111;
 
-  word-break: break-word;
-}
+      color: white;
+    }
 
-.stock {
-  background: #111;
+    .stock .label {
+      color: #bbb;
+    }
 
-  color: white;
-}
+    .stock .value {
+      font-size: 25px;
+    }
 
-.stock .label {
-  color: #bbb;
-}
+    .search-results {
+      display: none;
 
-.stock .value {
-  font-size: 25px;
-}
+      margin-top: 14px;
+    }
 
-.search-results {
-  display: none;
+    .result-item {
+      background: #f5f5f5;
 
-  margin-top: 14px;
-}
+      border-radius: 14px;
 
-.result-item {
-  background: #f5f5f5;
+      padding: 14px;
 
-  border-radius: 14px;
+      margin-bottom: 8px;
 
-  padding: 14px;
+      cursor: pointer;
+    }
 
-  margin-bottom: 8px;
+    .result-item:hover {
+      background: #eaeaea;
+    }
 
-  cursor: pointer;
-}
+    .result-item-name {
+      font-weight: 700;
 
-.result-item:hover {
-  background: #eaeaea;
-}
+      margin-bottom: 5px;
+    }
 
-.result-item-name {
-  font-weight: 700;
+    .result-item-code {
+      color: #777;
 
-  margin-bottom: 5px;
-}
+      font-size: 13px;
+    }
 
-.result-item-code {
-  color: #777;
+    .loading {
+      text-align: center;
 
-  font-size: 13px;
-}
+      padding: 28px;
 
-.loading {
-  text-align: center;
+      color: #777;
+    }
 
-  padding: 28px;
+    .error {
+      text-align: center;
 
-  color: #777;
-}
+      color: #b00020;
 
-.error {
-  text-align: center;
+      padding: 20px;
+    }
 
-  color: #b00020;
+    footer {
+      text-align: center;
 
-  padding: 20px;
-}
+      padding: 35px 0;
 
-footer {
-  text-align: center;
+      color: #aaa;
 
-  padding: 35px 0;
+      font-size: 13px;
+    }
 
-  color: #aaa;
 
-  font-size: 13px;
-}
+    /* =========================================================
+       MOBILE
+    ========================================================= */
 
+    @media(max-width:600px) {
 
-/* =========================================================
-   MOBILE
-========================================================= */
+      header {
+        padding-top: 12px;
+      }
 
-@media(max-width:600px) {
+      h1 {
+        font-size: 27px;
+      }
 
-  header {
-    padding-top: 20px;
-  }
+      .subtitle {
+        font-size: 15px;
+      }
 
-  .logo {
-    width: 72px;
-    height: 72px;
+      .search-row {
+        flex-direction: column;
+      }
 
-    font-size: 28px;
+      .search-row button {
+        height: 52px;
+      }
 
-    border-radius: 21px;
-  }
+      .info-grid {
+        grid-template-columns: 1fr;
+      }
 
-  h1 {
-    font-size: 27px;
-  }
+      .result-card {
+        padding: 21px;
+      }
 
-  .subtitle {
-    font-size: 15px;
-  }
+      .product-name {
+        font-size: 22px;
+      }
 
-  .search-row {
-    flex-direction: column;
-  }
+      .video-wrap {
+        max-width: 100%;
+      }
 
-  .search-row button {
-    height: 52px;
-  }
+      .scan-box {
+        width: 62%;
+        left: 19%;
 
-  .info-grid {
-    grid-template-columns: 1fr;
-  }
+        height: 25%;
+        top: 37.5%;
+      }
 
-  .result-card {
-    padding: 21px;
-  }
+    }
 
-  .product-name {
-    font-size: 22px;
-  }
-
-  .video-wrap {
-    max-width: 100%;
-  }
-
-  .scan-box {
-    width: 76%;
-    left: 12%;
-
-    height: 28%;
-    top: 36%;
-  }
-
-}
-
-</style>
+  </style>
 
 </head>
 
 
 <body>
 
-
-<div class="container">
-
-
-<header>
-
-  <div class="logo">
-    SM
-  </div>
-
-  <h1>
-    Sentral Makmur
-  </h1>
-
-  <div class="subtitle">
-    Cek Harga & Stok Produk
-  </div>
-
-</header>
+  <div class="container">
 
 
-<section class="search-card">
+    <!-- =====================================================
+         HEADER
+    ===================================================== -->
 
+    <header>
 
-  <div class="search-row">
+      <h1>
+        Sentral Makmur
+      </h1>
 
-    <div class="search-input-wrap">
-
-      <input
-        id="searchInput"
-        type="text"
-        placeholder="Cari nama, kode, atau barcode..."
-        autocomplete="off"
-      >
-
-      <button
-        id="clearBtn"
-        class="clear"
-        type="button"
-      >
-        ×
-      </button>
-
-    </div>
-
-
-    <button
-      id="searchBtn"
-      class="btn-black"
-      type="button"
-    >
-      Cari
-    </button>
-
-  </div>
-
-
-  <div class="action-row">
-
-    <button
-      id="scanBtn"
-      class="btn-black"
-      type="button"
-    >
-      📷 Scan Barcode
-    </button>
-
-    <button
-      id="resetBtn"
-      class="btn-gray"
-      type="button"
-    >
-      Reset
-    </button>
-
-  </div>
-
-</section>
-
-
-<!-- =====================================================
-     SCANNER
-===================================================== -->
-
-<section
-  id="scannerCard"
-  class="scanner-card"
->
-
-  <div class="scanner-header">
-
-    <div class="scanner-title">
-      Scan Barcode
-    </div>
-
-    <button
-      id="closeCameraBtn"
-      class="close-camera"
-      type="button"
-    >
-      Tutup
-    </button>
-
-  </div>
-
-
-  <div class="video-wrap">
-
-    <video
-      id="video"
-      autoplay
-      muted
-      playsinline
-    ></video>
-
-    <div class="scan-box">
-
-      <div class="scan-text">
-        Arahkan barcode ke dalam kotak
+      <div class="subtitle">
+        Cek Harga & Stok Produk
       </div>
 
-    </div>
-
-  </div>
+    </header>
 
 
-  <div
-    id="cameraStatus"
-    class="camera-status"
-  >
-    Menyiapkan kamera...
-  </div>
+    <!-- =====================================================
+         SEARCH
+    ===================================================== -->
+
+    <section class="search-card">
+
+      <div class="search-row">
+
+        <div class="search-input-wrap">
+
+          <input
+            id="searchInput"
+            type="text"
+            placeholder="Cari nama, kode, atau barcode..."
+            autocomplete="off"
+          >
+
+          <button
+            id="clearBtn"
+            class="clear"
+            type="button"
+          >
+            ×
+          </button>
+
+        </div>
+
+        <button
+          id="searchBtn"
+          class="btn-black"
+          type="button"
+        >
+          Cari
+        </button>
+
+      </div>
 
 
-  <div
-    id="zoomStatus"
-    class="zoom-status"
-  >
-    Zoom 1×
-  </div>
+      <div class="action-row">
+
+        <button
+          id="scanBtn"
+          class="btn-black"
+          type="button"
+        >
+          📷 Scan Barcode
+        </button>
+
+        <button
+          id="resetBtn"
+          class="btn-gray"
+          type="button"
+        >
+          Reset
+        </button>
+
+      </div>
+
+    </section>
 
 
-  <div
-    id="zoomControl"
-    class="zoom-control"
-  >
+    <!-- =====================================================
+         SCANNER
+    ===================================================== -->
 
-    <input
-      id="zoomRange"
-      type="range"
-      min="1"
-      max="3"
-      step="0.1"
-      value="1"
+    <section
+      id="scannerCard"
+      class="scanner-card"
     >
 
-  </div>
+      <div class="scanner-header">
 
-</section>
+        <div class="scanner-title">
+          Scan Barcode
+        </div>
 
+        <button
+          id="closeCameraBtn"
+          class="close-camera"
+          type="button"
+        >
+          Tutup
+        </button>
 
-<div
-  id="searchResults"
-  class="search-results"
-></div>
-
-
-<!-- =====================================================
-     RESULT
-===================================================== -->
-
-<section
-  id="resultCard"
-  class="result-card"
->
+      </div>
 
 
-  <div
-    id="emptyState"
-    class="empty"
-  >
+      <div class="video-wrap">
 
-    <div class="empty-icon">
-      🔎
-    </div>
+        <video
+          id="video"
+          autoplay
+          muted
+          playsinline
+        ></video>
 
-    <div class="empty-title">
-      Cari produk
-    </div>
+        <div class="scan-box">
 
-    <div>
-      Ketik nama barang, kode Accurate,
-      atau barcode untuk melihat harga dan stok.
-    </div>
+          <div class="scan-text">
+            Arahkan barcode ke dalam kotak
+          </div>
 
-  </div>
+        </div>
 
-
-  <div
-    id="loading"
-    class="loading"
-    style="display:none;"
-  >
-    Mengambil data stok dari Accurate...
-  </div>
+      </div>
 
 
-  <div
-    id="errorState"
-    class="error"
-    style="display:none;"
-  ></div>
+      <div
+        id="cameraStatus"
+        class="camera-status"
+      >
+        Menyiapkan kamera...
+      </div>
 
 
-  <div
-    id="product"
-    class="product"
-  >
+      <div
+        id="zoomStatus"
+        class="zoom-status"
+      >
+        Zoom 1×
+      </div>
+
+
+      <div
+        id="zoomControl"
+        class="zoom-control"
+      >
+
+        <input
+          id="zoomRange"
+          type="range"
+          min="1"
+          max="3"
+          step="0.1"
+          value="1"
+        >
+
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         SEARCH RESULTS
+    ===================================================== -->
 
     <div
-      id="productName"
-      class="product-name"
+      id="searchResults"
+      class="search-results"
     ></div>
 
 
-    <div class="info-grid">
+    <!-- =====================================================
+         RESULT
+    ===================================================== -->
 
+    <section
+      id="resultCard"
+      class="result-card"
+    >
 
-      <div class="info">
+      <div
+        id="emptyState"
+        class="empty"
+      >
 
-        <div class="label">
-          Barcode
+        <div class="empty-icon">
+          🔎
         </div>
 
-        <div
-          id="productBarcode"
-          class="value"
-        ></div>
+        <div class="empty-title">
+          Cari produk
+        </div>
+
+        <div>
+          Ketik nama barang, kode Accurate,
+          atau barcode untuk melihat harga dan stok.
+        </div>
 
       </div>
 
 
-      <div class="info">
-
-        <div class="label">
-          Kode Accurate
-        </div>
-
-        <div
-          id="productCode"
-          class="value"
-        ></div>
-
+      <div
+        id="loading"
+        class="loading"
+        style="display:none;"
+      >
+        Mengambil data stok dari Accurate...
       </div>
 
 
-      <div class="info">
+      <div
+        id="errorState"
+        class="error"
+        style="display:none;"
+      ></div>
 
-        <div class="label">
-          Harga
-        </div>
+
+      <div
+        id="product"
+        class="product"
+      >
 
         <div
-          id="productPrice"
-          class="value"
+          id="productName"
+          class="product-name"
         ></div>
+
+
+        <div class="info-grid">
+
+          <div class="info">
+
+            <div class="label">
+              Barcode
+            </div>
+
+            <div
+              id="productBarcode"
+              class="value"
+            ></div>
+
+          </div>
+
+
+          <div class="info">
+
+            <div class="label">
+              Kode Accurate
+            </div>
+
+            <div
+              id="productCode"
+              class="value"
+            ></div>
+
+          </div>
+
+
+          <div class="info">
+
+            <div class="label">
+              Harga
+            </div>
+
+            <div
+              id="productPrice"
+              class="value"
+            ></div>
+
+          </div>
+
+
+          <div class="info stock">
+
+            <div class="label">
+              Stok
+            </div>
+
+            <div
+              id="productStock"
+              class="value"
+            ></div>
+
+          </div>
+
+        </div>
 
       </div>
 
-
-      <div class="info stock">
-
-        <div class="label">
-          Stok
-        </div>
-
-        <div
-          id="productStock"
-          class="value"
-        ></div>
-
-      </div>
+    </section>
 
 
-    </div>
+    <footer>
+      Sentral Makmur • API Harga & Stok
+    </footer>
 
   </div>
 
 
-</section>
+  <script>
 
+    /* =========================================================
+       API
+    ========================================================= */
 
-<footer>
-  Sentral Makmur • API Harga & Stok
-</footer>
+    const API_URL =
+      'https://script.google.com/macros/s/AKfycbw8Dpkd4Z7-oidp3Y-g_25jPFXa5swegCUe5eeW9KcR_lvdFD_BvJu9gqzrDDSJSPw/exec';
 
 
-</div>
+    /* =========================================================
+       ELEMENT
+    ========================================================= */
 
+    const searchInput =
+      document.getElementById('searchInput');
 
-<script>
+    const searchBtn =
+      document.getElementById('searchBtn');
 
-/* =========================================================
-   API
-========================================================= */
+    const scanBtn =
+      document.getElementById('scanBtn');
 
-const API_URL =
-  'https://script.google.com/macros/s/AKfycbw8Dpkd4Z7-oidp3Y-g_25jPFXa5swegCUe5eeW9KcR_lvdFD_BvJu9gqzrDDSJSPw/exec';
+    const resetBtn =
+      document.getElementById('resetBtn');
 
+    const clearBtn =
+      document.getElementById('clearBtn');
 
-/* =========================================================
-   ELEMENT
-========================================================= */
+    const scannerCard =
+      document.getElementById('scannerCard');
 
-const searchInput =
-  document.getElementById('searchInput');
+    const closeCameraBtn =
+      document.getElementById('closeCameraBtn');
 
-const searchBtn =
-  document.getElementById('searchBtn');
+    const video =
+      document.getElementById('video');
 
-const scanBtn =
-  document.getElementById('scanBtn');
+    const zoomRange =
+      document.getElementById('zoomRange');
 
-const resetBtn =
-  document.getElementById('resetBtn');
+    const cameraStatus =
+      document.getElementById('cameraStatus');
 
-const clearBtn =
-  document.getElementById('clearBtn');
+    const zoomStatus =
+      document.getElementById('zoomStatus');
 
-const scannerCard =
-  document.getElementById('scannerCard');
+    const emptyState =
+      document.getElementById('emptyState');
 
-const closeCameraBtn =
-  document.getElementById('closeCameraBtn');
+    const loading =
+      document.getElementById('loading');
 
-const video =
-  document.getElementById('video');
+    const errorState =
+      document.getElementById('errorState');
 
-const zoomRange =
-  document.getElementById('zoomRange');
+    const product =
+      document.getElementById('product');
 
-const cameraStatus =
-  document.getElementById('cameraStatus');
+    const searchResults =
+      document.getElementById('searchResults');
 
-const zoomStatus =
-  document.getElementById('zoomStatus');
 
-const emptyState =
-  document.getElementById('emptyState');
+    /* =========================================================
+       VARIABEL
+    ========================================================= */
 
-const loading =
-  document.getElementById('loading');
+    let codeReader = null;
 
-const errorState =
-  document.getElementById('errorState');
+    let currentStream = null;
 
-const product =
-  document.getElementById('product');
+    let currentTrack = null;
 
-const searchResults =
-  document.getElementById('searchResults');
+    let scanning = false;
 
+    let masterCache = null;
 
-/* =========================================================
-   VARIABEL
-========================================================= */
 
-let codeReader = null;
+    /* =========================================================
+       ZOOM
+    ========================================================= */
 
-let currentStream = null;
+    let currentZoom = 1;
 
-let currentTrack = null;
+    let zoomMin = 1;
 
-let scanning = false;
+    let zoomMax = 3;
 
-let masterCache = null;
+    let hardwareZoomMax = 1;
 
+    let zoomCanUse = false;
 
-/*
- * AUTO ZOOM
- *
- * HANYA:
- *
- * 1x
- *  ↓
- * 2x
- *  ↓
- * 3x
- *
- * Tidak pernah turun sendiri.
- */
+    let zoomEscalationTimer = null;
 
-let currentZoom = 1;
+    let resetZoomTimer = null;
 
-let zoomMin = 1;
 
-let zoomMax = 3;
+    /*
+      BarcodeDetector hanya dipakai sebagai indikator
+      apakah ada bentuk barcode.
 
-let hardwareZoomMax = 1;
+      ZXing tetap menjadi scanner UTAMA.
+    */
 
-let zoomCanUse = false;
+    let barcodeDetectionTimer = null;
 
-let zoomEscalationTimer = null;
+    let barcodeCurrentlyVisible = false;
 
-let barcodeDetectionTimer = null;
+    let barcodeDetectionSupported = false;
 
-let barcodeCurrentlyVisible = false;
 
-let barcodeDetectionSupported = false;
+    /*
+      Mencegah scanner melakukan request barcode
+      berkali-kali.
+    */
 
+    let barcodeLock = false;
 
-/* =========================================================
-   AUDIO
-========================================================= */
 
-let audioContext = null;
+    /* =========================================================
+       AUDIO
+    ========================================================= */
 
+    let audioContext = null;
 
-function siapkanAudio() {
 
-  try {
+    function siapkanAudio() {
 
-    if (!audioContext) {
+      try {
 
-      audioContext =
-        new (
-          window.AudioContext ||
-          window.webkitAudioContext
-        )();
+        if (!audioContext) {
 
-    }
-
-    if (
-      audioContext.state === 'suspended'
-    ) {
-
-      audioContext.resume();
-
-    }
-
-  }
-
-  catch(error) {
-
-    console.log(
-      'Audio tidak tersedia:',
-      error
-    );
-
-  }
-
-}
-
-
-function bunyiBeep() {
-
-  try {
-
-    siapkanAudio();
-
-    if (!audioContext) {
-      return;
-    }
-
-    const oscillator =
-      audioContext.createOscillator();
-
-    const gain =
-      audioContext.createGain();
-
-    oscillator.type =
-      'sine';
-
-    oscillator.frequency.setValueAtTime(
-      1200,
-      audioContext.currentTime
-    );
-
-    gain.gain.setValueAtTime(
-      0.001,
-      audioContext.currentTime
-    );
-
-    gain.gain.exponentialRampToValueAtTime(
-      0.40,
-      audioContext.currentTime + 0.01
-    );
-
-    gain.gain.exponentialRampToValueAtTime(
-      0.001,
-      audioContext.currentTime + 0.18
-    );
-
-    oscillator.connect(gain);
-
-    gain.connect(
-      audioContext.destination
-    );
-
-    oscillator.start();
-
-    oscillator.stop(
-      audioContext.currentTime + 0.18
-    );
-
-  }
-
-  catch(error) {
-
-    console.log(
-      'Beep gagal:',
-      error
-    );
-
-  }
-
-}
-
-
-function getarBerhasil() {
-
-  try {
-
-    if (
-      navigator.vibrate
-    ) {
-
-      navigator.vibrate([
-        80,
-        40,
-        120
-      ]);
-
-    }
-
-  }
-
-  catch(error) {
-
-    console.log(
-      'Getar tidak tersedia:',
-      error
-    );
-
-  }
-
-}
-
-
-function feedbackProduk() {
-
-  bunyiBeep();
-
-  getarBerhasil();
-
-}
-
-
-/* =========================================================
-   INIT
-========================================================= */
-
-document.addEventListener(
-  'DOMContentLoaded',
-  function() {
-
-    searchInput.focus();
-
-  }
-);
-
-
-/* =========================================================
-   INPUT
-========================================================= */
-
-searchInput.addEventListener(
-  'input',
-  function() {
-
-    clearBtn.style.display =
-      searchInput.value
-        ? 'block'
-        : 'none';
-
-  }
-);
-
-
-clearBtn.addEventListener(
-  'click',
-  function() {
-
-    searchInput.value =
-      '';
-
-    clearBtn.style.display =
-      'none';
-
-    resetResult();
-
-    searchInput.focus();
-
-  }
-);
-
-
-searchInput.addEventListener(
-  'keydown',
-  function(event) {
-
-    if (
-      event.key === 'Enter'
-    ) {
-
-      cari();
-
-    }
-
-  }
-);
-
-
-/* =========================================================
-   NORMALISASI
-========================================================= */
-
-function normalisasi(value) {
-
-  return String(
-    value || ''
-  )
-    .trim()
-    .toUpperCase();
-
-}
-
-
-/* =========================================================
-   MASTER CACHE
-========================================================= */
-
-async function ambilMasterCache() {
-
-  if (
-    Array.isArray(masterCache)
-  ) {
-
-    return masterCache;
-
-  }
-
-  const response =
-    await fetch(
-      API_URL +
-      '?aksi=master'
-    );
-
-  const json =
-    await response.json();
-
-  if (
-    !json.success ||
-    !Array.isArray(json.data)
-  ) {
-
-    throw new Error(
-      'Master Produk tidak tersedia.'
-    );
-
-  }
-
-  masterCache =
-    json.data;
-
-  return masterCache;
-
-}
-
-
-/* =========================================================
-   CARI
-========================================================= */
-
-searchBtn.addEventListener(
-  'click',
-  cari
-);
-
-
-async function cari() {
-
-  const keyword =
-    searchInput.value.trim();
-
-  if (!keyword) {
-
-    resetResult();
-
-    return;
-
-  }
-
-  tutupScanner();
-
-  tampilLoading();
-
-  try {
-
-    const master =
-      await ambilMasterCache();
-
-    const target =
-      normalisasi(
-        keyword
-      );
-
-    const hasil =
-      master.filter(
-        function(item) {
-
-          const barcode =
-            normalisasi(
-              item.barcode
-            );
-
-          const nama =
-            normalisasi(
-              item.nama ||
-              item.name
-            );
-
-          const kode =
-            normalisasi(
-              item.kodeAccurate ||
-              item.no
-            );
-
-          const id =
-            normalisasi(
-              item.id
-            );
-
-          return (
-
-            barcode.includes(target)
-
-            ||
-
-            nama.includes(target)
-
-            ||
-
-            kode.includes(target)
-
-            ||
-
-            id === target
-
-          );
+          audioContext =
+            new (
+              window.AudioContext ||
+              window.webkitAudioContext
+            )();
 
         }
-      );
-
-
-    if (
-      hasil.length === 0
-    ) {
-
-      tampilError(
-        'Produk tidak ditemukan di Master Produk.'
-      );
-
-      return;
-
-    }
-
-
-    if (
-      hasil.length === 1
-    ) {
-
-      await tampilProduk(
-        hasil[0]
-      );
-
-      return;
-
-    }
-
-
-    tampilDaftarHasil(
-      hasil.slice(
-        0,
-        50
-      )
-    );
-
-  }
-
-  catch(error) {
-
-    console.error(
-      error
-    );
-
-    tampilError(
-      'Tidak dapat mengambil data produk.'
-    );
-
-  }
-
-}
-
-
-/* =========================================================
-   DAFTAR HASIL
-========================================================= */
-
-function tampilDaftarHasil(
-  data
-) {
-
-  emptyState.style.display =
-    'none';
-
-  loading.style.display =
-    'none';
-
-  errorState.style.display =
-    'none';
-
-  product.style.display =
-    'none';
-
-  searchResults.style.display =
-    'block';
-
-  searchResults.innerHTML =
-    '';
-
-
-  data.forEach(
-    function(item) {
-
-      const div =
-        document.createElement(
-          'div'
-        );
-
-      div.className =
-        'result-item';
-
-
-      div.innerHTML =
-
-        '<div class="result-item-name">' +
-
-        escapeHtml(
-          item.nama ||
-          item.name ||
-          '-'
-        ) +
-
-        '</div>' +
-
-        '<div class="result-item-code">' +
-
-        'Barcode: ' +
-
-        escapeHtml(
-          item.barcode ||
-          '-'
-        ) +
-
-        ' • Kode: ' +
-
-        escapeHtml(
-          item.kodeAccurate ||
-          item.no ||
-          '-'
-        ) +
-
-        '</div>';
-
-
-      div.addEventListener(
-        'click',
-        function() {
-
-          tampilProduk(
-            item
-          );
-
-        }
-      );
-
-
-      searchResults.appendChild(
-        div
-      );
-
-    }
-  );
-
-}
-
-
-/* =========================================================
-   TAMPIL PRODUK
-========================================================= */
-
-async function tampilProduk(
-  item
-) {
-
-  searchResults.style.display =
-    'none';
-
-  searchResults.innerHTML =
-    '';
-
-  emptyState.style.display =
-    'none';
-
-  errorState.style.display =
-    'none';
-
-  product.style.display =
-    'none';
-
-  loading.style.display =
-    'block';
-
-
-  try {
-
-    const params =
-      new URLSearchParams();
-
-
-    params.set(
-      'aksi',
-      'stok'
-    );
-
-
-    if (item.id) {
-
-      params.set(
-        'id',
-        item.id
-      );
-
-    }
-
-
-    if (item.barcode) {
-
-      params.set(
-        'barcode',
-        item.barcode
-      );
-
-    }
-
-
-    if (item.kodeAccurate) {
-
-      params.set(
-        'kode',
-        item.kodeAccurate
-      );
-
-    }
-
-
-    const response =
-      await fetch(
-        API_URL +
-        '?' +
-        params.toString()
-      );
-
-
-    const json =
-      await response.json();
-
-
-    if (
-      !json.success
-    ) {
-
-      tampilError(
-        json.error ||
-        'Stok gagal diambil dari Accurate.'
-      );
-
-      return;
-
-    }
-
-
-    const data =
-      json.data;
-
-
-    document.getElementById(
-      'productName'
-    ).textContent =
-      data.nama ||
-      '-';
-
-
-    document.getElementById(
-      'productBarcode'
-    ).textContent =
-      data.barcode ||
-      '-';
-
-
-    document.getElementById(
-      'productCode'
-    ).textContent =
-      data.kodeAccurate ||
-      '-';
-
-
-    document.getElementById(
-      'productPrice'
-    ).textContent =
-      data.harga ||
-      '-';
-
-
-    document.getElementById(
-      'productStock'
-    ).textContent =
-
-      String(
-        data.stok ??
-        data.stock ??
-        0
-      ) +
-
-      ' ' +
-
-      (
-        data.satuan ||
-        'PCS'
-      );
-
-
-    loading.style.display =
-      'none';
-
-    product.style.display =
-      'block';
-
-
-    /*
-     * PRODUK BENAR-BENAR SUDAH MUNCUL
-     *
-     * BARU DI SINI BUNYI + GETAR
-     */
-
-    feedbackProduk();
-
-  }
-
-  catch(error) {
-
-    console.error(
-      error
-    );
-
-    tampilError(
-      'Gagal mengambil stok dari Accurate.'
-    );
-
-  }
-
-}
-
-
-/* =========================================================
-   LOADING
-========================================================= */
-
-function tampilLoading() {
-
-  emptyState.style.display =
-    'none';
-
-  errorState.style.display =
-    'none';
-
-  product.style.display =
-    'none';
-
-  searchResults.style.display =
-    'none';
-
-  loading.style.display =
-    'block';
-
-}
-
-
-/* =========================================================
-   ERROR
-========================================================= */
-
-function tampilError(
-  message
-) {
-
-  emptyState.style.display =
-    'none';
-
-  loading.style.display =
-    'none';
-
-  product.style.display =
-    'none';
-
-  searchResults.style.display =
-    'none';
-
-  errorState.textContent =
-    message;
-
-  errorState.style.display =
-    'block';
-
-}
-
-
-/* =========================================================
-   RESET
-========================================================= */
-
-resetBtn.addEventListener(
-  'click',
-  function() {
-
-    searchInput.value =
-      '';
-
-    clearBtn.style.display =
-      'none';
-
-    resetResult();
-
-    tutupScanner();
-
-    searchInput.focus();
-
-  }
-);
-
-
-function resetResult() {
-
-  emptyState.style.display =
-    'block';
-
-  loading.style.display =
-    'none';
-
-  errorState.style.display =
-    'none';
-
-  product.style.display =
-    'none';
-
-  searchResults.style.display =
-    'none';
-
-  searchResults.innerHTML =
-    '';
-
-}
-
-
-/* =========================================================
-   SCAN BUTTON
-========================================================= */
-
-scanBtn.addEventListener(
-  'click',
-  function() {
-
-    /*
-     * Browser membutuhkan interaksi pengguna
-     * untuk mengaktifkan audio.
-     */
-
-    siapkanAudio();
-
-    bukaScanner();
-
-  }
-);
-
-
-/* =========================================================
-   BUKA SCANNER
-========================================================= */
-
-async function bukaScanner() {
-
-  /*
-   * Bersihkan kamera sebelumnya.
-   */
-
-  tutupScanner();
-
-
-  scannerCard.style.display =
-    'block';
-
-
-  cameraStatus.textContent =
-    'Menyiapkan kamera belakang...';
-
-
-  zoomStatus.textContent =
-    'Zoom 1×';
-
-
-  scanning =
-    true;
-
-
-  currentZoom =
-    1;
-
-
-  try {
-
-    /*
-     * =====================================================
-     * COBA KAMERA BELAKANG SECARA LANGSUNG
-     * =====================================================
-     */
-
-    let stream = null;
-
-
-    try {
-
-      stream =
-        await navigator.mediaDevices.getUserMedia({
-
-          audio: false,
-
-          video: {
-
-            facingMode: {
-              exact: 'environment'
-            },
-
-            width: {
-              ideal: 1280
-            },
-
-            height: {
-              ideal: 720
-            },
-
-            frameRate: {
-              ideal: 30
-            }
-
-          }
-
-        });
-
-    }
-
-    catch(error) {
-
-      console.log(
-        'Exact environment gagal, coba fallback.',
-        error
-      );
-
-
-      stream =
-        await navigator.mediaDevices.getUserMedia({
-
-          audio: false,
-
-          video: {
-
-            facingMode: {
-              ideal: 'environment'
-            },
-
-            width: {
-              ideal: 1280
-            },
-
-            height: {
-              ideal: 720
-            },
-
-            frameRate: {
-              ideal: 30
-            }
-
-          }
-
-        });
-
-    }
-
-
-    currentStream =
-      stream;
-
-
-    video.srcObject =
-      stream;
-
-
-    await video.play();
-
-
-    const tracks =
-      stream.getVideoTracks();
-
-
-    if (
-      !tracks.length
-    ) {
-
-      throw new Error(
-        'Track kamera tidak ditemukan.'
-      );
-
-    }
-
-
-    currentTrack =
-      tracks[0];
-
-
-    console.log(
-      'Kamera aktif:',
-      currentTrack.label
-    );
-
-
-    /*
-     * =====================================================
-     * PASTIKAN KAMERA TIDAK DEPAN
-     * =====================================================
-     */
-
-    const label =
-      (
-        currentTrack.label ||
-        ''
-      ).toLowerCase();
-
-
-    if (
-      label.includes('front') ||
-      label.includes('facetime') ||
-      label.includes('user')
-    ) {
-
-      console.warn(
-        'Kamera depan terdeteksi:',
-        currentTrack.label
-      );
-
-    }
-
-
-    cameraStatus.textContent =
-      'Arahkan barcode ke kotak scan';
-
-
-    /*
-     * =====================================================
-     * ZOOM MULAI 1X
-     * =====================================================
-     */
-
-    siapkanZoom(
-      currentTrack
-    );
-
-
-    /*
-     * =====================================================
-     * MULAI ZXING
-     * =====================================================
-     */
-
-    mulaiZXing();
-
-
-    /*
-     * =====================================================
-     * DETEKSI BARCODE
-     *
-     * Ini hanya untuk membantu menentukan:
-     *
-     * "Ada sesuatu yang terlihat seperti barcode?"
-     *
-     * Kalau tidak ada barcode:
-     * TETAP 1X.
-     *
-     * Kalau ada barcode tapi belum terbaca:
-     * 1X -> 2X -> 3X.
-     * =====================================================
-     */
-
-    mulaiDeteksiBarcode();
-
-  }
-
-  catch(error) {
-
-    console.error(
-      'Kamera gagal:',
-      error
-    );
-
-
-    tutupScanner();
-
-
-    alert(
-      'Kamera belakang tidak dapat digunakan. Pastikan izin kamera sudah diberikan.'
-    );
-
-  }
-
-}
-
-
-/* =========================================================
-   ZXING
-========================================================= */
-
-function mulaiZXing() {
-
-  try {
-
-    codeReader =
-      new ZXing.BrowserMultiFormatReader();
-
-
-    codeReader.decodeFromVideoElement(
-      video,
-      function(result, error) {
 
         if (
-          !result ||
-          !scanning
+          audioContext.state === 'suspended'
         ) {
 
-          return;
+          audioContext.resume();
 
         }
-
-
-        /*
-         * BARCODE BERHASIL TERBACA
-         */
-
-        scanning =
-          false;
-
-
-        hentikanDeteksiBarcode();
-
-
-        const text =
-          result.getText();
-
-
-        console.log(
-          'BARCODE TERBACA:',
-          text
-        );
-
-
-        cameraStatus.textContent =
-          'Barcode berhasil dibaca';
-
-
-        /*
-         * STOP KAMERA SEGERA
-         */
-
-        tutupScanner();
-
-
-        /*
-         * MASUKKAN BARCODE
-         */
-
-        searchInput.value =
-          text;
-
-
-        clearBtn.style.display =
-          'block';
-
-
-        /*
-         * CARI PRODUK
-         */
-
-        cari();
 
       }
-    );
 
-  }
-
-  catch(error) {
-
-    console.error(
-      'ZXing gagal:',
-      error
-    );
-
-  }
-
-}
-
-
-/* =========================================================
-   SIAPKAN ZOOM
-========================================================= */
-
-function siapkanZoom(
-  track
-) {
-
-  zoomCanUse =
-    false;
-
-
-  currentZoom =
-    1;
-
-
-  zoomRange.value =
-    1;
-
-
-  zoomStatus.textContent =
-    'Zoom 1×';
-
-
-  try {
-
-    const capabilities =
-      track.getCapabilities();
-
-
-    if (
-      !capabilities.zoom
-    ) {
-
-      console.log(
-        'Hardware zoom tidak tersedia.'
-      );
-
-
-      zoomRange.style.display =
-        'none';
-
-
-      return;
-
-    }
-
-
-    hardwareZoomMax =
-      Number(
-        capabilities.zoom.max ||
-        1
-      );
-
-
-    zoomMin =
-      Number(
-        capabilities.zoom.min ||
-        1
-      );
-
-
-    /*
-     * Kita sengaja batasi maksimal 3X.
-     *
-     * Tidak akan pernah lebih dari ini.
-     */
-
-    zoomMax =
-      Math.min(
-        hardwareZoomMax,
-        3
-      );
-
-
-    if (
-      zoomMax <= zoomMin
-    ) {
-
-      zoomRange.style.display =
-        'none';
-
-      return;
-
-    }
-
-
-    zoomCanUse =
-      true;
-
-
-    zoomRange.min =
-      zoomMin;
-
-
-    zoomRange.max =
-      zoomMax;
-
-
-    zoomRange.step =
-      capabilities.zoom.step ||
-      0.1;
-
-
-    zoomRange.value =
-      1;
-
-
-    zoomRange.style.display =
-      'block';
-
-
-    terapkanZoom(
-      1
-    );
-
-  }
-
-  catch(error) {
-
-    console.log(
-      'Zoom tidak tersedia:',
-      error
-    );
-
-
-    zoomRange.style.display =
-      'none';
-
-  }
-
-}
-
-
-/* =========================================================
-   TERAPKAN ZOOM
-========================================================= */
-
-function terapkanZoom(
-  zoom
-) {
-
-  if (
-    !currentTrack ||
-    !zoomCanUse
-  ) {
-
-    return;
-
-  }
-
-
-  const target =
-    Math.min(
-      zoomMax,
-      Math.max(
-        zoomMin,
-        zoom
-      )
-    );
-
-
-  currentZoom =
-    target;
-
-
-  zoomRange.value =
-    target;
-
-
-  zoomStatus.textContent =
-    'Zoom ' +
-    formatZoom(target) +
-    '×';
-
-
-  currentTrack
-    .applyConstraints({
-
-      advanced: [
-
-        {
-          zoom: target
-        }
-
-      ]
-
-    })
-
-    .catch(
-      function(error) {
+      catch(error) {
 
         console.log(
-          'Gagal menerapkan zoom:',
+          'Audio tidak tersedia:',
           error
         );
 
       }
+
+    }
+
+
+    function bunyiBeep() {
+
+      try {
+
+        siapkanAudio();
+
+        if (!audioContext) {
+          return;
+        }
+
+        const oscillator =
+          audioContext.createOscillator();
+
+        const gain =
+          audioContext.createGain();
+
+        oscillator.type =
+          'sine';
+
+        oscillator.frequency.setValueAtTime(
+          1200,
+          audioContext.currentTime
+        );
+
+        gain.gain.setValueAtTime(
+          0.001,
+          audioContext.currentTime
+        );
+
+        gain.gain.exponentialRampToValueAtTime(
+          0.40,
+          audioContext.currentTime + 0.01
+        );
+
+        gain.gain.exponentialRampToValueAtTime(
+          0.001,
+          audioContext.currentTime + 0.18
+        );
+
+        oscillator.connect(gain);
+
+        gain.connect(
+          audioContext.destination
+        );
+
+        oscillator.start();
+
+        oscillator.stop(
+          audioContext.currentTime + 0.18
+        );
+
+      }
+
+      catch(error) {
+
+        console.log(
+          'Beep gagal:',
+          error
+        );
+
+      }
+
+    }
+
+
+    function getarBerhasil() {
+
+      try {
+
+        if (
+          navigator.vibrate
+        ) {
+
+          navigator.vibrate([
+            80,
+            40,
+            120
+          ]);
+
+        }
+
+      }
+
+      catch(error) {
+
+        console.log(
+          'Getar tidak tersedia:',
+          error
+        );
+
+      }
+
+    }
+
+
+    function feedbackProduk() {
+
+      bunyiBeep();
+
+      getarBerhasil();
+
+    }
+
+
+    /* =========================================================
+       INIT
+    ========================================================= */
+
+    document.addEventListener(
+      'DOMContentLoaded',
+      function() {
+
+        searchInput.focus();
+
+      }
     );
 
-}
+
+    /* =========================================================
+       INPUT
+    ========================================================= */
+
+    searchInput.addEventListener(
+      'input',
+      function() {
+
+        clearBtn.style.display =
+          searchInput.value
+            ? 'block'
+            : 'none';
+
+      }
+    );
 
 
-/* =========================================================
-   FORMAT ZOOM
-========================================================= */
+    clearBtn.addEventListener(
+      'click',
+      function() {
 
-function formatZoom(
-  value
-) {
+        searchInput.value =
+          '';
 
-  const rounded =
-    Math.round(
-      value * 10
-    ) / 10;
+        clearBtn.style.display =
+          'none';
 
+        resetResult();
 
-  return String(
-    rounded
-  );
+        searchInput.focus();
 
-}
+      }
+    );
 
 
-/* =========================================================
-   MANUAL ZOOM
-========================================================= */
+    searchInput.addEventListener(
+      'keydown',
+      function(event) {
 
-zoomRange.addEventListener(
-  'input',
-  function() {
+        if (
+          event.key === 'Enter'
+        ) {
 
-    if (
-      !currentTrack ||
-      !zoomCanUse
-    ) {
+          cari();
 
-      return;
+        }
+
+      }
+    );
+
+
+    /* =========================================================
+       NORMALISASI
+    ========================================================= */
+
+    function normalisasi(value) {
+
+      return String(
+        value ?? ''
+      )
+        .trim()
+        .toUpperCase()
+        .replace(/\s+/g, '');
 
     }
 
 
     /*
-     * Kalau user mengubah manual,
-     * auto escalation dihentikan.
-     */
+      Barcode scanner kadang mengembalikan karakter
+      whitespace atau karakter kontrol.
 
-    hentikanAutoZoom();
+      Fungsi ini membersihkan hasil ZXing.
+    */
 
+    function bersihkanBarcode(value) {
 
-    terapkanZoom(
-      Number(
-        zoomRange.value
+      return String(
+        value ?? ''
       )
-    );
-
-  }
-);
-
-
-/* =========================================================
-   BARCODE DETECTOR
-========================================================= */
-
-async function cekBarcodeDetector() {
-
-  try {
-
-    if (
-      !('BarcodeDetector' in window)
-    ) {
-
-      barcodeDetectionSupported =
-        false;
-
-      return;
+        .replace(/[\r\n\t]/g, '')
+        .replace(/\s+/g, '')
+        .trim();
 
     }
 
 
-    const formats =
-      await BarcodeDetector.getSupportedFormats();
-
-
-    if (
-      !formats ||
-      !formats.length
-    ) {
-
-      barcodeDetectionSupported =
-        false;
-
-      return;
-
-    }
-
-
-    barcodeDetectionSupported =
-      true;
-
-
-    console.log(
-      'BarcodeDetector tersedia.'
-    );
-
-  }
-
-  catch(error) {
-
-    console.log(
-      'BarcodeDetector tidak tersedia:',
-      error
-    );
-
-
-    barcodeDetectionSupported =
-      false;
-
-  }
-
-}
-
-
-/* =========================================================
-   MULAI DETEKSI BARCODE
-========================================================= */
-
-async function mulaiDeteksiBarcode() {
-
-  hentikanDeteksiBarcode();
-
-
-  /*
-   * Cek apakah browser mendukung
-   * BarcodeDetector.
-   */
-
-  await cekBarcodeDetector();
-
-
-  if (
-    !scanning
-  ) {
-
-    return;
-
-  }
-
-
-  /*
-   * =====================================================
-   * JIKA BARCODEDETECTOR TERSEDIA
-   *
-   * Kita tidak akan zoom kalau kamera kosong.
-   * =====================================================
-   */
-
-  if (
-    barcodeDetectionSupported
-  ) {
-
-    mulaiDeteksiDenganNative();
-
-    return;
-
-  }
-
-
-  /*
-   * =====================================================
-   * FALLBACK
-   *
-   * Kalau browser tidak punya BarcodeDetector,
-   * gunakan pemeriksaan gambar sederhana.
-   * =====================================================
-   */
-
-  mulaiDeteksiDenganGambar();
-
-}
-
-
-/* =========================================================
-   NATIVE BARCODE DETECTOR
-========================================================= */
-
-function mulaiDeteksiDenganNative() {
-
-  let detector;
-
-
-  try {
-
-    detector =
-      new BarcodeDetector({
-
-        formats: [
-
-          'code_128',
-          'code_39',
-          'code_93',
-
-          'ean_13',
-          'ean_8',
-
-          'upc_a',
-          'upc_e',
-
-          'itf',
-
-          'codabar',
-
-          'data_matrix',
-          'qr_code'
-
-        ]
-
-      });
-
-  }
-
-  catch(error) {
-
-    console.log(
-      'Gagal membuat BarcodeDetector:',
-      error
-    );
-
-    mulaiDeteksiDenganGambar();
-
-    return;
-
-  }
-
-
-  async function cek() {
-
-    if (
-      !scanning ||
-      !video.videoWidth ||
-      !video.videoHeight
-    ) {
-
-      return;
-
-    }
-
-
-    try {
-
-      const results =
-        await detector.detect(
-          video
-        );
-
-
-      barcodeCurrentlyVisible =
-        Array.isArray(results) &&
-        results.length > 0;
-
+    /* =========================================================
+       MASTER CACHE
+    ========================================================= */
+
+    async function ambilMasterCache() {
 
       if (
-        barcodeCurrentlyVisible
+        Array.isArray(masterCache)
       ) {
 
-        cameraStatus.textContent =
-          'Barcode terlihat • mencari...';
-
-
-        jadwalkanNaikZoom();
+        return masterCache;
 
       }
 
-      else {
+      const response =
+        await fetch(
+          API_URL +
+          '?aksi=master'
+        );
+
+      if (!response.ok) {
+
+        throw new Error(
+          'HTTP ' +
+          response.status
+        );
+
+      }
+
+      const json =
+        await response.json();
+
+      if (
+        !json.success ||
+        !Array.isArray(json.data)
+      ) {
+
+        throw new Error(
+          'Master Produk tidak tersedia.'
+        );
+
+      }
+
+      masterCache =
+        json.data;
+
+      return masterCache;
+
+    }
+
+
+    /* =========================================================
+       CARI
+    ========================================================= */
+
+    searchBtn.addEventListener(
+      'click',
+      cari
+    );
+
+
+    async function cari(
+      forcedKeyword = null
+    ) {
+
+      const keyword =
+        forcedKeyword !== null
+          ? String(forcedKeyword)
+          : searchInput.value.trim();
+
+
+      if (!keyword) {
+
+        resetResult();
+
+        return;
+
+      }
+
+
+      tutupScanner();
+
+
+      tampilLoading();
+
+
+      try {
+
+        const master =
+          await ambilMasterCache();
+
+
+        const target =
+          normalisasi(
+            keyword
+          );
+
 
         /*
-         * TIDAK ADA BARCODE
-         *
-         * Jangan zoom.
-         *
-         * Kembalikan ke 1X hanya kalau
-         * sebelumnya scanner memang sudah
-         * tidak menemukan barcode selama
-         * beberapa saat.
-         */
+          1. Cari exact barcode terlebih dahulu.
+        */
 
-        cameraStatus.textContent =
-          'Mencari barcode...';
+        let hasil =
+          master.filter(
+            function(item) {
+
+              const barcode =
+                normalisasi(
+                  item.barcode
+                );
+
+              return (
+                barcode === target
+              );
+
+            }
+          );
 
 
         /*
-         * Penting:
-         *
-         * Kalau belum pernah ada barcode,
-         * tetap 1X.
-         */
+          2. Kalau tidak ketemu exact barcode,
+             lakukan pencarian normal.
+        */
 
         if (
-          currentZoom > 1
+          hasil.length === 0
         ) {
 
-          kembaliKe1xPerlahan();
+          hasil =
+            master.filter(
+              function(item) {
+
+                const barcode =
+                  normalisasi(
+                    item.barcode
+                  );
+
+                const nama =
+                  normalisasi(
+                    item.nama ||
+                    item.name
+                  );
+
+                const kode =
+                  normalisasi(
+                    item.kodeAccurate ||
+                    item.no
+                  );
+
+                const id =
+                  normalisasi(
+                    item.id
+                  );
+
+                return (
+
+                  barcode.includes(target)
+
+                  ||
+
+                  nama.includes(target)
+
+                  ||
+
+                  kode.includes(target)
+
+                  ||
+
+                  id === target
+
+                );
+
+              }
+            );
 
         }
 
-      }
 
-    }
-
-    catch(error) {
-
-      console.log(
-        'Detector:',
-        error
-      );
-
-    }
-
-
-    if (
-      scanning
-    ) {
-
-      barcodeDetectionTimer =
-        setTimeout(
-          cek,
-          180
-        );
-
-    }
-
-  }
-
-
-  cek();
-
-}
-
-
-/* =========================================================
-   FALLBACK DETEKSI GAMBAR
-========================================================= */
-
-function mulaiDeteksiDenganGambar() {
-
-  /*
-   * Canvas kecil agar ringan.
-   */
-
-  const canvas =
-    document.createElement(
-      'canvas'
-    );
-
-
-  canvas.width =
-    320;
-
-
-  canvas.height =
-    180;
-
-
-  const ctx =
-    canvas.getContext(
-      '2d',
-      {
-        willReadFrequently: true
-      }
-    );
-
-
-  let lastScore =
-    0;
-
-
-  function cek() {
-
-    if (
-      !scanning ||
-      !video.videoWidth ||
-      !video.videoHeight
-    ) {
-
-      return;
-
-    }
-
-
-    try {
-
-      /*
-       * Ambil bagian tengah video.
-       *
-       * Ini sesuai area scan.
-       */
-
-      ctx.drawImage(
-        video,
-        video.videoWidth * 0.15,
-        video.videoHeight * 0.30,
-        video.videoWidth * 0.70,
-        video.videoHeight * 0.40,
-        0,
-        0,
-        canvas.width,
-        canvas.height
-      );
-
-
-      const image =
-        ctx.getImageData(
-          0,
-          0,
-          canvas.width,
-          canvas.height
-        );
-
-
-      /*
-       * Cari pola perubahan terang-gelap
-       * vertikal yang cukup kuat.
-       *
-       * Barcode biasanya memiliki banyak
-       * garis vertikal.
-       */
-
-      let score =
-        0;
-
-
-      const yStart =
-        30;
-
-
-      const yEnd =
-        150;
-
-
-      for (
-        let x = 2;
-        x < canvas.width - 2;
-        x += 3
-      ) {
-
-        let changes =
-          0;
-
-
-        for (
-          let y = yStart;
-          y < yEnd;
-          y += 4
+        if (
+          hasil.length === 0
         ) {
 
-          const index1 =
-            (
-              y *
-              canvas.width +
-              x
-            ) * 4;
+          tampilError(
+            'Produk tidak ditemukan di Master Produk.'
+          );
+
+          return;
+
+        }
 
 
-          const index2 =
-            (
-              y *
-              canvas.width +
-              x - 1
-            ) * 4;
+        if (
+          hasil.length === 1
+        ) {
+
+          await tampilProduk(
+            hasil[0]
+          );
+
+          return;
+
+        }
 
 
-          const gray1 =
-            (
-              image.data[index1] +
-              image.data[index1 + 1] +
-              image.data[index1 + 2]
-            ) / 3;
+        tampilDaftarHasil(
+          hasil.slice(
+            0,
+            50
+          )
+        );
+
+      }
+
+      catch(error) {
+
+        console.error(
+          'Cari gagal:',
+          error
+        );
+
+        tampilError(
+          'Tidak dapat mengambil data produk.'
+        );
+
+      }
+
+    }
 
 
-          const gray2 =
-            (
-              image.data[index2] +
-              image.data[index2 + 1] +
-              image.data[index2 + 2]
-            ) / 3;
+    /* =========================================================
+       DAFTAR HASIL
+    ========================================================= */
+
+    function tampilDaftarHasil(
+      data
+    ) {
+
+      emptyState.style.display =
+        'none';
+
+      loading.style.display =
+        'none';
+
+      errorState.style.display =
+        'none';
+
+      product.style.display =
+        'none';
+
+      searchResults.style.display =
+        'block';
+
+      searchResults.innerHTML =
+        '';
 
 
-          if (
-            Math.abs(
-              gray1 - gray2
-            ) > 45
-          ) {
+      data.forEach(
+        function(item) {
 
-            changes++;
+          const div =
+            document.createElement(
+              'div'
+            );
+
+          div.className =
+            'result-item';
+
+
+          div.innerHTML =
+
+            '<div class="result-item-name">' +
+
+            escapeHtml(
+              item.nama ||
+              item.name ||
+              '-'
+            ) +
+
+            '</div>' +
+
+            '<div class="result-item-code">' +
+
+            'Barcode: ' +
+
+            escapeHtml(
+              item.barcode ||
+              '-'
+            ) +
+
+            ' • Kode: ' +
+
+            escapeHtml(
+              item.kodeAccurate ||
+              item.no ||
+              '-'
+            ) +
+
+            '</div>';
+
+
+          div.addEventListener(
+            'click',
+            function() {
+
+              tampilProduk(
+                item
+              );
+
+            }
+          );
+
+
+          searchResults.appendChild(
+            div
+          );
+
+        }
+      );
+
+    }
+
+
+    /* =========================================================
+       TAMPIL PRODUK
+    ========================================================= */
+
+    async function tampilProduk(
+      item
+    ) {
+
+      searchResults.style.display =
+        'none';
+
+      searchResults.innerHTML =
+        '';
+
+      emptyState.style.display =
+        'none';
+
+      errorState.style.display =
+        'none';
+
+      product.style.display =
+        'none';
+
+      loading.style.display =
+        'block';
+
+
+      try {
+
+        const params =
+          new URLSearchParams();
+
+
+        params.set(
+          'aksi',
+          'stok'
+        );
+
+
+        if (
+          item.id !== undefined &&
+          item.id !== null &&
+          String(item.id).trim() !== ''
+        ) {
+
+          params.set(
+            'id',
+            String(item.id)
+          );
+
+        }
+
+
+        if (
+          item.barcode !== undefined &&
+          item.barcode !== null &&
+          String(item.barcode).trim() !== ''
+        ) {
+
+          params.set(
+            'barcode',
+            String(item.barcode)
+          );
+
+        }
+
+
+        if (
+          item.kodeAccurate !== undefined &&
+          item.kodeAccurate !== null &&
+          String(item.kodeAccurate).trim() !== ''
+        ) {
+
+          params.set(
+            'kode',
+            String(item.kodeAccurate)
+          );
+
+        }
+
+
+        const response =
+          await fetch(
+            API_URL +
+            '?' +
+            params.toString()
+          );
+
+
+        if (!response.ok) {
+
+          throw new Error(
+            'HTTP ' +
+            response.status
+          );
+
+        }
+
+
+        const json =
+          await response.json();
+
+
+        if (
+          !json.success
+        ) {
+
+          tampilError(
+            json.error ||
+            'Stok gagal diambil dari Accurate.'
+          );
+
+          return;
+
+        }
+
+
+        const data =
+          json.data;
+
+
+        document.getElementById(
+          'productName'
+        ).textContent =
+          data.nama ||
+          item.nama ||
+          item.name ||
+          '-';
+
+
+        document.getElementById(
+          'productBarcode'
+        ).textContent =
+          data.barcode ||
+          item.barcode ||
+          '-';
+
+
+        document.getElementById(
+          'productCode'
+        ).textContent =
+          data.kodeAccurate ||
+          item.kodeAccurate ||
+          item.no ||
+          '-';
+
+
+        document.getElementById(
+          'productPrice'
+        ).textContent =
+          data.harga ||
+          '-';
+
+
+        document.getElementById(
+          'productStock'
+        ).textContent =
+
+          String(
+            data.stok ??
+            data.stock ??
+            0
+          ) +
+
+          ' ' +
+
+          (
+            data.satuan ||
+            'PCS'
+          );
+
+
+        loading.style.display =
+          'none';
+
+        product.style.display =
+          'block';
+
+
+        feedbackProduk();
+
+      }
+
+      catch(error) {
+
+        console.error(
+          'Tampil produk gagal:',
+          error
+        );
+
+        tampilError(
+          'Gagal mengambil stok dari Accurate.'
+        );
+
+      }
+
+    }
+
+
+    /* =========================================================
+       LOADING
+    ========================================================= */
+
+    function tampilLoading() {
+
+      emptyState.style.display =
+        'none';
+
+      errorState.style.display =
+        'none';
+
+      product.style.display =
+        'none';
+
+      searchResults.style.display =
+        'none';
+
+      loading.style.display =
+        'block';
+
+    }
+
+
+    /* =========================================================
+       ERROR
+    ========================================================= */
+
+    function tampilError(
+      message
+    ) {
+
+      emptyState.style.display =
+        'none';
+
+      loading.style.display =
+        'none';
+
+      product.style.display =
+        'none';
+
+      searchResults.style.display =
+        'none';
+
+      errorState.textContent =
+        message;
+
+      errorState.style.display =
+        'block';
+
+    }
+
+
+    /* =========================================================
+       RESET
+    ========================================================= */
+
+    resetBtn.addEventListener(
+      'click',
+      function() {
+
+        searchInput.value =
+          '';
+
+        clearBtn.style.display =
+          'none';
+
+        resetResult();
+
+        tutupScanner();
+
+        searchInput.focus();
+
+      }
+    );
+
+
+    function resetResult() {
+
+      emptyState.style.display =
+        'block';
+
+      loading.style.display =
+        'none';
+
+      errorState.style.display =
+        'none';
+
+      product.style.display =
+        'none';
+
+      searchResults.style.display =
+        'none';
+
+      searchResults.innerHTML =
+        '';
+
+    }
+
+
+    /* =========================================================
+       SCAN BUTTON
+    ========================================================= */
+
+    scanBtn.addEventListener(
+      'click',
+      function() {
+
+        siapkanAudio();
+
+        bukaScanner();
+
+      }
+    );
+
+
+    /* =========================================================
+       BUKA SCANNER
+    ========================================================= */
+
+    async function bukaScanner() {
+
+      tutupScanner();
+
+
+      scannerCard.style.display =
+        'block';
+
+
+      cameraStatus.textContent =
+        'Menyiapkan kamera belakang...';
+
+
+      zoomStatus.textContent =
+        'Zoom 1×';
+
+
+      scanning =
+        true;
+
+
+      barcodeLock =
+        false;
+
+
+      currentZoom =
+        1;
+
+
+      try {
+
+        let stream = null;
+
+
+        /*
+          Prioritas kamera belakang.
+        */
+
+        try {
+
+          stream =
+            await navigator.mediaDevices.getUserMedia({
+
+              audio: false,
+
+              video: {
+
+                facingMode: {
+                  exact: 'environment'
+                },
+
+                width: {
+                  ideal: 1920
+                },
+
+                height: {
+                  ideal: 1080
+                },
+
+                frameRate: {
+                  ideal: 30
+                }
+
+              }
+
+            });
+
+        }
+
+        catch(error) {
+
+          console.log(
+            'Exact environment gagal. Fallback.',
+            error
+          );
+
+
+          stream =
+            await navigator.mediaDevices.getUserMedia({
+
+              audio: false,
+
+              video: {
+
+                facingMode: {
+                  ideal: 'environment'
+                },
+
+                width: {
+                  ideal: 1920
+                },
+
+                height: {
+                  ideal: 1080
+                },
+
+                frameRate: {
+                  ideal: 30
+                }
+
+              }
+
+            });
+
+        }
+
+
+        currentStream =
+          stream;
+
+
+        video.srcObject =
+          stream;
+
+
+        await video.play();
+
+
+        /*
+          Tunggu video benar-benar mempunyai frame.
+        */
+
+        if (
+          video.readyState <
+          2
+        ) {
+
+          await new Promise(
+            function(resolve) {
+
+              video.addEventListener(
+                'loadeddata',
+                resolve,
+                {
+                  once: true
+                }
+              );
+
+            }
+          );
+
+        }
+
+
+        const tracks =
+          stream.getVideoTracks();
+
+
+        if (
+          !tracks.length
+        ) {
+
+          throw new Error(
+            'Track kamera tidak ditemukan.'
+          );
+
+        }
+
+
+        currentTrack =
+          tracks[0];
+
+
+        console.log(
+          'Kamera aktif:',
+          currentTrack.label
+        );
+
+
+        cameraStatus.textContent =
+          'Arahkan barcode ke kotak scan';
+
+
+        /*
+          Zoom harus disiapkan dulu.
+        */
+
+        siapkanZoom(
+          currentTrack
+        );
+
+
+        /*
+          Beri waktu kamera stabil.
+        */
+
+        await new Promise(
+          function(resolve) {
+
+            setTimeout(
+              resolve,
+              350
+            );
 
           }
-
-        }
-
-
-        if (
-          changes > 10
-        ) {
-
-          score++;
-
-        }
-
-      }
-
-
-      /*
-       * Smoothing agar tidak loncat-loncat.
-       */
-
-      lastScore =
-        (
-          lastScore * 0.65
-        ) +
-        (
-          score * 0.35
         );
 
 
-      /*
-       * Ambang barcode-like.
-       */
+        if (!scanning) {
+          return;
+        }
 
-      barcodeCurrentlyVisible =
-        lastScore > 10;
 
+        /*
+          Mulai ZXing.
+        */
+
+        mulaiZXing();
+
+
+        /*
+          Detector hanya mengatur kapan
+          zoom boleh naik.
+        */
+
+        mulaiDeteksiBarcode();
+
+      }
+
+      catch(error) {
+
+        console.error(
+          'Kamera gagal:',
+          error
+        );
+
+
+        tutupScanner();
+
+
+        alert(
+          'Kamera belakang tidak dapat digunakan. Pastikan izin kamera sudah diberikan.'
+        );
+
+      }
+
+    }
+
+
+    /* =========================================================
+       ZXING
+    ========================================================= */
+
+    function mulaiZXing() {
 
       if (
-        barcodeCurrentlyVisible
+        !window.ZXing
       ) {
 
-        cameraStatus.textContent =
-          'Objek barcode terlihat • mencari...';
-
-
-        jadwalkanNaikZoom();
-
-      }
-
-      else {
-
-        cameraStatus.textContent =
-          'Mencari barcode...';
-
-
-        if (
-          currentZoom > 1
-        ) {
-
-          kembaliKe1xPerlahan();
-
-        }
-
-      }
-
-    }
-
-    catch(error) {
-
-      console.log(
-        'Image detector:',
-        error
-      );
-
-    }
-
-
-    if (
-      scanning
-    ) {
-
-      barcodeDetectionTimer =
-        setTimeout(
-          cek,
-          180
+        console.error(
+          'Library ZXing tidak tersedia.'
         );
 
+        cameraStatus.textContent =
+          'Scanner tidak tersedia.';
+
+        return;
+
+      }
+
+
+      try {
+
+        /*
+          TRY_HARDER sangat penting untuk barcode
+          yang agak jauh / miring / kurang jelas.
+        */
+
+        const hints =
+          new Map();
+
+
+        if (
+          ZXing.DecodeHintType &&
+          ZXing.DecodeHintType.TRY_HARDER
+        ) {
+
+          hints.set(
+            ZXing.DecodeHintType.TRY_HARDER,
+            true
+          );
+
+        }
+
+
+        if (
+          ZXing.DecodeHintType &&
+          ZXing.DecodeHintType.POSSIBLE_FORMATS &&
+          ZXing.BarcodeFormat
+        ) {
+
+          hints.set(
+            ZXing.DecodeHintType.POSSIBLE_FORMATS,
+            [
+
+              ZXing.BarcodeFormat.CODE_128,
+
+              ZXing.BarcodeFormat.CODE_39,
+
+              ZXing.BarcodeFormat.CODE_93,
+
+              ZXing.BarcodeFormat.EAN_13,
+
+              ZXing.BarcodeFormat.EAN_8,
+
+              ZXing.BarcodeFormat.UPC_A,
+
+              ZXing.BarcodeFormat.UPC_E,
+
+              ZXing.BarcodeFormat.ITF,
+
+              ZXing.BarcodeFormat.CODABAR
+
+            ]
+
+          );
+
+        }
+
+
+        codeReader =
+          new ZXing.BrowserMultiFormatReader(
+            hints,
+            200
+          );
+
+
+        /*
+          Sedikit delay supaya video sudah stabil.
+        */
+
+        setTimeout(
+          function() {
+
+            if (
+              !scanning ||
+              !video.srcObject
+            ) {
+
+              return;
+
+            }
+
+
+            try {
+
+              codeReader.decodeFromVideoElement(
+                video,
+                function(result, error) {
+
+                  if (
+                    !scanning ||
+                    barcodeLock
+                  ) {
+
+                    return;
+
+                  }
+
+
+                  if (
+                    !result
+                  ) {
+
+                    return;
+
+                  }
+
+
+                  /*
+                    BARCODE BERHASIL TERBACA.
+                  */
+
+                  const rawText =
+                    result.getText();
+
+
+                  const text =
+                    bersihkanBarcode(
+                      rawText
+                    );
+
+
+                  if (!text) {
+                    return;
+                  }
+
+
+                  /*
+                    Kunci agar tidak membaca
+                    barcode yang sama berkali-kali.
+                  */
+
+                  barcodeLock =
+                    true;
+
+                  scanning =
+                    false;
+
+
+                  hentikanDeteksiBarcode();
+
+                  hentikanAutoZoom();
+
+
+                  console.log(
+                    'BARCODE RAW:',
+                    rawText
+                  );
+
+
+                  console.log(
+                    'BARCODE BERSIH:',
+                    text
+                  );
+
+
+                  cameraStatus.textContent =
+                    'Barcode berhasil dibaca';
+
+
+                  /*
+                    Tutup kamera setelah hasil
+                    benar-benar disimpan.
+                  */
+
+                  searchInput.value =
+                    text;
+
+
+                  clearBtn.style.display =
+                    'block';
+
+
+                  bunyiBeep();
+
+                  getarBerhasil();
+
+
+                  /*
+                    Tutup kamera.
+                  */
+
+                  tutupScanner();
+
+
+                  /*
+                    CARI PRODUK.
+
+                    Pakai forcedKeyword supaya
+                    hasil ZXing pasti dikirim
+                    sebagai barcode.
+                  */
+
+                  cari(text);
+
+                }
+
+              );
+
+            }
+
+            catch(error) {
+
+              console.error(
+                'ZXing decode gagal:',
+                error
+              );
+
+              cameraStatus.textContent =
+                'Scanner sedang mencoba membaca barcode...';
+
+            }
+
+          },
+          300
+        );
+
+      }
+
+      catch(error) {
+
+        console.error(
+          'ZXing gagal dibuat:',
+          error
+        );
+
+        cameraStatus.textContent =
+          'Scanner gagal dimulai.';
+
+      }
+
     }
 
-  }
+
+    /* =========================================================
+       SIAPKAN ZOOM
+    ========================================================= */
+
+    function siapkanZoom(
+      track
+    ) {
+
+      zoomCanUse =
+        false;
 
 
-  cek();
-
-}
-
-
-/* =========================================================
-   JADWALKAN NAIK ZOOM
-========================================================= */
-
-function jadwalkanNaikZoom() {
-
-  if (
-    !scanning ||
-    !barcodeCurrentlyVisible ||
-    !zoomCanUse
-  ) {
-
-    return;
-
-  }
+      currentZoom =
+        1;
 
 
-  /*
-   * Kalau sudah 3X:
-   * jangan melakukan apa-apa lagi.
-   */
-
-  if (
-    currentZoom >=
-    Math.min(zoomMax, 3)
-  ) {
-
-    return;
-
-  }
+      zoomRange.value =
+        1;
 
 
-  /*
-   * Kalau timer sudah ada,
-   * jangan membuat timer baru.
-   */
-
-  if (
-    zoomEscalationTimer
-  ) {
-
-    return;
-
-  }
+      zoomStatus.textContent =
+        'Zoom 1×';
 
 
-  /*
-   * Jangan langsung lompat zoom.
-   *
-   * Beri kesempatan ZXing membaca
-   * barcode di zoom sekarang.
-   */
+      try {
 
-  zoomEscalationTimer =
-    setTimeout(
-      function() {
-
-        zoomEscalationTimer =
-          null;
+        const capabilities =
+          track.getCapabilities();
 
 
         if (
-          !scanning ||
-          !barcodeCurrentlyVisible ||
-          !currentTrack
+          !capabilities.zoom
         ) {
+
+          console.log(
+            'Hardware zoom tidak tersedia.'
+          );
+
+
+          zoomRange.style.display =
+            'none';
+
 
           return;
 
         }
 
 
-        let next;
+        hardwareZoomMax =
+          Number(
+            capabilities.zoom.max ||
+            1
+          );
 
 
-        /*
-         * 1X -> 2X
-         *
-         * 2X -> 3X
-         */
-
-        if (
-          currentZoom < 1.5
-        ) {
-
-          next =
-            2;
-
-        }
-
-        else if (
-          currentZoom < 2.5
-        ) {
-
-          next =
-            3;
-
-        }
-
-        else {
-
-          next =
-            3;
-
-        }
+        zoomMin =
+          Number(
+            capabilities.zoom.min ||
+            1
+          );
 
 
-        next =
+        zoomMax =
           Math.min(
-            next,
-            zoomMax
+            hardwareZoomMax,
+            3
           );
 
 
         if (
-          next >
-          currentZoom
+          zoomMax <= zoomMin
         ) {
 
-          terapkanZoom(
-            next
-          );
-
-
-          cameraStatus.textContent =
-            'Barcode belum terbaca • mencoba ' +
-            formatZoom(next) +
-            '×';
-
-        }
-
-      },
-      900
-    );
-
-}
-
-
-/* =========================================================
-   KEMBALI 1X
-========================================================= */
-
-let resetZoomTimer = null;
-
-
-function kembaliKe1xPerlahan() {
-
-  if (
-    !zoomCanUse ||
-    !currentTrack
-  ) {
-
-    return;
-
-  }
-
-
-  /*
-   * Jangan langsung reset.
-   *
-   * Pastikan memang tidak ada barcode.
-   */
-
-  if (
-    resetZoomTimer
-  ) {
-
-    return;
-
-  }
-
-
-  resetZoomTimer =
-    setTimeout(
-      function() {
-
-        resetZoomTimer =
-          null;
-
-
-        if (
-          !scanning ||
-          barcodeCurrentlyVisible ||
-          !currentTrack
-        ) {
+          zoomRange.style.display =
+            'none';
 
           return;
 
         }
 
 
-        /*
-         * BARCODE SUDAH HILANG
-         *
-         * Kembali ke 1X.
-         */
+        zoomCanUse =
+          true;
+
+
+        zoomRange.min =
+          zoomMin;
+
+
+        zoomRange.max =
+          zoomMax;
+
+
+        zoomRange.step =
+          capabilities.zoom.step ||
+          0.1;
+
+
+        zoomRange.value =
+          1;
+
+
+        zoomRange.style.display =
+          'block';
+
 
         terapkanZoom(
           1
         );
 
+      }
 
-        cameraStatus.textContent =
-          'Mencari barcode...';
+      catch(error) {
 
-      },
-      600
-    );
-
-}
-
-
-/* =========================================================
-   STOP DETEKSI
-========================================================= */
-
-function hentikanDeteksiBarcode() {
-
-  if (
-    barcodeDetectionTimer
-  ) {
-
-    clearTimeout(
-      barcodeDetectionTimer
-    );
-
-    barcodeDetectionTimer =
-      null;
-
-  }
+        console.log(
+          'Zoom tidak tersedia:',
+          error
+        );
 
 
-  barcodeCurrentlyVisible =
-    false;
+        zoomRange.style.display =
+          'none';
 
-}
-
-
-/* =========================================================
-   STOP AUTO ZOOM
-========================================================= */
-
-function hentikanAutoZoom() {
-
-  if (
-    zoomEscalationTimer
-  ) {
-
-    clearTimeout(
-      zoomEscalationTimer
-    );
-
-    zoomEscalationTimer =
-      null;
-
-  }
-
-
-  if (
-    resetZoomTimer
-  ) {
-
-    clearTimeout(
-      resetZoomTimer
-    );
-
-    resetZoomTimer =
-      null;
-
-  }
-
-}
-
-
-/* =========================================================
-   TUTUP CAMERA
-========================================================= */
-
-closeCameraBtn.addEventListener(
-  'click',
-  tutupScanner
-);
-
-
-function tutupScanner() {
-
-  scanning =
-    false;
-
-
-  /*
-   * STOP SEMUA DETEKSI
-   */
-
-  hentikanDeteksiBarcode();
-
-  hentikanAutoZoom();
-
-
-  /*
-   * STOP ZXING
-   */
-
-  if (
-    codeReader
-  ) {
-
-    try {
-
-      codeReader.reset();
+      }
 
     }
 
-    catch(error) {
 
-      console.log(
-        'ZXing reset:',
-        error
-      );
+    /* =========================================================
+       TERAPKAN ZOOM
+    ========================================================= */
 
-    }
+    function terapkanZoom(
+      zoom
+    ) {
 
-  }
+      if (
+        !currentTrack ||
+        !zoomCanUse
+      ) {
+
+        return;
+
+      }
 
 
-  codeReader =
-    null;
+      const target =
+        Math.min(
+          zoomMax,
+          Math.max(
+            zoomMin,
+            zoom
+          )
+        );
 
 
-  /*
-   * STOP STREAM
-   */
+      currentZoom =
+        target;
 
-  if (
-    currentStream
-  ) {
 
-    currentStream
-      .getTracks()
-      .forEach(
-        function(track) {
+      zoomRange.value =
+        target;
 
-          try {
 
-            track.stop();
+      zoomStatus.textContent =
+        'Zoom ' +
+        formatZoom(target) +
+        '×';
 
-          }
 
-          catch(error) {
+      currentTrack
+        .applyConstraints({
+
+          advanced: [
+
+            {
+              zoom: target
+            }
+
+          ]
+
+        })
+
+        .catch(
+          function(error) {
 
             console.log(
+              'Gagal menerapkan zoom:',
               error
             );
 
           }
+        );
 
-        }
+    }
+
+
+    /* =========================================================
+       FORMAT ZOOM
+    ========================================================= */
+
+    function formatZoom(
+      value
+    ) {
+
+      const rounded =
+        Math.round(
+          value * 10
+        ) / 10;
+
+
+      return String(
+        rounded
       );
 
-  }
+    }
 
 
-  /*
-   * HAPUS VIDEO
-   */
+    /* =========================================================
+       MANUAL ZOOM
+    ========================================================= */
 
-  try {
+    zoomRange.addEventListener(
+      'input',
+      function() {
 
-    video.pause();
+        if (
+          !currentTrack ||
+          !zoomCanUse
+        ) {
 
-  }
+          return;
 
-  catch(error) {}
-
-
-  video.srcObject =
-    null;
-
-
-  /*
-   * RESET
-   */
-
-  currentStream =
-    null;
-
-  currentTrack =
-    null;
-
-  currentZoom =
-    1;
-
-  zoomCanUse =
-    false;
-
-  barcodeCurrentlyVisible =
-    false;
+        }
 
 
-  zoomRange.value =
-    1;
+        /*
+          Manual zoom menghentikan
+          auto escalation.
+        */
+
+        hentikanAutoZoom();
 
 
-  zoomStatus.textContent =
-    'Zoom 1×';
+        terapkanZoom(
+          Number(
+            zoomRange.value
+          )
+        );
 
-
-  /*
-   * HIDE
-   */
-
-  scannerCard.style.display =
-    'none';
-
-}
-
-
-/* =========================================================
-   ESCAPE HTML
-========================================================= */
-
-function escapeHtml(
-  value
-) {
-
-  return String(
-    value || ''
-  )
-    .replace(
-      /&/g,
-      '&amp;'
-    )
-    .replace(
-      /</g,
-      '&lt;'
-    )
-    .replace(
-      />/g,
-      '&gt;'
-    )
-    .replace(
-      /"/g,
-      '&quot;'
-    )
-    .replace(
-      /'/g,
-      '&#039;'
+      }
     );
 
-}
 
-</script>
+    /* =========================================================
+       BARCODE DETECTOR
+    ========================================================= */
+
+    async function cekBarcodeDetector() {
+
+      try {
+
+        if (
+          !('BarcodeDetector' in window)
+        ) {
+
+          barcodeDetectionSupported =
+            false;
+
+          return;
+
+        }
+
+
+        const formats =
+          await BarcodeDetector.getSupportedFormats();
+
+
+        if (
+          !formats ||
+          !formats.length
+        ) {
+
+          barcodeDetectionSupported =
+            false;
+
+          return;
+
+        }
+
+
+        barcodeDetectionSupported =
+          true;
+
+
+        console.log(
+          'BarcodeDetector tersedia.'
+        );
+
+      }
+
+      catch(error) {
+
+        console.log(
+          'BarcodeDetector tidak tersedia:',
+          error
+        );
+
+
+        barcodeDetectionSupported =
+          false;
+
+      }
+
+    }
+
+
+    /* =========================================================
+       MULAI DETEKSI BARCODE
+    ========================================================= */
+
+    async function mulaiDeteksiBarcode() {
+
+      hentikanDeteksiBarcode();
+
+
+      await cekBarcodeDetector();
+
+
+      if (
+        !scanning
+      ) {
+
+        return;
+
+      }
+
+
+      if (
+        barcodeDetectionSupported
+      ) {
+
+        mulaiDeteksiDenganNative();
+
+        return;
+
+      }
+
+
+      /*
+        Kalau BarcodeDetector tidak tersedia,
+        jangan pakai deteksi gambar agresif.
+
+        Tetap 1× sampai ZXing menemukan barcode.
+
+        Ini sengaja supaya zoom tidak
+        naik turun tidak karuan.
+      */
+
+      cameraStatus.textContent =
+        'Mencari barcode...';
+
+    }
+
+
+    /* =========================================================
+       NATIVE BARCODE DETECTOR
+    ========================================================= */
+
+    function mulaiDeteksiDenganNative() {
+
+      let detector;
+
+
+      try {
+
+        detector =
+          new BarcodeDetector({
+
+            formats: [
+
+              'code_128',
+              'code_39',
+              'code_93',
+
+              'ean_13',
+              'ean_8',
+
+              'upc_a',
+              'upc_e',
+
+              'itf',
+
+              'codabar'
+
+            ]
+
+          });
+
+      }
+
+      catch(error) {
+
+        console.log(
+          'Gagal membuat BarcodeDetector:',
+          error
+        );
+
+        return;
+
+      }
+
+
+      async function cek() {
+
+        if (
+          !scanning ||
+          !video.videoWidth ||
+          !video.videoHeight
+        ) {
+
+          return;
+
+        }
+
+
+        try {
+
+          const results =
+            await detector.detect(
+              video
+            );
+
+
+          barcodeCurrentlyVisible =
+            Array.isArray(results) &&
+            results.length > 0;
+
+
+          if (
+            barcodeCurrentlyVisible
+          ) {
+
+            cameraStatus.textContent =
+              'Barcode terlihat • mencari...';
+
+
+            jadwalkanNaikZoom();
+
+          }
+
+          else {
+
+            cameraStatus.textContent =
+              'Mencari barcode...';
+
+
+            /*
+              HANYA reset kalau barcode
+              benar-benar sudah tidak terlihat.
+
+              Tidak boleh naik turun cepat.
+            */
+
+            if (
+              currentZoom > 1
+            ) {
+
+              kembaliKe1xPerlahan();
+
+            }
+
+          }
+
+        }
+
+        catch(error) {
+
+          /*
+            Jangan spam console.
+          */
+
+        }
+
+
+        if (
+          scanning
+        ) {
+
+          barcodeDetectionTimer =
+            setTimeout(
+              cek,
+              300
+            );
+
+        }
+
+      }
+
+
+      cek();
+
+    }
+
+
+    /* =========================================================
+       JADWALKAN NAIK ZOOM
+    ========================================================= */
+
+    function jadwalkanNaikZoom() {
+
+      if (
+        !scanning ||
+        !barcodeCurrentlyVisible ||
+        !zoomCanUse
+      ) {
+
+        return;
+
+      }
+
+
+      const batasZoom =
+        Math.min(
+          zoomMax,
+          3
+        );
+
+
+      if (
+        currentZoom >= batasZoom
+      ) {
+
+        return;
+
+      }
+
+
+      if (
+        zoomEscalationTimer
+      ) {
+
+        return;
+
+      }
+
+
+      /*
+        Tunggu ZXing mencoba membaca
+        pada zoom sekarang.
+
+        Jadi tidak langsung zoom.
+      */
+
+      zoomEscalationTimer =
+        setTimeout(
+          function() {
+
+            zoomEscalationTimer =
+              null;
+
+
+            if (
+              !scanning ||
+              !barcodeCurrentlyVisible ||
+              !currentTrack
+            ) {
+
+              return;
+
+            }
+
+
+            let next;
+
+
+            if (
+              currentZoom < 1.5
+            ) {
+
+              next = 2;
+
+            }
+
+            else if (
+              currentZoom < 2.5
+            ) {
+
+              next = 3;
+
+            }
+
+            else {
+
+              next = 3;
+
+            }
+
+
+            next =
+              Math.min(
+                next,
+                batasZoom
+              );
+
+
+            if (
+              next >
+              currentZoom
+            ) {
+
+              terapkanZoom(
+                next
+              );
+
+
+              cameraStatus.textContent =
+                'Barcode belum terbaca • mencoba ' +
+                formatZoom(next) +
+                '×';
+
+            }
+
+          },
+          1800
+        );
+
+    }
+
+
+    /* =========================================================
+       KEMBALI 1X
+    ========================================================= */
+
+    function kembaliKe1xPerlahan() {
+
+      if (
+        !zoomCanUse ||
+        !currentTrack
+      ) {
+
+        return;
+
+      }
+
+
+      if (
+        resetZoomTimer
+      ) {
+
+        return;
+
+      }
+
+
+      /*
+        Tunggu 1500ms.
+
+        Ini penting agar zoom tidak
+        naik turun setiap beberapa frame.
+      */
+
+      resetZoomTimer =
+        setTimeout(
+          function() {
+
+            resetZoomTimer =
+              null;
+
+
+            if (
+              !scanning ||
+              barcodeCurrentlyVisible ||
+              !currentTrack
+            ) {
+
+              return;
+
+            }
+
+
+            terapkanZoom(
+              1
+            );
+
+
+            cameraStatus.textContent =
+              'Mencari barcode...';
+
+          },
+          1500
+        );
+
+    }
+
+
+    /* =========================================================
+       STOP DETEKSI
+    ========================================================= */
+
+    function hentikanDeteksiBarcode() {
+
+      if (
+        barcodeDetectionTimer
+      ) {
+
+        clearTimeout(
+          barcodeDetectionTimer
+        );
+
+        barcodeDetectionTimer =
+          null;
+
+      }
+
+
+      barcodeCurrentlyVisible =
+        false;
+
+    }
+
+
+    /* =========================================================
+       STOP AUTO ZOOM
+    ========================================================= */
+
+    function hentikanAutoZoom() {
+
+      if (
+        zoomEscalationTimer
+      ) {
+
+        clearTimeout(
+          zoomEscalationTimer
+        );
+
+        zoomEscalationTimer =
+          null;
+
+      }
+
+
+      if (
+        resetZoomTimer
+      ) {
+
+        clearTimeout(
+          resetZoomTimer
+        );
+
+        resetZoomTimer =
+          null;
+
+      }
+
+    }
+
+
+    /* =========================================================
+       TUTUP CAMERA
+    ========================================================= */
+
+    closeCameraBtn.addEventListener(
+      'click',
+      tutupScanner
+    );
+
+
+    function tutupScanner() {
+
+      scanning =
+        false;
+
+
+      barcodeLock =
+        true;
+
+
+      /*
+        Stop semua detector.
+      */
+
+      hentikanDeteksiBarcode();
+
+      hentikanAutoZoom();
+
+
+      /*
+        Stop ZXing.
+      */
+
+      if (
+        codeReader
+      ) {
+
+        try {
+
+          codeReader.reset();
+
+        }
+
+        catch(error) {
+
+          console.log(
+            'ZXing reset:',
+            error
+          );
+
+        }
+
+      }
+
+
+      codeReader =
+        null;
+
+
+      /*
+        Stop kamera.
+      */
+
+      if (
+        currentStream
+      ) {
+
+        currentStream
+          .getTracks()
+          .forEach(
+            function(track) {
+
+              try {
+
+                track.stop();
+
+              }
+
+              catch(error) {
+
+                console.log(
+                  error
+                );
+
+              }
+
+            }
+          );
+
+      }
+
+
+      try {
+
+        video.pause();
+
+      }
+
+      catch(error) {}
+
+
+      video.srcObject =
+        null;
+
+
+      /*
+        Reset variabel.
+      */
+
+      currentStream =
+        null;
+
+      currentTrack =
+        null;
+
+      currentZoom =
+        1;
+
+      zoomCanUse =
+        false;
+
+      barcodeCurrentlyVisible =
+        false;
+
+
+      zoomRange.value =
+        1;
+
+
+      zoomStatus.textContent =
+        'Zoom 1×';
+
+
+      /*
+        Hide scanner.
+      */
+
+      scannerCard.style.display =
+        'none';
+
+    }
+
+
+    /* =========================================================
+       ESCAPE HTML
+    ========================================================= */
+
+    function escapeHtml(
+      value
+    ) {
+
+      return String(
+        value ?? ''
+      )
+
+        .replace(
+          /&/g,
+          '&amp;'
+        )
+
+        .replace(
+          /</g,
+          '&lt;'
+        )
+
+        .replace(
+          />/g,
+          '&gt;'
+        )
+
+        .replace(
+          /"/g,
+          '&quot;'
+        )
+
+        .replace(
+          /'/g,
+          '&#039;'
+        );
+
+    }
+
+  </script>
 
 </body>
 
