@@ -1503,11 +1503,13 @@ async function ambilMasterCache() {
 
 searchBtn.addEventListener(
   'click',
-  cari
+  function() {
+    cari(false);
+  }
 );
 
 
-async function cari() {
+async function cari(dariScan = false) {
 
   const keyword =
     searchInput.value.trim();
@@ -1551,129 +1553,144 @@ async function cari() {
 
 
     const hasil =
-      master.filter(
-        function(item) {
+  master.filter(
+    function(item) {
 
-          /*
-           * Ambil berbagai kemungkinan nama field
-           * tanpa mengubah struktur Master Produk lama.
-           */
+      const barcodeValue =
+        item.barcode ??
+        item.Barcode ??
+        item.BARCODE ??
+        item.kodeBarcode ??
+        item.kode_barcode ??
+        '';
 
-          const barcodeValue =
-            item.barcode ??
-            item.Barcode ??
-            item.BARCODE ??
-            item.kodeBarcode ??
-            item.kode_barcode ??
-            '';
+      const nama =
+        normalisasi(
+          item.nama ??
+          item.name ??
+          item.Nama ??
+          ''
+        );
 
+      const kode =
+        normalisasi(
+          item.kodeAccurate ??
+          item.kode ??
+          item.no ??
+          item.KodeAccurate ??
+          ''
+        );
 
-          const nama =
-            normalisasi(
-              item.nama ??
-              item.name ??
-              item.Nama ??
-              ''
-            );
+      const id =
+        normalisasi(
+          item.id ??
+          ''
+        );
 
+      const barcodeNormalized =
+        normalisasiBarcode(
+          barcodeValue
+        );
 
-          const kode =
-            normalisasi(
-              item.kodeAccurate ??
-              item.kode ??
-              item.no ??
-              item.KodeAccurate ??
-              ''
-            );
+      /*
+       * =====================================================
+       * KALAU DARI SCAN BARCODE
+       *
+       * HARUS EXACT MATCH.
+       *
+       * Contoh:
+       * Scan SF02
+       *
+       * Barcode SF02      -> MASUK
+       * Barcode SF020     -> TIDAK
+       * Barcode ABCSF02   -> TIDAK
+       * Barcode ABC02     -> TIDAK
+       * =====================================================
+       */
 
+      if (dariScan) {
 
-          const id =
-            normalisasi(
-              item.id ??
-              ''
-            );
+        return (
+          barcodeSama(
+            barcodeValue,
+            keyword
+          )
+        );
 
-
-          /*
-           * Pencocokan barcode baru.
-           *
-           * Ini bagian terpenting.
-           */
-
-          const cocokBarcode =
-            barcodeSama(
-              barcodeValue,
-              keyword
-            );
-
-
-          /*
-           * Pencocokan lama tetap dipertahankan.
-           */
-
-          const cocokBarcodeNormal =
-            targetBarcode &&
-            normalisasiBarcode(
-              barcodeValue
-            ) === targetBarcode;
-
-
-          const cocokKode =
-            kode === target;
+      }
 
 
-          const cocokId =
-            id === target;
+      /*
+       * =====================================================
+       * PENCARIAN MANUAL
+       *
+       * Tetap boleh mencari:
+       * - nama sebagian
+       * - kode sebagian
+       * - barcode sebagian
+       * - ID exact
+       * =====================================================
+       */
 
+      const cocokBarcode =
+        barcodeSama(
+          barcodeValue,
+          keyword
+        );
 
-          const cocokNama =
-            nama.includes(target);
+      const cocokBarcodeNormal =
+        targetBarcode &&
+        barcodeNormalized === targetBarcode;
 
+      const cocokKode =
+        kode === target;
 
-          const cocokKodeSebagian =
-            kode.includes(target);
+      const cocokId =
+        id === target;
 
+      const cocokNama =
+        nama.includes(target);
 
-          const cocokBarcodeSebagian =
-            normalisasiBarcode(
-              barcodeValue
-            ).includes(
-              targetBarcode
-            );
+      const cocokKodeSebagian =
+        kode.includes(target);
 
+      const cocokBarcodeSebagian =
+        barcodeNormalized.includes(
+          targetBarcode
+        );
 
-          return (
+      return (
 
-            cocokBarcode
+        cocokBarcode
 
-            ||
+        ||
 
-            cocokBarcodeNormal
+        cocokBarcodeNormal
 
-            ||
+        ||
 
-            cocokKode
+        cocokKode
 
-            ||
+        ||
 
-            cocokId
+        cocokId
 
-            ||
+        ||
 
-            cocokNama
+        cocokNama
 
-            ||
+        ||
 
-            cocokKodeSebagian
+        cocokKodeSebagian
 
-            ||
+        ||
 
-            cocokBarcodeSebagian
+        cocokBarcodeSebagian
 
-          );
-
-        }
       );
+
+    }
+  );
 
 
     console.log(
@@ -2613,7 +2630,7 @@ function mulaiNativeBarcodeDetector(
            * SUDAH DIPERBAIKI NORMALISASINYA.
            */
 
-          await cari();
+          await cari(true);
 
 
           return;
@@ -2769,7 +2786,7 @@ function mulaiZXingScanner() {
             'block';
 
 
-          cari();
+          cari(true);
 
 
           return;
