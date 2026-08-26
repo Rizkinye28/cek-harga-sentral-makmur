@@ -1909,40 +1909,223 @@ scanBtn.addEventListener(
 
 
 /* =====================================================
-   BUKA SCANNER
+   BUKA SCANNER - VERSI CEPAT
 ===================================================== */
 
 async function bukaScanner() {
 
-  // Bersihkan scanner sebelumnya
   tutupScanner();
 
-  scannerCard.style.display =
-    'block';
+  scannerCard.style.display = 'block';
+
+  scanning = true;
 
   try {
+
+    /*
+     * PAKSA KAMERA BELAKANG
+     */
+
+    currentStream =
+      await navigator.mediaDevices.getUserMedia({
+
+        audio: false,
+
+        video: {
+
+          facingMode: {
+            exact: 'environment'
+          },
+
+          width: {
+            ideal: 1280
+          },
+
+          height: {
+            ideal: 720
+          },
+
+          frameRate: {
+            ideal: 30
+          }
+
+        }
+
+      });
+
+
+    video.srcObject =
+      currentStream;
+
+
+    await video.play();
+
+
+    const tracks =
+      currentStream.getVideoTracks();
+
+
+    if (!tracks.length) {
+
+      throw new Error(
+        'Kamera tidak ditemukan.'
+      );
+
+    }
+
+
+    currentTrack =
+      tracks[0];
+
+
+    console.log(
+      'KAMERA:',
+      currentTrack.label
+    );
+
+
+    /*
+     * SIAPKAN ZOOM
+     */
+
+    siapkanZoomCepat(
+      currentTrack
+    );
+
+
+    /*
+     * MULAI ZXING
+     */
 
     codeReader =
       new ZXing.BrowserMultiFormatReader();
 
 
-    scanning =
-      true;
+    codeReader.decodeFromVideoElement(
+      video,
+      function(result, error) {
+
+        if (
+          result &&
+          scanning
+        ) {
+
+          scanning = false;
+
+
+          /*
+           * STOP ZOOM
+           */
+
+          hentikanAutoZoom();
+
+
+          /*
+           * BEEP + GETAR
+           */
+
+          feedbackScan();
+
+
+          /*
+           * BARCODE
+           */
+
+          const text =
+            result.getText();
+
+
+          console.log(
+            'BARCODE:',
+            text
+          );
+
+
+          searchInput.value =
+            text;
+
+
+          clearBtn.style.display =
+            'block';
+
+
+          /*
+           * TUTUP KAMERA
+           */
+
+          tutupScanner();
+
+
+          /*
+           * CARI PRODUK
+           */
+
+          cari();
+
+        }
+
+      }
+    );
 
 
     /*
-     * =================================================
-     * PAKSA KAMERA BELAKANG
-     * =================================================
-     *
-     * Jangan lagi memilih devices[0].
-     * Kita langsung minta kamera environment.
-     *
-     * Ini mencegah kamera berubah ke kamera depan
-     * saat scan kedua, ketiga, dst.
+     * MULAI AUTO ZOOM
      */
 
-    const constraints = {
+    mulaiAutoZoomCepat();
+
+  }
+
+  catch(error) {
+
+    console.error(
+      'Kamera error:',
+      error
+    );
+
+
+    /*
+     * Beberapa HP tidak menerima
+     * exact environment.
+     *
+     * Coba fallback.
+     */
+
+    try {
+
+      await bukaKameraFallback();
+
+    }
+
+    catch(error2) {
+
+      console.error(
+        error2
+      );
+
+
+      tutupScanner();
+
+
+      alert(
+        'Kamera belakang tidak dapat digunakan. Pastikan izin kamera sudah diberikan.'
+      );
+
+    }
+
+  }
+
+}
+
+
+/* =====================================================
+   FALLBACK KAMERA BELAKANG
+===================================================== */
+
+async function bukaKameraFallback() {
+
+  currentStream =
+    await navigator.mediaDevices.getUserMedia({
 
       audio: false,
 
@@ -1958,144 +2141,50 @@ async function bukaScanner() {
 
         height: {
           ideal: 720
-        },
-
-        frameRate: {
-          ideal: 30,
-          max: 30
         }
 
       }
 
-    };
+    });
 
 
-    /*
-     * =================================================
-     * START CAMERA
-     * =================================================
-     */
-
-    currentStream =
-      await navigator.mediaDevices
-        .getUserMedia(
-          constraints
-        );
+  video.srcObject =
+    currentStream;
 
 
-    video.srcObject =
-      currentStream;
+  await video.play();
 
 
-    await video.play();
+  const tracks =
+    currentStream.getVideoTracks();
 
 
-    /*
-     * Ambil track kamera
-     */
+  if (!tracks.length) {
 
-    const tracks =
-      currentStream.getVideoTracks();
-
-
-    if (
-      !tracks.length
-    ) {
-
-      throw new Error(
-        'Track kamera tidak ditemukan.'
-      );
-
-    }
-
-
-    currentTrack =
-      tracks[0];
-
-
-    /*
-     * =================================================
-     * CEK KAMERA
-     * =================================================
-     */
-
-    console.log(
-      'Kamera aktif:',
-      currentTrack.label
-    );
-
-
-    /*
-     * =================================================
-     * SET ZOOM AWAL
-     * =================================================
-     */
-
-    siapkanZoom(
-      currentTrack
-    );
-
-
-    /*
-     * =================================================
-     * MULAI ZXING
-     * =================================================
-     *
-     * Karena stream sudah kita buat sendiri,
-     * kita gunakan decodeFromVideoElement.
-     */
-
-    decodeBarcode();
-
-
-    /*
-     * =================================================
-     * MULAI DETEKSI BARCODE UNTUK AUTO ZOOM
-     * =================================================
-     */
-
-    mulaiAutoZoomDeteksi();
-
-  }
-
-  catch(error) {
-
-    console.error(
-      'Kamera gagal:',
-      error
-    );
-
-
-    hentikanAutoZoom();
-
-
-    scannerCard.style.display =
-      'none';
-
-
-    alert(
-      'Kamera belakang tidak dapat digunakan. Pastikan izin kamera sudah diberikan.'
+    throw new Error(
+      'Track kamera kosong.'
     );
 
   }
 
-}
+
+  currentTrack =
+    tracks[0];
 
 
-/* =====================================================
-   DECODE BARCODE
-===================================================== */
+  console.log(
+    'FALLBACK CAMERA:',
+    currentTrack.label
+  );
 
-function decodeBarcode() {
 
-  if (
-    !codeReader ||
-    !scanning
-  ) {
+  siapkanZoomCepat(
+    currentTrack
+  );
 
-    return;
 
-  }
+  codeReader =
+    new ZXing.BrowserMultiFormatReader();
 
 
   codeReader.decodeFromVideoElement(
@@ -2107,66 +2196,22 @@ function decodeBarcode() {
         scanning
       ) {
 
-        /*
-         * =============================================
-         * BARCODE BERHASIL
-         * =============================================
-         */
-
-        scanning =
-          false;
-
-
-        /*
-         * STOP AUTO ZOOM SECEPATNYA
-         */
+        scanning = false;
 
         hentikanAutoZoom();
 
-
-        /*
-         * BEEP + GETAR
-         */
-
         feedbackScan();
-
-
-        /*
-         * Ambil barcode
-         */
 
         const text =
           result.getText();
 
-
-        console.log(
-          'Barcode terbaca:',
-          text
-        );
-
-
-        /*
-         * Masukkan barcode ke search
-         */
-
         searchInput.value =
           text;
-
 
         clearBtn.style.display =
           'block';
 
-
-        /*
-         * Tutup kamera
-         */
-
         tutupScanner();
-
-
-        /*
-         * Cari produk
-         */
 
         cari();
 
@@ -2175,14 +2220,17 @@ function decodeBarcode() {
     }
   );
 
+
+  mulaiAutoZoomCepat();
+
 }
 
 
 /* =====================================================
-   SIAPKAN ZOOM
+   SIAPKAN ZOOM CEPAT
 ===================================================== */
 
-function siapkanZoom(
+function siapkanZoomCepat(
   track
 ) {
 
@@ -2192,16 +2240,12 @@ function siapkanZoom(
       track.getCapabilities();
 
 
-    /*
-     * Kalau kamera tidak mendukung zoom
-     */
-
     if (
       !capabilities.zoom
     ) {
 
       console.log(
-        'Kamera tidak mendukung zoom.'
+        'Zoom hardware tidak tersedia.'
       );
 
 
@@ -2228,19 +2272,28 @@ function siapkanZoom(
 
 
     /*
-     * =================================================
-     * BATASI MAX ZOOM
-     * =================================================
+     * BATAS AMAN
      *
-     * Walaupun kamera bisa 10x,
-     * kita hanya izinkan sekitar 2.2x.
+     * Jangan sampai zoom berlebihan.
      */
 
-    const batasZoom =
+    const safeMax =
       Math.min(
         max,
-        2.2
+        1.8
       );
+
+
+    window.zoomMin =
+      min;
+
+
+    window.zoomMax =
+      safeMax;
+
+
+    window.zoomStep =
+      step;
 
 
     zoomRange.min =
@@ -2248,7 +2301,7 @@ function siapkanZoom(
 
 
     zoomRange.max =
-      batasZoom;
+      safeMax;
 
 
     zoomRange.step =
@@ -2256,7 +2309,7 @@ function siapkanZoom(
 
 
     /*
-     * START NORMAL
+     * MULAI 1X
      */
 
     currentAutoZoom =
@@ -2274,45 +2327,18 @@ function siapkanZoom(
       'block';
 
 
-    /*
-     * Terapkan zoom normal
-     */
-
-    terapkanZoom(
+    terapkanZoomCepat(
       track,
       currentAutoZoom
     );
 
-
-    /*
-     * Simpan batas zoom
-     */
-
-    window.zoomMin =
-      min;
-
-
-    window.zoomMax =
-      batasZoom;
-
-
-    window.zoomStep =
-      step;
-
-
-    console.log(
-      'Zoom:',
-      min,
-      '-',
-      batasZoom
-    );
 
   }
 
   catch(error) {
 
     console.log(
-      'Gagal menyiapkan zoom:',
+      'Zoom error:',
       error
     );
 
@@ -2326,121 +2352,29 @@ function siapkanZoom(
 
 
 /* =====================================================
-   DETEKSI BARCODE + AUTO ZOOM
+   AUTO ZOOM CEPAT
 ===================================================== */
 
-let barcodeDetector =
-  null;
+let autoZoomInterval = null;
 
-let autoZoomDetectionTimer =
-  null;
-
-let barcodeTerlihat =
-  false;
+let lastZoomTime = 0;
 
 
-/* =====================================================
-   MULAI DETEKSI
-===================================================== */
+/*
+ * Kita tidak menunggu BarcodeDetector.
+ *
+ * Kamera akan melakukan zoom bertahap
+ * dengan sangat cepat.
+ */
 
-function mulaiAutoZoomDeteksi() {
+function mulaiAutoZoomCepat() {
 
   hentikanAutoZoom();
 
 
-  barcodeTerlihat =
-    false;
-
-
-  /*
-   * =================================================
-   * BARCODE DETECTOR NATIVE
-   * =================================================
-   *
-   * Browser modern tertentu mendukung BarcodeDetector.
-   */
-
   if (
-    'BarcodeDetector'
-    in window
-  ) {
-
-    try {
-
-      barcodeDetector =
-        new BarcodeDetector({
-
-          formats: [
-
-            'ean_13',
-            'ean_8',
-            'upc_a',
-            'upc_e',
-            'code_128',
-            'code_39',
-            'code_93',
-            'itf',
-            'codabar'
-
-          ]
-
-        });
-
-
-      console.log(
-        'BarcodeDetector aktif.'
-      );
-
-
-      autoZoomDetectionTimer =
-        setInterval(
-          deteksiBarcodeUntukZoom,
-          180
-        );
-
-
-      return;
-
-    }
-
-    catch(error) {
-
-      console.log(
-        'BarcodeDetector tidak bisa digunakan:',
-        error
-      );
-
-    }
-
-  }
-
-
-  /*
-   * =================================================
-   * FALLBACK
-   * =================================================
-   *
-   * Kalau browser tidak mendukung BarcodeDetector,
-   * kita gunakan zoom bertahap yang sangat ringan.
-   *
-   * Tidak langsung zoom besar.
-   */
-
-  mulaiFallbackZoom();
-
-}
-
-
-/* =====================================================
-   DETEKSI BARCODE NATIVE
-===================================================== */
-
-async function deteksiBarcodeUntukZoom() {
-
-  if (
-    !scanning ||
     !currentTrack ||
-    !video.videoWidth
+    !window.zoomMax
   ) {
 
     return;
@@ -2448,284 +2382,131 @@ async function deteksiBarcodeUntukZoom() {
   }
 
 
-  try {
+  /*
+   * Tunggu kamera stabil sebentar.
+   */
 
-    const barcodes =
-      await barcodeDetector.detect(
-        video
-      );
+  setTimeout(
+    function() {
 
+      if (
+        !scanning ||
+        !currentTrack
+      ) {
 
-    /*
-     * Tidak ada barcode
-     */
+        return;
 
-    if (
-      !barcodes ||
-      !barcodes.length
-    ) {
+      }
 
-      barcodeTerlihat =
-        false;
 
-      return;
+      autoZoomInterval =
+        setInterval(
+          function() {
 
-    }
+            if (
+              !scanning ||
+              !currentTrack
+            ) {
 
+              hentikanAutoZoom();
 
-    /*
-     * BARCODE TERLIHAT
-     */
+              return;
 
-    barcodeTerlihat =
-      true;
+            }
 
 
-    /*
-     * =================================================
-     * AUTO ZOOM BERDASARKAN UKURAN BARCODE
-     * =================================================
-     */
+            const now =
+              performance.now();
 
-    const barcode =
-      barcodes[0];
 
+            /*
+             * Jaga agar zoom tidak spam
+             */
 
-    const box =
-      barcode.boundingBox;
+            if (
+              now -
+              lastZoomTime <
+              70
+            ) {
 
+              return;
 
-    if (
-      !box
-    ) {
+            }
 
-      return;
 
-    }
+            lastZoomTime =
+              now;
 
 
-    const lebarVideo =
-      video.videoWidth;
+            const maxZoom =
+              window.zoomMax ||
+              1.8;
 
 
-    const tinggiVideo =
-      video.videoHeight;
+            /*
+             * Kalau sudah maksimal,
+             * berhenti.
+             */
 
+            if (
+              currentAutoZoom >=
+              maxZoom
+            ) {
 
-    const ukuranBarcode =
-      Math.max(
-        box.width / lebarVideo,
-        box.height / tinggiVideo
-      );
+              hentikanAutoZoom();
 
+              return;
 
-    /*
-     * Barcode sudah cukup besar
-     */
+            }
 
-    if (
-      ukuranBarcode >= 0.28
-    ) {
 
-      /*
-       * Jangan zoom lagi
-       */
+            /*
+             * NAIK CEPAT
+             *
+             * 0.20x setiap ~80ms
+             */
 
-      hentikanAutoZoom();
+            let nextZoom =
+              currentAutoZoom +
+              0.20;
 
-      return;
 
-    }
+            nextZoom =
+              Math.min(
+                nextZoom,
+                maxZoom
+              );
 
 
-    /*
-     * Barcode terlalu kecil.
-     * Naikkan zoom sedikit saja.
-     */
+            currentAutoZoom =
+              nextZoom;
 
-    let targetZoom =
-      1;
 
+            zoomRange.value =
+              currentAutoZoom;
 
-    if (
-      ukuranBarcode < 0.08
-    ) {
 
-      targetZoom =
-        1.8;
+            terapkanZoomCepat(
+              currentTrack,
+              currentAutoZoom
+            );
 
-    }
+          },
+          80
+        );
 
-    else if (
-      ukuranBarcode < 0.14
-    ) {
-
-      targetZoom =
-        1.5;
-
-    }
-
-    else if (
-      ukuranBarcode < 0.20
-    ) {
-
-      targetZoom =
-        1.3;
-
-    }
-
-    else {
-
-      targetZoom =
-        1.15;
-
-    }
-
-
-    /*
-     * Batasi maksimum
-     */
-
-    targetZoom =
-      Math.min(
-        targetZoom,
-        window.zoomMax || 2.2
-      );
-
-
-    /*
-     * Jangan naik turun terus.
-     */
-
-    if (
-      targetZoom >
-      currentAutoZoom
-    ) {
-
-      currentAutoZoom =
-        targetZoom;
-
-
-      zoomRange.value =
-        currentAutoZoom;
-
-
-      terapkanZoom(
-        currentTrack,
-        currentAutoZoom
-      );
-
-    }
-
-  }
-
-  catch(error) {
-
-    /*
-     * Tidak perlu spam console
-     */
-
-  }
+    },
+    500
+  );
 
 }
 
 
 /* =====================================================
-   FALLBACK AUTO ZOOM
+   TERAPKAN ZOOM CEPAT
 ===================================================== */
 
-function mulaiFallbackZoom() {
-
-  /*
-   * Kalau BarcodeDetector tidak tersedia,
-   * kita TIDAK langsung zoom.
-   *
-   * Mulai normal dulu.
-   */
-
-  currentAutoZoom =
-    Math.max(
-      window.zoomMin || 1,
-      1
-    );
-
-
-  /*
-   * Setelah 1.5 detik tanpa barcode,
-   * naik sedikit saja.
-   *
-   * Ini hanya fallback karena browser tidak punya
-   * BarcodeDetector.
-   */
-
-  autoZoomDetectionTimer =
-    setTimeout(
-      function() {
-
-        if (
-          !scanning ||
-          !currentTrack
-        ) {
-
-          return;
-
-        }
-
-
-        const maxZoom =
-          window.zoomMax || 2.2;
-
-
-        /*
-         * Naik hanya 0.25x
-         */
-
-        const nextZoom =
-          Math.min(
-            currentAutoZoom + 0.25,
-            maxZoom
-          );
-
-
-        if (
-          nextZoom >
-          currentAutoZoom
-        ) {
-
-          currentAutoZoom =
-            nextZoom;
-
-
-          zoomRange.value =
-            currentAutoZoom;
-
-
-          terapkanZoom(
-            currentTrack,
-            currentAutoZoom
-          );
-
-        }
-
-
-        /*
-         * Ulangi perlahan.
-         */
-
-        mulaiFallbackZoom();
-
-      },
-      1500
-    );
-
-}
-
-
-/* =====================================================
-   TERAPKAN ZOOM
-===================================================== */
-
-function terapkanZoom(
+function terapkanZoomCepat(
   track,
   zoom
 ) {
@@ -2768,7 +2549,6 @@ function terapkanZoom(
   catch(error) {
 
     console.log(
-      'Zoom tidak tersedia:',
       error
     );
 
@@ -2784,12 +2564,32 @@ function terapkanZoom(
 function hentikanAutoZoom() {
 
   if (
+    autoZoomInterval
+  ) {
+
+    clearInterval(
+      autoZoomInterval
+    );
+
+
+    autoZoomInterval =
+      null;
+
+  }
+
+
+  /*
+   * Hentikan timer lama juga
+   */
+
+  if (
     autoZoomDetectionTimer
   ) {
 
     clearInterval(
       autoZoomDetectionTimer
     );
+
 
     clearTimeout(
       autoZoomDetectionTimer
@@ -2822,8 +2622,8 @@ zoomRange.addEventListener(
 
 
     /*
-     * Kalau user mengatur zoom manual,
-     * hentikan auto zoom.
+     * Kalau user mengubah zoom,
+     * auto zoom dihentikan.
      */
 
     hentikanAutoZoom();
@@ -2835,12 +2635,120 @@ zoomRange.addEventListener(
       );
 
 
-    terapkanZoom(
+    terapkanZoomCepat(
       currentTrack,
       currentAutoZoom
     );
 
   }
+);
+
+
+/* =====================================================
+   TUTUP CAMERA
+===================================================== */
+
+closeCameraBtn.addEventListener(
+  'click',
+  tutupScanner
+);
+
+
+function tutupScanner() {
+
+  scanning =
+    false;
+
+
+  /*
+   * STOP SEMUA AUTO ZOOM
+   */
+
+  hentikanAutoZoom();
+
+
+  /*
+   * STOP ZXING
+   */
+
+  if (
+    codeReader
+  ) {
+
+    try {
+
+      codeReader.reset();
+
+    }
+
+    catch(error) {
+
+      console.log(
+        error
+      );
+
+    }
+
+  }
+
+
+  /*
+   * STOP CAMERA
+   */
+
+  if (
+    currentStream
+  ) {
+
+    currentStream
+      .getTracks()
+      .forEach(
+        function(track) {
+
+          track.stop();
+
+        }
+      );
+
+  }
+
+
+  if (
+    video.srcObject
+  ) {
+
+    video.srcObject =
+      null;
+
+  }
+
+
+  /*
+   * RESET
+   */
+
+  currentStream =
+    null;
+
+  currentTrack =
+    null;
+
+  codeReader =
+    null;
+
+
+  currentAutoZoom =
+    1;
+
+
+  /*
+   * HIDE
+   */
+
+  scannerCard.style.display =
+    'none';
+
+}
 );
 
 
