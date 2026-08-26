@@ -795,9 +795,6 @@ const video =
 const zoomRange =
   document.getElementById('zoomRange');
 
-const cameraStatus =
-  document.getElementById('cameraStatus');
-
 const emptyState =
   document.getElementById('emptyState');
 
@@ -819,16 +816,189 @@ const searchResults =
 ===================================================== */
 
 let codeReader = null;
-
 let currentStream = null;
-
 let currentTrack = null;
 
 let scanning = false;
 
 let autoZoomTimer = null;
+let currentAutoZoom = 1;
 
-let currentAutoZoom = 2;
+let masterCache = null;
+
+
+/* =====================================================
+   AUDIO
+===================================================== */
+
+let audioContext = null;
+
+
+/*
+ * Siapkan audio ketika tombol Scan ditekan.
+ * Ini penting karena browser biasanya memblokir
+ * audio yang dibuat tanpa interaksi pengguna.
+ */
+
+function siapkanAudio() {
+
+  try {
+
+    if (!audioContext) {
+
+      audioContext =
+        new (
+          window.AudioContext ||
+          window.webkitAudioContext
+        )();
+
+    }
+
+    if (
+      audioContext.state === 'suspended'
+    ) {
+
+      audioContext.resume();
+
+    }
+
+  }
+
+  catch(error) {
+
+    console.log(
+      'Audio tidak tersedia:',
+      error
+    );
+
+  }
+
+}
+
+
+/* =====================================================
+   SUARA BIP
+===================================================== */
+
+function bunyiBeep() {
+
+  try {
+
+    siapkanAudio();
+
+    if (!audioContext) {
+      return;
+    }
+
+    const oscillator =
+      audioContext.createOscillator();
+
+    const gain =
+      audioContext.createGain();
+
+
+    oscillator.type =
+      'sine';
+
+    oscillator.frequency.setValueAtTime(
+      880,
+      audioContext.currentTime
+    );
+
+
+    gain.gain.setValueAtTime(
+      0.001,
+      audioContext.currentTime
+    );
+
+    gain.gain.exponentialRampToValueAtTime(
+      0.25,
+      audioContext.currentTime + 0.01
+    );
+
+    gain.gain.exponentialRampToValueAtTime(
+      0.001,
+      audioContext.currentTime + 0.18
+    );
+
+
+    oscillator.connect(
+      gain
+    );
+
+    gain.connect(
+      audioContext.destination
+    );
+
+
+    oscillator.start();
+
+    oscillator.stop(
+      audioContext.currentTime + 0.18
+    );
+
+  }
+
+  catch(error) {
+
+    console.log(
+      'Beep gagal:',
+      error
+    );
+
+  }
+
+}
+
+
+/* =====================================================
+   GETAR
+===================================================== */
+
+function getarBerhasil() {
+
+  try {
+
+    if (
+      navigator.vibrate
+    ) {
+
+      /*
+       * Getaran pendek:
+       * 80ms
+       */
+
+      navigator.vibrate(
+        80
+      );
+
+    }
+
+  }
+
+  catch(error) {
+
+    console.log(
+      'Getar tidak tersedia:',
+      error
+    );
+
+  }
+
+}
+
+
+/* =====================================================
+   SUARA + GETAR
+===================================================== */
+
+function feedbackBerhasil() {
+
+  bunyiBeep();
+
+  getarBerhasil();
+
+}
 
 
 /* =====================================================
@@ -868,7 +1038,8 @@ clearBtn.addEventListener(
 
     searchInput.value = '';
 
-    clearBtn.style.display = 'none';
+    clearBtn.style.display =
+      'none';
 
     resetResult();
 
@@ -896,6 +1067,79 @@ searchInput.addEventListener(
 
   }
 );
+
+
+/* =====================================================
+   SEARCH MASTER CACHE
+===================================================== */
+
+/*
+ * Ambil Master Produk hanya sekali.
+ *
+ * Setelah itu pencarian berikutnya dilakukan
+ * langsung di browser.
+ *
+ * Ini membuat pencarian manual jauh lebih cepat.
+ */
+
+async function ambilMasterCache() {
+
+  if (
+    Array.isArray(masterCache)
+  ) {
+
+    return masterCache;
+
+  }
+
+
+  const response =
+    await fetch(
+      API_URL +
+      '?aksi=master'
+    );
+
+
+  const json =
+    await response.json();
+
+
+  if (
+    !json.success ||
+    !Array.isArray(json.data)
+  ) {
+
+    throw new Error(
+      'Master Produk tidak tersedia.'
+    );
+
+  }
+
+
+  masterCache =
+    json.data;
+
+
+  return masterCache;
+
+}
+
+
+/* =====================================================
+   NORMALISASI
+===================================================== */
+
+function normalisasi(
+  value
+) {
+
+  return String(
+    value || ''
+  )
+    .trim()
+    .toUpperCase();
+
+}
 
 
 /* =====================================================
@@ -930,35 +1174,71 @@ async function cari() {
 
   try {
 
-    const url =
-      API_URL +
-      '?aksi=cari&keyword=' +
-      encodeURIComponent(keyword);
+    /*
+     * Cari dari cache browser.
+     */
+
+    const master =
+      await ambilMasterCache();
 
 
-    const response =
-      await fetch(url);
-
-
-    const json =
-      await response.json();
-
-
-    if (!json.success) {
-
-      tampilError(
-        json.error ||
-        'Gagal mencari produk.'
+    const target =
+      normalisasi(
+        keyword
       );
 
-      return;
 
-    }
+    const hasil =
+      master.filter(
+        function(item) {
+
+          const barcode =
+            normalisasi(
+              item.barcode
+            );
+
+          const nama =
+            normalisasi(
+              item.nama ||
+              item.name
+            );
+
+          const kode =
+            normalisasi(
+              item.kodeAccurate ||
+              item.no
+            );
+
+          const id =
+            normalisasi(
+              item.id
+            );
+
+
+          return (
+
+            barcode.includes(target)
+
+            ||
+
+            nama.includes(target)
+
+            ||
+
+            kode.includes(target)
+
+            ||
+
+            id === target
+
+          );
+
+        }
+      );
 
 
     if (
-      !json.data ||
-      json.data.length === 0
+      hasil.length === 0
     ) {
 
       tampilError(
@@ -970,12 +1250,17 @@ async function cari() {
     }
 
 
+    /*
+     * Hanya satu produk:
+     * langsung ambil stok.
+     */
+
     if (
-      json.data.length === 1
+      hasil.length === 1
     ) {
 
       await tampilProduk(
-        json.data[0]
+        hasil[0]
       );
 
       return;
@@ -983,18 +1268,27 @@ async function cari() {
     }
 
 
+    /*
+     * Banyak hasil.
+     */
+
     tampilDaftarHasil(
-      json.data
+      hasil.slice(
+        0,
+        50
+      )
     );
 
   }
 
   catch(error) {
 
-    console.error(error);
+    console.error(
+      error
+    );
 
     tampilError(
-      'Tidak dapat terhubung ke API.'
+      'Tidak dapat mengambil data produk.'
     );
 
   }
@@ -1003,29 +1297,39 @@ async function cari() {
 
 
 /* =====================================================
-   DAFTAR HASIL
+   TAMPIL DAFTAR HASIL
 ===================================================== */
 
-function tampilDaftarHasil(data) {
+function tampilDaftarHasil(
+  data
+) {
 
-  emptyState.style.display = 'none';
+  emptyState.style.display =
+    'none';
 
-  loading.style.display = 'none';
+  loading.style.display =
+    'none';
 
-  errorState.style.display = 'none';
+  errorState.style.display =
+    'none';
 
-  product.style.display = 'none';
+  product.style.display =
+    'none';
 
-  searchResults.style.display = 'block';
+  searchResults.style.display =
+    'block';
 
-  searchResults.innerHTML = '';
+  searchResults.innerHTML =
+    '';
 
 
   data.forEach(
     function(item) {
 
       const div =
-        document.createElement('div');
+        document.createElement(
+          'div'
+        );
 
 
       div.className =
@@ -1057,6 +1361,7 @@ function tampilDaftarHasil(data) {
 
         escapeHtml(
           item.kodeAccurate ||
+          item.no ||
           '-'
         ) +
 
@@ -1067,13 +1372,17 @@ function tampilDaftarHasil(data) {
         'click',
         function() {
 
-          tampilProduk(item);
+          tampilProduk(
+            item
+          );
 
         }
       );
 
 
-      searchResults.appendChild(div);
+      searchResults.appendChild(
+        div
+      );
 
     }
   );
@@ -1082,22 +1391,30 @@ function tampilDaftarHasil(data) {
 
 
 /* =====================================================
-   TAMPIL PRODUK
+   TAMPIL PRODUK + STOK
 ===================================================== */
 
-async function tampilProduk(item) {
+async function tampilProduk(
+  item
+) {
 
-  searchResults.style.display = 'none';
+  searchResults.style.display =
+    'none';
 
-  searchResults.innerHTML = '';
+  searchResults.innerHTML =
+    '';
 
-  emptyState.style.display = 'none';
+  emptyState.style.display =
+    'none';
 
-  errorState.style.display = 'none';
+  errorState.style.display =
+    'none';
 
-  product.style.display = 'none';
+  product.style.display =
+    'none';
 
-  loading.style.display = 'block';
+  loading.style.display =
+    'block';
 
 
   try {
@@ -1111,6 +1428,10 @@ async function tampilProduk(item) {
       'stok'
     );
 
+
+    /*
+     * ID Accurate tetap diprioritaskan.
+     */
 
     if (item.id) {
 
@@ -1132,21 +1453,13 @@ async function tampilProduk(item) {
     }
 
 
-    if (item.kodeAccurate) {
+    if (
+      item.kodeAccurate
+    ) {
 
       params.set(
         'kode',
         item.kodeAccurate
-      );
-
-    }
-
-
-    if (item.nama) {
-
-      params.set(
-        'nama',
-        item.nama
       );
 
     }
@@ -1164,7 +1477,9 @@ async function tampilProduk(item) {
       await response.json();
 
 
-    if (!json.success) {
+    if (
+      !json.success
+    ) {
 
       tampilError(
         json.error ||
@@ -1183,25 +1498,29 @@ async function tampilProduk(item) {
     document.getElementById(
       'productName'
     ).textContent =
-      data.nama || '-';
+      data.nama ||
+      '-';
 
 
     document.getElementById(
       'productBarcode'
     ).textContent =
-      data.barcode || '-';
+      data.barcode ||
+      '-';
 
 
     document.getElementById(
       'productCode'
     ).textContent =
-      data.kodeAccurate || '-';
+      data.kodeAccurate ||
+      '-';
 
 
     document.getElementById(
       'productPrice'
     ).textContent =
-      data.harga || '-';
+      data.harga ||
+      '-';
 
 
     document.getElementById(
@@ -1222,166 +1541,31 @@ async function tampilProduk(item) {
       );
 
 
-    loading.style.display = 'none';
+    loading.style.display =
+      'none';
 
-    product.style.display = 'block';
+    product.style.display =
+      'block';
 
 
     /*
      * PRODUK BERHASIL TAMPIL
-     * → suara
-     * → getar
+     * → BIP
+     * → GETAR
      */
 
-    suksesScan();
+    feedbackBerhasil();
 
   }
 
   catch(error) {
 
-    console.error(error);
+    console.error(
+      error
+    );
 
     tampilError(
       'Gagal mengambil stok dari Accurate.'
-    );
-
-  }
-
-}
-
-
-/* =====================================================
-   SUARA + GETAR
-===================================================== */
-
-function suksesScan() {
-
-  bunyiBerhasil();
-
-  getarBerhasil();
-
-}
-
-
-/* =====================================================
-   BUNYI BEEP
-===================================================== */
-
-function bunyiBerhasil() {
-
-  try {
-
-    const AudioContext =
-      window.AudioContext ||
-      window.webkitAudioContext;
-
-
-    if (!AudioContext) {
-
-      return;
-
-    }
-
-
-    const audio =
-      new AudioContext();
-
-
-    const oscillator =
-      audio.createOscillator();
-
-
-    const gain =
-      audio.createGain();
-
-
-    oscillator.type =
-      'sine';
-
-
-    oscillator.frequency.setValueAtTime(
-      900,
-      audio.currentTime
-    );
-
-
-    oscillator.frequency.setValueAtTime(
-      1300,
-      audio.currentTime + 0.10
-    );
-
-
-    gain.gain.setValueAtTime(
-      0.001,
-      audio.currentTime
-    );
-
-
-    gain.gain.exponentialRampToValueAtTime(
-      0.25,
-      audio.currentTime + 0.01
-    );
-
-
-    gain.gain.exponentialRampToValueAtTime(
-      0.001,
-      audio.currentTime + 0.22
-    );
-
-
-    oscillator.connect(gain);
-
-    gain.connect(audio.destination);
-
-
-    oscillator.start();
-
-    oscillator.stop(
-      audio.currentTime + 0.23
-    );
-
-
-  }
-
-  catch(error) {
-
-    console.log(
-      'Audio tidak tersedia:',
-      error
-    );
-
-  }
-
-}
-
-
-/* =====================================================
-   GETAR
-===================================================== */
-
-function getarBerhasil() {
-
-  try {
-
-    if (
-      'vibrate' in navigator
-    ) {
-
-      navigator.vibrate([
-        100,
-        60,
-        160
-      ]);
-
-    }
-
-  }
-
-  catch(error) {
-
-    console.log(
-      'Vibration tidak tersedia:',
-      error
     );
 
   }
@@ -1395,15 +1579,20 @@ function getarBerhasil() {
 
 function tampilLoading() {
 
-  emptyState.style.display = 'none';
+  emptyState.style.display =
+    'none';
 
-  errorState.style.display = 'none';
+  errorState.style.display =
+    'none';
 
-  product.style.display = 'none';
+  product.style.display =
+    'none';
 
-  searchResults.style.display = 'none';
+  searchResults.style.display =
+    'none';
 
-  loading.style.display = 'block';
+  loading.style.display =
+    'block';
 
 }
 
@@ -1412,19 +1601,27 @@ function tampilLoading() {
    ERROR
 ===================================================== */
 
-function tampilError(message) {
+function tampilError(
+  message
+) {
 
-  emptyState.style.display = 'none';
+  emptyState.style.display =
+    'none';
 
-  loading.style.display = 'none';
+  loading.style.display =
+    'none';
 
-  product.style.display = 'none';
+  product.style.display =
+    'none';
 
-  searchResults.style.display = 'none';
+  searchResults.style.display =
+    'none';
 
-  errorState.textContent = message;
+  errorState.textContent =
+    message;
 
-  errorState.style.display = 'block';
+  errorState.style.display =
+    'block';
 
 }
 
@@ -1437,9 +1634,11 @@ resetBtn.addEventListener(
   'click',
   function() {
 
-    searchInput.value = '';
+    searchInput.value =
+      '';
 
-    clearBtn.style.display = 'none';
+    clearBtn.style.display =
+      'none';
 
     resetResult();
 
@@ -1453,17 +1652,23 @@ resetBtn.addEventListener(
 
 function resetResult() {
 
-  emptyState.style.display = 'block';
+  emptyState.style.display =
+    'block';
 
-  loading.style.display = 'none';
+  loading.style.display =
+    'none';
 
-  errorState.style.display = 'none';
+  errorState.style.display =
+    'none';
 
-  product.style.display = 'none';
+  product.style.display =
+    'none';
 
-  searchResults.style.display = 'none';
+  searchResults.style.display =
+    'none';
 
-  searchResults.innerHTML = '';
+  searchResults.innerHTML =
+    '';
 
 }
 
@@ -1474,16 +1679,25 @@ function resetResult() {
 
 scanBtn.addEventListener(
   'click',
-  bukaScanner
+  function() {
+
+    /*
+     * Browser mengizinkan audio karena
+     * ini berasal dari klik pengguna.
+     */
+
+    siapkanAudio();
+
+    bukaScanner();
+
+  }
 );
 
 
 async function bukaScanner() {
 
-  scannerCard.style.display = 'block';
-
-  cameraStatus.textContent =
-    'Membuka kamera belakang...';
+  scannerCard.style.display =
+    'block';
 
 
   try {
@@ -1496,7 +1710,9 @@ async function bukaScanner() {
       await codeReader.listVideoInputDevices();
 
 
-    if (!devices.length) {
+    if (
+      !devices.length
+    ) {
 
       throw new Error(
         'Kamera tidak ditemukan.'
@@ -1526,19 +1742,21 @@ async function bukaScanner() {
 
           return (
 
-            label.includes('back')
+            label.includes(
+              'back'
+            )
 
             ||
 
-            label.includes('rear')
+            label.includes(
+              'rear'
+            )
 
             ||
 
-            label.includes('environment')
-
-            ||
-
-            label.includes('belakang')
+            label.includes(
+              'environment'
+            )
 
           );
 
@@ -1554,16 +1772,9 @@ async function bukaScanner() {
     }
 
 
-    scanning = true;
+    scanning =
+      true;
 
-
-    cameraStatus.textContent =
-      'Arahkan barcode ke kotak...';
-
-
-    /*
-     * MULAI SCAN
-     */
 
     await codeReader.decodeFromVideoDevice(
       deviceId,
@@ -1575,18 +1786,20 @@ async function bukaScanner() {
           scanning
         ) {
 
-          scanning = false;
+          /*
+           * HENTIKAN AUTO ZOOM
+           * sebelum proses produk.
+           */
+
+          hentikanAutoZoom();
+
+
+          scanning =
+            false;
 
 
           const text =
             result.getText();
-
-
-          /*
-           * Hentikan auto zoom.
-           */
-
-          hentikanAutoZoom();
 
 
           searchInput.value =
@@ -1597,11 +1810,15 @@ async function bukaScanner() {
             'block';
 
 
+          /*
+           * Tutup kamera.
+           */
+
           tutupScanner();
 
 
           /*
-           * Cari produk.
+           * LANGSUNG CARI
            */
 
           cari();
@@ -1613,31 +1830,36 @@ async function bukaScanner() {
 
 
     /*
-     * Ambil stream.
+     * Ambil stream kamera.
      */
 
     currentStream =
       video.srcObject;
 
 
-    if (currentStream) {
+    if (
+      currentStream
+    ) {
 
       const tracks =
         currentStream.getVideoTracks();
 
 
-      if (tracks.length) {
+      if (
+        tracks.length
+      ) {
 
         currentTrack =
           tracks[0];
 
 
+        /*
+         * Aktifkan zoom.
+         */
+
         aktifkanZoom(
           currentTrack
         );
-
-
-        mulaiAutoZoom();
 
       }
 
@@ -1647,7 +1869,13 @@ async function bukaScanner() {
 
   catch(error) {
 
-    console.error(error);
+    console.error(
+      error
+    );
+
+
+    hentikanAutoZoom();
+
 
     scannerCard.style.display =
       'none';
@@ -1666,7 +1894,9 @@ async function bukaScanner() {
    ZOOM
 ===================================================== */
 
-function aktifkanZoom(track) {
+function aktifkanZoom(
+  track
+) {
 
   try {
 
@@ -1675,72 +1905,144 @@ function aktifkanZoom(track) {
 
 
     if (
-      capabilities.zoom
+      !capabilities.zoom
     ) {
-
-      const min =
-        capabilities.zoom.min;
-
-
-      const max =
-        capabilities.zoom.max;
-
-
-      const step =
-        capabilities.zoom.step ||
-        0.1;
-
-
-      zoomRange.min =
-        min;
-
-
-      zoomRange.max =
-        max;
-
-
-      zoomRange.step =
-        step;
-
-
-      /*
-       * Mulai dari 2x kalau kamera mendukung.
-       */
-
-      const startZoom =
-        Math.min(
-          max,
-          Math.max(
-            min,
-            2
-          )
-        );
-
-
-      zoomRange.value =
-        startZoom;
-
-
-      currentAutoZoom =
-        startZoom;
-
-
-      zoomRange.style.display =
-        'block';
-
-
-      terapkanZoom(
-        startZoom
-      );
-
-    }
-
-    else {
 
       zoomRange.style.display =
         'none';
 
+      return;
+
     }
+
+
+    const min =
+      capabilities.zoom.min;
+
+
+    const max =
+      capabilities.zoom.max;
+
+
+    const step =
+      capabilities.zoom.step ||
+      0.1;
+
+
+    zoomRange.min =
+      min;
+
+    zoomRange.max =
+      max;
+
+    zoomRange.step =
+      step;
+
+
+    zoomRange.style.display =
+      'block';
+
+
+    /*
+     * =============================================
+     * AUTO ZOOM CEPAT
+     * =============================================
+     *
+     * Mulai langsung sekitar 2x.
+     *
+     * Kalau barcode belum terbaca,
+     * zoom naik otomatis.
+     */
+
+    currentAutoZoom =
+      Math.min(
+        max,
+        Math.max(
+          min,
+          2
+        )
+      );
+
+
+    terapkanZoom(
+      track,
+      currentAutoZoom
+    );
+
+
+    /*
+     * Auto zoom sangat cepat.
+     *
+     * Setiap 600ms naik.
+     */
+
+    hentikanAutoZoom();
+
+
+    autoZoomTimer =
+      setInterval(
+        function() {
+
+          if (
+            !scanning ||
+            !currentTrack
+          ) {
+
+            return;
+
+          }
+
+
+          /*
+           * Naik 0.5x setiap langkah.
+           */
+
+          let nextZoom =
+            currentAutoZoom +
+            Math.max(
+              step,
+              0.5
+            );
+
+
+          /*
+           * Jangan melebihi maksimum.
+           */
+
+          nextZoom =
+            Math.min(
+              max,
+              nextZoom
+            );
+
+
+          /*
+           * Kalau sudah maksimum,
+           * jangan terus menerapkan constraint.
+           */
+
+          if (
+            nextZoom <=
+            currentAutoZoom
+          ) {
+
+            return;
+
+          }
+
+
+          currentAutoZoom =
+            nextZoom;
+
+
+          terapkanZoom(
+            track,
+            currentAutoZoom
+          );
+
+        },
+        600
+      );
 
   }
 
@@ -1763,63 +2065,13 @@ function aktifkanZoom(track) {
    TERAPKAN ZOOM
 ===================================================== */
 
-function terapkanZoom(value) {
-
-  if (!currentTrack) {
-
-    return;
-
-  }
-
-
-  currentTrack
-    .applyConstraints({
-
-      advanced: [
-
-        {
-          zoom: Number(value)
-        }
-
-      ]
-
-    })
-    .catch(
-      function(error) {
-
-        console.log(
-          'Gagal mengatur zoom:',
-          error
-        );
-
-      }
-    );
-
-}
-
-
-/* =====================================================
-   AUTO ZOOM
-===================================================== */
-
-function mulaiAutoZoom() {
-
-  hentikanAutoZoom();
-
-
-  if (!currentTrack) {
-
-    return;
-
-  }
-
-
-  const capabilities =
-    currentTrack.getCapabilities();
-
+function terapkanZoom(
+  track,
+  zoom
+) {
 
   if (
-    !capabilities.zoom
+    !track
   ) {
 
     return;
@@ -1827,90 +2079,27 @@ function mulaiAutoZoom() {
   }
 
 
-  const min =
-    capabilities.zoom.min;
+  track.applyConstraints({
 
+    advanced: [
 
-  const max =
-    capabilities.zoom.max;
+      {
+        zoom:
+          zoom
+      }
 
+    ]
 
-  const step =
-    capabilities.zoom.step ||
-    0.5;
+  }).catch(
+    function(error) {
 
+      console.log(
+        'Gagal menerapkan zoom:',
+        error
+      );
 
-  /*
-   * Setiap 2 detik,
-   * zoom dinaikkan sedikit.
-   *
-   * Ini berguna kalau barcode kecil
-   * atau kamera terlalu jauh.
-   */
-
-  autoZoomTimer =
-    setInterval(
-      function() {
-
-        if (!scanning) {
-
-          return;
-
-        }
-
-
-        let nextZoom =
-          currentAutoZoom +
-          Math.max(
-            step,
-            0.5
-          );
-
-
-        if (
-          nextZoom > max
-        ) {
-
-          /*
-           * Sudah maksimum.
-           * Jangan terus memaksa zoom.
-           */
-
-          nextZoom =
-            max;
-
-        }
-
-
-        if (
-          nextZoom !== currentAutoZoom
-        ) {
-
-          currentAutoZoom =
-            nextZoom;
-
-
-          zoomRange.value =
-            currentAutoZoom;
-
-
-          terapkanZoom(
-            currentAutoZoom
-          );
-
-
-          cameraStatus.textContent =
-            'Mencoba membaca barcode... Zoom ' +
-            Number(
-              currentAutoZoom
-            ).toFixed(1) +
-            '×';
-
-        }
-
-      },
-      2000
-    );
+    }
+  );
 
 }
 
@@ -1921,7 +2110,9 @@ function mulaiAutoZoom() {
 
 function hentikanAutoZoom() {
 
-  if (autoZoomTimer) {
+  if (
+    autoZoomTimer
+  ) {
 
     clearInterval(
       autoZoomTimer
@@ -1943,7 +2134,9 @@ zoomRange.addEventListener(
   'input',
   function() {
 
-    if (!currentTrack) {
+    if (
+      !currentTrack
+    ) {
 
       return;
 
@@ -1961,6 +2154,7 @@ zoomRange.addEventListener(
 
 
     terapkanZoom(
+      currentTrack,
       value
     );
 
@@ -1980,13 +2174,16 @@ closeCameraBtn.addEventListener(
 
 function tutupScanner() {
 
-  scanning = false;
+  scanning =
+    false;
 
 
   hentikanAutoZoom();
 
 
-  if (codeReader) {
+  if (
+    codeReader
+  ) {
 
     try {
 
@@ -1996,14 +2193,18 @@ function tutupScanner() {
 
     catch(error) {
 
-      console.log(error);
+      console.log(
+        error
+      );
 
     }
 
   }
 
 
-  if (currentStream) {
+  if (
+    currentStream
+  ) {
 
     currentStream
       .getTracks()
@@ -2018,7 +2219,9 @@ function tutupScanner() {
   }
 
 
-  if (video.srcObject) {
+  if (
+    video.srcObject
+  ) {
 
     video.srcObject =
       null;
@@ -2043,7 +2246,9 @@ function tutupScanner() {
    ESCAPE HTML
 ===================================================== */
 
-function escapeHtml(value) {
+function escapeHtml(
+  value
+) {
 
   return String(
     value || ''
