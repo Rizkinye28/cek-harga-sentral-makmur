@@ -1,12 +1,14 @@
 <!DOCTYPE html>
+
 <html lang="id">
 <head>
   <meta charset="UTF-8">
 
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1"
-  >
+<meta
+name="viewport"
+content="width=device-width, initial-scale=1"
+
+>
 
   <title>Sentral Makmur - Cek Harga & Stok</title>
 
@@ -54,6 +56,10 @@
       outline: none;
     }
 
+    input:focus {
+      border-color: #111;
+    }
+
     button {
       padding: 15px 20px;
       border: none;
@@ -62,10 +68,16 @@
       font-weight: bold;
       background: #111;
       color: white;
+      min-width: 90px;
     }
 
     button:hover {
       opacity: 0.85;
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: wait;
     }
 
     #status {
@@ -91,8 +103,14 @@
     .row {
       display: flex;
       justify-content: space-between;
-      padding: 5px 0;
+      gap: 20px;
+      padding: 6px 0;
       color: #555;
+    }
+
+    .row span:last-child {
+      text-align: right;
+      word-break: break-word;
     }
 
     .price {
@@ -113,7 +131,20 @@
       text-align: center;
     }
 
+    .empty {
+      background: white;
+      padding: 20px;
+      border-radius: 14px;
+      text-align: center;
+      color: #777;
+    }
+
     @media (max-width: 500px) {
+
+      .container {
+        padding: 20px 15px;
+      }
+
       .search-box {
         flex-direction: column;
       }
@@ -121,40 +152,50 @@
       button {
         width: 100%;
       }
+
+      .row {
+        align-items: flex-start;
+      }
     }
   </style>
+
 </head>
 
 <body>
 
   <div class="container">
 
-    <h1>Sentral Makmur</h1>
+```
+<h1>Sentral Makmur</h1>
 
-    <div class="subtitle">
-      Cek Harga & Stok Produk
-    </div>
+<div class="subtitle">
+  Cek Harga & Stok Produk
+</div>
 
-    <div class="search-box">
+<div class="search-box">
 
-      <input
-        type="text"
-        id="keyword"
-        placeholder="Cari nama, barcode, atau kode..."
-        autocomplete="off"
-      >
+  <input
+    type="text"
+    id="keyword"
+    placeholder="Cari nama atau kode produk..."
+    autocomplete="off"
+  >
 
-      <button onclick="cariProduk()">
-        CARI
-      </button>
+  <button
+    id="btnCari"
+    onclick="cariProduk()"
+  >
+    CARI
+  </button>
 
-    </div>
+</div>
 
-    <div id="status">
-      Silakan cari produk.
-    </div>
+<div id="status">
+  Silakan cari produk.
+</div>
 
-    <div id="hasil"></div>
+<div id="hasil"></div>
+```
 
   </div>
 
@@ -188,12 +229,8 @@
 
     async function cariProduk() {
 
-      const keyword =
-        document
-          .getElementById('keyword')
-          .value
-          .trim();
-
+      const input =
+        document.getElementById('keyword');
 
       const status =
         document.getElementById('status');
@@ -201,13 +238,22 @@
       const hasil =
         document.getElementById('hasil');
 
+      const button =
+        document.getElementById('btnCari');
+
+
+      const keyword =
+        input.value.trim();
+
 
       if (!keyword) {
 
         status.textContent =
-          'Masukkan nama, barcode, atau kode produk.';
+          'Masukkan nama atau kode produk.';
 
         hasil.innerHTML = '';
+
+        input.focus();
 
         return;
 
@@ -218,6 +264,10 @@
         'Mencari produk...';
 
       hasil.innerHTML = '';
+
+      button.disabled = true;
+
+      button.textContent = '...';
 
 
       try {
@@ -235,7 +285,7 @@
         if (!response.ok) {
 
           throw new Error(
-            'HTTP ' +
+            'Server error HTTP ' +
             response.status
           );
 
@@ -266,7 +316,6 @@
           data.data || []
         );
 
-
       }
 
       catch (error) {
@@ -283,6 +332,57 @@
           '</div>';
 
       }
+
+      finally {
+
+        button.disabled = false;
+
+        button.textContent = 'CARI';
+
+      }
+
+    }
+
+
+    /*
+     * HILANGKAN DUPLIKAT
+     */
+
+    function hapusDuplikat(products) {
+
+      const map =
+        new Map();
+
+
+      products.forEach(
+        function(product) {
+
+          const id =
+            String(
+              product.id ||
+              product.kodeAccurate ||
+              product.no ||
+              product.nama ||
+              ''
+            );
+
+
+          if (!map.has(id)) {
+
+            map.set(
+              id,
+              product
+            );
+
+          }
+
+        }
+      );
+
+
+      return Array.from(
+        map.values()
+      );
 
     }
 
@@ -306,96 +406,171 @@
       ) {
 
         status.textContent =
-          'Produk tidak ditemukan.';
+          '';
 
-        hasil.innerHTML = '';
+        hasil.innerHTML =
+          '<div class="empty">' +
+          'Produk tidak ditemukan.' +
+          '</div>';
 
         return;
 
       }
 
 
+      /*
+       * Buang data duplikat
+       */
+
+      const uniqueProducts =
+        hapusDuplikat(
+          products
+        );
+
+
+      /*
+       * Batasi tampilan
+       * agar website tetap ringan.
+       */
+
+      const tampil =
+        uniqueProducts.slice(
+          0,
+          30
+        );
+
+
       status.textContent =
-        products.length +
+        uniqueProducts.length +
         ' produk ditemukan.';
 
 
       hasil.innerHTML =
-        products
-          .map(function(product) {
+        tampil
+          .map(
+            function(product) {
 
-            const nama =
-              product.nama ||
-              product.name ||
-              '-';
-
-            const harga =
-              product.harga ||
-              product.price ||
-              '-';
-
-            const stok =
-              product.stok ??
-              product.stock ??
-              0;
-
-            const barcode =
-              product.barcode ||
-              '-';
-
-            const kode =
-              product.kodeAccurate ||
-              product.no ||
-              '-';
-
-            const satuan =
-              product.satuan ||
-              'PCS';
+              const nama =
+                product.nama ||
+                product.name ||
+                '-';
 
 
-            return `
+              const harga =
+                product.harga ||
+                product.price ||
+                '-';
 
-              <div class="product">
 
-                <div class="product-name">
-                  ${escapeHtml(nama)}
+              const stok =
+                product.stok ??
+                product.stock ??
+                0;
+
+
+              const barcode =
+                product.barcode ||
+                '-';
+
+
+              const kode =
+                product.kodeAccurate ||
+                product.no ||
+                '-';
+
+
+              const satuan =
+                product.satuan ||
+                'PCS';
+
+
+              return `
+
+                <div class="product">
+
+                  <div class="product-name">
+                    ${escapeHtml(nama)}
+                  </div>
+
+                  <div class="row">
+
+                    <span>
+                      Harga
+                    </span>
+
+                    <span class="price">
+                      Rp ${escapeHtml(harga)}
+                    </span>
+
+                  </div>
+
+                  <div class="row">
+
+                    <span>
+                      Stok
+                    </span>
+
+                    <span class="stock">
+                      ${escapeHtml(String(stok))}
+                      ${escapeHtml(satuan)}
+                    </span>
+
+                  </div>
+
+                  <div class="row">
+
+                    <span>
+                      Barcode
+                    </span>
+
+                    <span>
+                      ${escapeHtml(barcode)}
+                    </span>
+
+                  </div>
+
+                  <div class="row">
+
+                    <span>
+                      Kode
+                    </span>
+
+                    <span>
+                      ${escapeHtml(kode)}
+                    </span>
+
+                  </div>
+
                 </div>
 
-                <div class="row">
-                  <span>Harga</span>
-                  <span class="price">
-                    Rp ${escapeHtml(harga)}
-                  </span>
-                </div>
+              `;
 
-                <div class="row">
-                  <span>Stok</span>
-                  <span class="stock">
-                    ${escapeHtml(String(stok))}
-                    ${escapeHtml(satuan)}
-                  </span>
-                </div>
-
-                <div class="row">
-                  <span>Barcode</span>
-                  <span>
-                    ${escapeHtml(barcode)}
-                  </span>
-                </div>
-
-                <div class="row">
-                  <span>Kode</span>
-                  <span>
-                    ${escapeHtml(kode)}
-                  </span>
-                </div>
-
-              </div>
-
-            `;
-
-          })
+            }
+          )
           .join('');
+
+
+      /*
+       * Kalau hasil lebih dari 30
+       */
+
+      if (
+        uniqueProducts.length > 30
+      ) {
+
+        hasil.innerHTML +=
+
+          '<div class="empty">' +
+
+          'Menampilkan 30 dari ' +
+
+          uniqueProducts.length +
+
+          ' hasil. Persempit kata pencarian untuk hasil yang lebih spesifik.' +
+
+          '</div>';
+
+      }
 
     }
 
@@ -407,11 +582,26 @@
     function escapeHtml(value) {
 
       return String(value)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
+        .replace(
+          /&/g,
+          '&amp;'
+        )
+        .replace(
+          /</g,
+          '&lt;'
+        )
+        .replace(
+          />/g,
+          '&gt;'
+        )
+        .replace(
+          /"/g,
+          '&quot;'
+        )
+        .replace(
+          /'/g,
+          '&#039;'
+        );
 
     }
 
