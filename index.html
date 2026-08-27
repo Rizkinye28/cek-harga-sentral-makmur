@@ -12,13 +12,10 @@
 
 <title>Sentral Makmur - Cek Harga & Stok</title>
 
+<!-- ZXing -->
 <script src="https://unpkg.com/@zxing/library@0.21.2/umd/index.min.js"></script>
 
 <style>
-
-/* =========================================================
-   DASAR
-========================================================= */
 
 * {
   box-sizing: border-box;
@@ -42,6 +39,11 @@ body {
 button,
 input {
   font-family: inherit;
+}
+
+button {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 .container {
@@ -119,6 +121,7 @@ input:focus {
   color: #777;
   cursor: pointer;
   display: none;
+  padding: 4px 8px;
 }
 
 button {
@@ -128,7 +131,6 @@ button {
   font-size: 16px;
   font-weight: 700;
   cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
 }
 
 .btn-black {
@@ -209,9 +211,8 @@ video {
   object-fit: cover;
   background: #000;
 
-  /*
-   * Penting untuk Safari/iPhone
-   */
+  /* Safari / iPhone */
+  -webkit-transform: translateZ(0);
   transform: translateZ(0);
 }
 
@@ -287,7 +288,7 @@ video {
 
 
 /* =========================================================
-   STATUS KAMERA
+   STATUS
 ========================================================= */
 
 .camera-status {
@@ -507,7 +508,7 @@ footer {
 
 
 /* =========================================================
-   IPHONE
+   IPHONE / SAFARI
 ========================================================= */
 
 @supports (-webkit-touch-callout: none) {
@@ -518,6 +519,7 @@ footer {
 
   video {
     -webkit-transform: translateZ(0);
+    transform: translateZ(0);
   }
 
 }
@@ -910,22 +912,9 @@ let zoomCanUse = false;
 
 let autoZoomTimer = null;
 
-let barcodeDetectionTimer = null;
-
 let manualZoomMode = false;
 
 let audioContext = null;
-
-
-/*
- * Penanda scanner.
- *
- * Kita sengaja menggunakan ZXing
- * sebagai scanner utama agar iPhone
- * tidak bergantung pada BarcodeDetector.
- */
-
-let scannerMode = 'zxing';
 
 
 /* =========================================================
@@ -984,8 +973,7 @@ function bunyiBeep() {
     const gain =
       audioContext.createGain();
 
-    oscillator.type =
-      'sine';
+    oscillator.type = 'sine';
 
     oscillator.frequency.setValueAtTime(
       1200,
@@ -1137,7 +1125,7 @@ searchInput.addEventListener(
 
 
 /* =========================================================
-   NORMALISASI TEKS
+   NORMALISASI
 ========================================================= */
 
 function normalisasi(value) {
@@ -1150,10 +1138,6 @@ function normalisasi(value) {
 
 }
 
-
-/* =========================================================
-   NORMALISASI BARCODE
-========================================================= */
 
 function normalisasiBarcode(value) {
 
@@ -1197,10 +1181,6 @@ function normalisasiBarcode(value) {
 
 }
 
-
-/* =========================================================
-   BARCODE EXACT MATCH
-========================================================= */
 
 function barcodeExactSama(
   barcodeA,
@@ -1968,7 +1948,7 @@ scanBtn.addEventListener(
 
 
 /* =========================================================
-   DETEKSI IPHONE / IOS
+   DETEKSI iOS
 ========================================================= */
 
 function apakahIOS() {
@@ -2004,7 +1984,7 @@ function apakahIOS() {
 async function bukaScanner() {
 
   /*
-   * Pastikan kamera lama benar-benar mati
+   * Bersihkan scanner lama
    */
 
   tutupScanner();
@@ -2034,283 +2014,73 @@ async function bukaScanner() {
 
   try {
 
+    /*
+     * Pastikan HTTPS
+     */
+
+    if (
+      location.protocol !== 'https:' &&
+      location.hostname !== 'localhost'
+    ) {
+
+      throw new Error(
+        'Halaman kamera harus menggunakan HTTPS.'
+      );
+
+    }
+
+
     if (
       !navigator.mediaDevices ||
       !navigator.mediaDevices.getUserMedia
     ) {
 
       throw new Error(
-        'getUserMedia tidak tersedia.'
+        'Kamera tidak didukung browser ini.'
       );
 
     }
 
 
-    let stream = null;
+    if (
+      !window.ZXing
+    ) {
+
+      throw new Error(
+        'Library ZXing belum termuat.'
+      );
+
+    }
 
 
     /*
      * =====================================================
-     * iPHONE
+     * ZXING MENGAMBIL KAMERA LANGSUNG
+     *
+     * Tidak lagi:
+     *
+     * getUserMedia()
+     * lalu
+     * decodeFromVideoElement()
+     *
+     * secara terpisah.
+     *
+     * Ini lebih aman untuk Safari/iPhone.
      * =====================================================
-     *
-     * Safari/iPhone lebih aman jika meminta
-     * environment tanpa "exact".
-     *
-     * exact environment pada beberapa iPhone
-     * bisa menyebabkan kamera gagal dibuka.
      */
 
-    if (
-      apakahIOS()
-    ) {
-
-      console.log(
-        'Perangkat iOS terdeteksi.'
-      );
-
-
-      try {
-
-        stream =
-          await navigator.mediaDevices.getUserMedia({
-
-            audio: false,
-
-            video: {
-
-              facingMode: {
-                ideal: 'environment'
-              },
-
-              width: {
-                ideal: 1280
-              },
-
-              height: {
-                ideal: 720
-              }
-
-            }
-
-          });
-
-      }
-
-      catch(errorIOS) {
-
-        console.log(
-          'Kamera belakang iOS gagal:',
-          errorIOS
-        );
-
-
-        /*
-         * Fallback kamera biasa.
-         */
-
-        stream =
-          await navigator.mediaDevices.getUserMedia({
-
-            audio: false,
-
-            video: true
-
-          });
-
-      }
-
-    }
-
-    else {
-
-      /*
-       * =================================================
-       * ANDROID / DEVICE LAIN
-       * =================================================
-       */
-
-      try {
-
-        stream =
-          await navigator.mediaDevices.getUserMedia({
-
-            audio: false,
-
-            video: {
-
-              facingMode: {
-                ideal: 'environment'
-              },
-
-              width: {
-                ideal: 1280
-              },
-
-              height: {
-                ideal: 720
-              },
-
-              frameRate: {
-                ideal: 30
-              }
-
-            }
-
-          });
-
-      }
-
-      catch(errorAndroid) {
-
-        console.log(
-          'Kamera environment gagal, fallback:',
-          errorAndroid
-        );
-
-
-        stream =
-          await navigator.mediaDevices.getUserMedia({
-
-            audio: false,
-
-            video: true
-
-          });
-
-      }
-
-    }
-
-
-    if (!stream) {
-
-      throw new Error(
-        'Stream kamera kosong.'
-      );
-
-    }
-
-
-    currentStream =
-      stream;
-
-
-    video.srcObject =
-      stream;
-
-
-    /*
-     * Penting untuk Safari.
-     */
-
-    video.muted =
-      true;
-
-    video.setAttribute(
-      'playsinline',
-      ''
-    );
-
-    video.setAttribute(
-      'webkit-playsinline',
-      ''
-    );
-
-
-    try {
-
-      await video.play();
-
-    }
-
-    catch(playError) {
-
-      console.log(
-        'video.play() gagal:',
-        playError
-      );
-
-
-      /*
-       * Coba lagi sedikit setelah stream aktif.
-       */
-
-      await new Promise(
-        function(resolve) {
-
-          setTimeout(
-            resolve,
-            300
-          );
-
-        }
-      );
-
-
-      await video.play();
-
-    }
-
-
-    const tracks =
-      stream.getVideoTracks();
-
-
-    if (
-      !tracks.length
-    ) {
-
-      throw new Error(
-        'Track kamera tidak ditemukan.'
-      );
-
-    }
-
-
-    currentTrack =
-      tracks[0];
-
-
-    console.log(
-      'Kamera aktif:',
-      currentTrack.label
-    );
-
-
-    console.log(
-      'Camera settings:',
-      currentTrack.getSettings
-        ? currentTrack.getSettings()
-        : {}
-    );
+    codeReader =
+      new ZXing.BrowserMultiFormatReader();
 
 
     cameraStatus.textContent =
-      'Arahkan barcode ke kotak scan';
+      apakahIOS()
+        ? 'Meminta akses kamera iPhone...'
+        : 'Meminta akses kamera...';
 
 
-    siapkanZoom(
-      currentTrack
-    );
+    await mulaiZXingDenganKamera();
 
-
-    /*
-     * =====================================================
-     * PENTING
-     *
-     * SELALU ZXING
-     *
-     * Tidak memakai BarcodeDetector.
-     * Ini yang kita prioritaskan untuk iPhone.
-     * =====================================================
-     */
-
-    scannerMode =
-      'zxing';
-
-
-    mulaiBarcodeScanner();
 
   }
 
@@ -2326,7 +2096,7 @@ async function bukaScanner() {
 
 
     let pesan =
-      'Kamera tidak dapat digunakan. ';
+      'Kamera tidak dapat digunakan.';
 
 
     if (
@@ -2335,8 +2105,9 @@ async function bukaScanner() {
         'NotAllowedError'
     ) {
 
-      pesan +=
-        'Pastikan izin kamera untuk Safari sudah diizinkan.';
+      pesan =
+        'Izin kamera ditolak. Buka Pengaturan iPhone → Safari → Kamera → Izinkan.';
+
 
     }
 
@@ -2346,8 +2117,9 @@ async function bukaScanner() {
         'NotFoundError'
     ) {
 
-      pesan +=
+      pesan =
         'Kamera tidak ditemukan pada perangkat.';
+
 
     }
 
@@ -2357,15 +2129,31 @@ async function bukaScanner() {
         'NotReadableError'
     ) {
 
-      pesan +=
-        'Kamera sedang digunakan aplikasi lain.';
+      pesan =
+        'Kamera sedang digunakan aplikasi lain. Tutup aplikasi yang menggunakan kamera lalu coba lagi.';
+
 
     }
 
-    else {
+    else if (
+      error &&
+      error.name ===
+        'SecurityError'
+    ) {
 
-      pesan +=
-        'Pastikan halaman dibuka melalui HTTPS dan izin kamera sudah diberikan.';
+      pesan =
+        'Browser tidak mengizinkan akses kamera. Pastikan halaman dibuka melalui HTTPS.';
+
+
+    }
+
+    else if (
+      error &&
+      error.message
+    ) {
+
+      pesan =
+        error.message;
 
     }
 
@@ -2380,201 +2168,360 @@ async function bukaScanner() {
 
 
 /* =========================================================
-   BARCODE SCANNER
+   ZXING CAMERA
 ========================================================= */
 
-function mulaiBarcodeScanner() {
+async function mulaiZXingDenganKamera() {
 
-  hentikanBarcodeScanner();
+  if (
+    !codeReader
+  ) {
+
+    throw new Error(
+      'ZXing belum siap.'
+    );
+
+  }
+
+
+  scanning =
+    true;
 
 
   /*
-   * SELALU gunakan ZXing.
+   * Coba kamera belakang terlebih dahulu.
    *
-   * Tidak lagi menggunakan:
-   *
-   * BarcodeDetector
-   *
-   * Karena masalah kompatibilitas
-   * terutama pada Safari/iPhone.
+   * iPhone Safari:
+   * environment dibuat sebagai constraint
+   * yang tidak terlalu ketat.
    */
 
-  mulaiZXingScanner();
-
-}
+  let constraints;
 
 
-/* =========================================================
-   ZXING
-========================================================= */
+  if (
+    apakahIOS()
+  ) {
 
-function mulaiZXingScanner() {
+    constraints = {
 
-  try {
+      video: {
 
-    if (
-      !window.ZXing
-    ) {
+        facingMode: {
+          ideal: 'environment'
+        },
 
-      cameraStatus.textContent =
-        'Library scanner tidak tersedia.';
+        width: {
+          ideal: 1280
+        },
 
-      return;
+        height: {
+          ideal: 720
+        }
 
-    }
+      },
+
+      audio: false
+
+    };
+
+  }
+
+  else {
+
+    constraints = {
+
+      video: {
+
+        facingMode: {
+          ideal: 'environment'
+        },
+
+        width: {
+          ideal: 1280
+        },
+
+        height: {
+          ideal: 720
+        },
+
+        frameRate: {
+          ideal: 30
+        }
+
+      },
+
+      audio: false
+
+    };
+
+  }
 
 
-    if (
-      !video.srcObject
-    ) {
+  /*
+   * decodeFromConstraints langsung meminta kamera
+   * dan menghubungkan hasil ke video.
+   */
 
-      cameraStatus.textContent =
-        'Kamera belum siap.';
+  codeReader.decodeFromConstraints(
+    constraints,
+    video,
+    function(result, error) {
 
-      return;
-
-    }
-
-
-    /*
-     * Reset reader lama.
-     */
-
-    if (codeReader) {
-
-      try {
-
-        codeReader.reset();
-
+      if (!scanning) {
+        return;
       }
 
-      catch(error) {
 
-        console.log(
-          'Reset ZXing lama:',
-          error
+      if (result) {
+
+        prosesBarcodeHasil(
+          result
         );
 
       }
 
     }
+  );
 
 
-    codeReader =
-      new ZXing.BrowserMultiFormatReader();
+  /*
+   * Tunggu sebentar agar video benar-benar aktif.
+   */
+
+  await tungguVideoAktif();
 
 
-    cameraStatus.textContent =
-      'Mencari barcode...';
+  if (
+    !scanning
+  ) {
+    return;
+  }
 
 
-    console.log(
-      'ZXing scanner dimulai.'
-    );
+  currentStream =
+    video.srcObject;
 
 
-    /*
-     * ZXing membaca video yang sudah
-     * diberikan getUserMedia.
-     */
+  if (
+    currentStream
+  ) {
 
-    codeReader.decodeFromVideoElement(
-      video,
-      function(result, error) {
-
-        if (!scanning) {
-          return;
-        }
+    const tracks =
+      currentStream.getVideoTracks();
 
 
-        if (result) {
+    if (
+      tracks.length
+    ) {
 
-          const text =
-            String(
-              result.getText() ||
-              ''
-            ).trim();
-
-
-          if (!text) {
-            return;
-          }
+      currentTrack =
+        tracks[0];
 
 
-          console.log(
-            'BARCODE TERBACA ZXING:',
-            text
-          );
+      console.log(
+        'Kamera aktif:',
+        currentTrack.label
+      );
 
 
-          cameraStatus.textContent =
-            'Barcode berhasil dibaca';
+      console.log(
+        'Camera settings:',
+        currentTrack.getSettings
+          ? currentTrack.getSettings()
+          : {}
+      );
 
 
-          scanning =
-            false;
+      cameraStatus.textContent =
+        'Arahkan barcode ke kotak scan';
 
 
-          feedbackProduk();
+      siapkanZoom(
+        currentTrack
+      );
 
 
-          hentikanBarcodeScanner();
+      mulaiAutoZoomStabil();
+
+    }
+
+  }
 
 
-          /*
-           * Simpan hasil dulu.
-           */
+  /*
+   * Pastikan video berjalan di Safari.
+   */
 
-          searchInput.value =
-            text;
+  try {
 
+    if (
+      video.paused
+    ) {
 
-          clearBtn.style.display =
-            'block';
+      await video.play();
 
-
-          /*
-           * Tutup kamera setelah hasil
-           * berhasil ditangkap.
-           */
-
-          tutupScanner();
-
-
-          /*
-           * TRUE = mode scan.
-           *
-           * Jadi barcode harus EXACT.
-           */
-
-          cari(true);
-
-        }
-
-      }
-    );
-
-
-    /*
-     * Auto zoom tetap aktif.
-     */
-
-    mulaiAutoZoomStabil();
+    }
 
   }
 
   catch(error) {
 
-    console.error(
-      'ZXing gagal:',
+    console.log(
+      'Video play tambahan gagal:',
       error
     );
 
+  }
 
-    cameraStatus.textContent =
-      'Scanner barcode gagal dijalankan.';
+}
+
+
+/* =========================================================
+   TUNGGU VIDEO AKTIF
+========================================================= */
+
+function tungguVideoAktif() {
+
+  return new Promise(
+    function(resolve) {
+
+      let selesai =
+        false;
+
+
+      function done() {
+
+        if (
+          selesai
+        ) {
+
+          return;
+
+        }
+
+        selesai =
+          true;
+
+        resolve();
+
+      }
+
+
+      if (
+        video.readyState >= 2
+      ) {
+
+        done();
+
+        return;
+
+      }
+
+
+      video.addEventListener(
+        'loadedmetadata',
+        done,
+        {
+          once: true
+        }
+      );
+
+
+      setTimeout(
+        done,
+        2500
+      );
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   PROSES HASIL BARCODE
+========================================================= */
+
+function prosesBarcodeHasil(
+  result
+) {
+
+  if (
+    !scanning
+  ) {
+
+    return;
 
   }
+
+
+  const text =
+    String(
+      result.getText() ||
+      ''
+    ).trim();
+
+
+  if (
+    !text
+  ) {
+
+    return;
+
+  }
+
+
+  console.log(
+    'BARCODE TERBACA ZXING:',
+    text
+  );
+
+
+  scanning =
+    false;
+
+
+  cameraStatus.textContent =
+    'Barcode berhasil dibaca';
+
+
+  feedbackProduk();
+
+
+  /*
+   * Hentikan scanner dahulu.
+   */
+
+  hentikanBarcodeScanner();
+
+
+  /*
+   * Masukkan barcode ke search.
+   */
+
+  searchInput.value =
+    text;
+
+
+  clearBtn.style.display =
+    'block';
+
+
+  /*
+   * Tutup kamera.
+   */
+
+  tutupScanner();
+
+
+  /*
+   * TRUE = scan.
+   *
+   * Barcode wajib EXACT MATCH.
+   */
+
+  cari(true);
 
 }
 
@@ -2588,13 +2535,21 @@ function mulaiAutoZoomStabil() {
   hentikanAutoZoom();
 
 
-  if (!zoomCanUse) {
+  if (
+    !zoomCanUse
+  ) {
+
     return;
+
   }
 
 
-  if (manualZoomMode) {
+  if (
+    manualZoomMode
+  ) {
+
     return;
+
   }
 
 
@@ -2935,26 +2890,14 @@ zoomRange.addEventListener(
 
 
 /* =========================================================
-   STOP BARCODE
+   STOP BARCODE SCANNER
 ========================================================= */
 
 function hentikanBarcodeScanner() {
 
   if (
-    barcodeDetectionTimer
+    codeReader
   ) {
-
-    clearTimeout(
-      barcodeDetectionTimer
-    );
-
-    barcodeDetectionTimer =
-      null;
-
-  }
-
-
-  if (codeReader) {
 
     try {
 
@@ -3019,30 +2962,57 @@ function tutupScanner() {
   hentikanAutoZoom();
 
 
-  if (currentStream) {
+  /*
+   * Ambil stream dari video juga.
+   *
+   * Ini penting karena pada versi baru
+   * ZXing yang membuat stream.
+   */
 
-    currentStream
-      .getTracks()
-      .forEach(
-        function(track) {
+  const stream =
+    currentStream ||
+    video.srcObject;
 
-          try {
 
-            track.stop();
+  if (
+    stream
+  ) {
+
+    try {
+
+      stream
+        .getTracks()
+        .forEach(
+          function(track) {
+
+            try {
+
+              track.stop();
+
+            }
+
+            catch(error) {
+
+              console.log(
+                'Stop track gagal:',
+                error
+              );
+
+            }
 
           }
+        );
 
-          catch(error) {
+    }
 
-            console.log(
-              'Stop track gagal:',
-              error
-            );
+    catch(error) {
 
-          }
-
-        }
+      console.log(
+        'Gagal menghentikan stream:',
+        error
       );
+
+    }
 
   }
 
