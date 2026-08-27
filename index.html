@@ -7,8 +7,7 @@
 
 <meta name="viewport"
       content="width=device-width, initial-scale=1.0,
-               maximum-scale=1.0,
-               user-scalable=no">
+               viewport-fit=cover">
 
 <title>Sentral Makmur - Cek Harga & Stok</title>
 
@@ -20,15 +19,8 @@
   box-sizing: border-box;
 }
 
-html,
 body {
   margin: 0;
-  padding: 0;
-  width: 100%;
-  min-height: 100%;
-}
-
-body {
   font-family: Arial, Helvetica, sans-serif;
   background: #f7f7f7;
   color: #151515;
@@ -38,10 +30,6 @@ body {
   width: min(100% - 32px, 900px);
   margin: 0 auto;
 }
-
-/* =========================================================
-   HEADER
-========================================================= */
 
 header {
   text-align: center;
@@ -58,10 +46,6 @@ h1 {
   color: #777;
   font-size: 17px;
 }
-
-/* =========================================================
-   SEARCH
-========================================================= */
 
 .search-card {
   background: white;
@@ -88,8 +72,6 @@ input {
   border-radius: 15px;
   font-size: 17px;
   outline: none;
-  -webkit-appearance: none;
-  appearance: none;
 }
 
 input:focus {
@@ -140,10 +122,6 @@ button {
   flex: 1;
 }
 
-/* =========================================================
-   SCANNER
-========================================================= */
-
 .scanner-card {
   margin-top: 16px;
   background: #111;
@@ -173,10 +151,6 @@ button {
   font-size: 13px;
 }
 
-/* =========================================================
-   VIDEO
-========================================================= */
-
 .video-wrap {
   position: relative;
   width: 100%;
@@ -194,32 +168,17 @@ video {
   display: block;
   object-fit: cover;
   background: #000;
-
-  /*
-   * Penting untuk iPhone Safari
-   */
-  -webkit-transform: translateZ(0);
-  transform: translateZ(0);
 }
-
-/* =========================================================
-   SCAN BOX
-========================================================= */
 
 .scan-box {
   position: absolute;
-
-  width: 58%;
+  width: 62%;
   height: 27%;
-
-  left: 21%;
+  left: 19%;
   top: 36.5%;
-
   border: 2px solid rgba(255,255,255,.95);
   border-radius: 12px;
-
   pointer-events: none;
-
   box-shadow:
     0 0 0 9999px rgba(0,0,0,.18);
 }
@@ -227,12 +186,9 @@ video {
 .scan-box::before,
 .scan-box::after {
   content: "";
-
   position: absolute;
-
   width: 24px;
   height: 24px;
-
   border-color: white;
   border-style: solid;
 }
@@ -240,7 +196,6 @@ video {
 .scan-box::before {
   left: -2px;
   top: -2px;
-
   border-width: 4px 0 0 4px;
   border-radius: 7px 0 0 0;
 }
@@ -248,32 +203,21 @@ video {
 .scan-box::after {
   right: -2px;
   bottom: -2px;
-
   border-width: 0 4px 4px 0;
   border-radius: 0 0 7px 0;
 }
 
 .scan-text {
   position: absolute;
-
   left: 0;
   right: 0;
-
   bottom: -38px;
-
   text-align: center;
-
   color: white;
-
   font-size: 13px;
   font-weight: 600;
-
   text-shadow: 0 1px 3px #000;
 }
-
-/* =========================================================
-   STATUS
-========================================================= */
 
 .camera-status {
   text-align: center;
@@ -291,10 +235,6 @@ video {
   font-weight: 700;
 }
 
-/* =========================================================
-   ZOOM
-========================================================= */
-
 .zoom-control {
   max-width: 520px;
   margin: 13px auto 0;
@@ -308,10 +248,6 @@ video {
   padding: 0;
   border: none;
 }
-
-/* =========================================================
-   HASIL
-========================================================= */
 
 .result-card {
   margin-top: 16px;
@@ -433,10 +369,6 @@ footer {
   font-size: 13px;
 }
 
-/* =========================================================
-   MOBILE
-========================================================= */
-
 @media(max-width:600px) {
 
   header {
@@ -476,8 +408,8 @@ footer {
   }
 
   .scan-box {
-    width: 62%;
-    left: 19%;
+    width: 68%;
+    left: 16%;
     height: 25%;
     top: 37.5%;
   }
@@ -502,6 +434,7 @@ footer {
 
 </header>
 
+
 <section class="search-card">
 
   <div class="search-row">
@@ -513,7 +446,6 @@ footer {
         type="text"
         placeholder="Cari nama, kode, atau barcode..."
         autocomplete="off"
-        autocorrect="off"
         autocapitalize="off"
         spellcheck="false"
       >
@@ -538,6 +470,7 @@ footer {
 
   </div>
 
+
   <div class="action-row">
 
     <button
@@ -560,9 +493,6 @@ footer {
 
 </section>
 
-<!-- =====================================================
-     SCANNER
-===================================================== -->
 
 <section
   id="scannerCard"
@@ -585,6 +515,7 @@ footer {
 
   </div>
 
+
   <div class="video-wrap">
 
     <video
@@ -593,7 +524,6 @@ footer {
       muted
       playsinline
       webkit-playsinline
-      disablepictureinpicture
     ></video>
 
     <div class="scan-box">
@@ -606,6 +536,7 @@ footer {
 
   </div>
 
+
   <div
     id="cameraStatus"
     class="camera-status"
@@ -613,12 +544,14 @@ footer {
     Menyiapkan kamera...
   </div>
 
+
   <div
     id="zoomStatus"
     class="zoom-status"
   >
     Zoom 1×
   </div>
+
 
   <div
     id="zoomControl"
@@ -638,14 +571,12 @@ footer {
 
 </section>
 
+
 <div
   id="searchResults"
   class="search-results"
 ></div>
 
-<!-- =====================================================
-     RESULT
-===================================================== -->
 
 <section
   id="resultCard"
@@ -672,6 +603,7 @@ footer {
 
   </div>
 
+
   <div
     id="loading"
     class="loading"
@@ -680,11 +612,13 @@ footer {
     Mengambil data stok dari Accurate...
   </div>
 
+
   <div
     id="errorState"
     class="error"
     style="display:none;"
   ></div>
+
 
   <div
     id="product"
@@ -695,6 +629,7 @@ footer {
       id="productName"
       class="product-name"
     ></div>
+
 
     <div class="info-grid">
 
@@ -711,6 +646,7 @@ footer {
 
       </div>
 
+
       <div class="info">
 
         <div class="label">
@@ -724,6 +660,7 @@ footer {
 
       </div>
 
+
       <div class="info">
 
         <div class="label">
@@ -736,6 +673,7 @@ footer {
         ></div>
 
       </div>
+
 
       <div class="info stock">
 
@@ -756,11 +694,13 @@ footer {
 
 </section>
 
+
 <footer>
   Sentral Makmur • API Harga & Stok
 </footer>
 
 </div>
+
 
 <script>
 
@@ -832,6 +772,7 @@ const searchResults =
 let codeReader = null;
 let currentStream = null;
 let currentTrack = null;
+
 let scanning = false;
 let masterCache = null;
 
@@ -847,6 +788,9 @@ let barcodeDetectionTimer = null;
 let manualZoomMode = false;
 
 let audioContext = null;
+
+let lastScannedCode = '';
+let scanLocked = false;
 
 
 /* =========================================================
@@ -1000,23 +944,7 @@ document.addEventListener(
   'DOMContentLoaded',
   function() {
 
-    /*
-     * Jangan langsung focus di iPhone.
-     * Safari bisa membuka keyboard tanpa user action.
-     */
-
-    if (
-      !/iPhone|iPad|iPod/i.test(
-        navigator.userAgent
-      )
-    ) {
-
-      try {
-        searchInput.focus();
-      }
-      catch(error) {}
-
-    }
+    searchInput.focus();
 
   }
 );
@@ -1072,7 +1000,7 @@ searchInput.addEventListener(
 
 
 /* =========================================================
-   NORMALISASI TEKS
+   NORMALISASI
 ========================================================= */
 
 function normalisasi(value) {
@@ -1085,10 +1013,6 @@ function normalisasi(value) {
 
 }
 
-
-/* =========================================================
-   NORMALISASI BARCODE
-========================================================= */
 
 function normalisasiBarcode(value) {
 
@@ -1134,7 +1058,7 @@ function normalisasiBarcode(value) {
 
 
 /* =========================================================
-   BARCODE EXACT MATCH
+   BARCODE EXACT
 ========================================================= */
 
 function barcodeExactSama(
@@ -1180,19 +1104,9 @@ async function ambilMasterCache() {
       API_URL +
       '?aksi=master',
       {
-        method: 'GET',
         cache: 'no-store'
       }
     );
-
-  if (!response.ok) {
-
-    throw new Error(
-      'HTTP ' +
-      response.status
-    );
-
-  }
 
   const json =
     await response.json();
@@ -1247,6 +1161,7 @@ async function cari(dariScan = false) {
 
   tampilLoading();
 
+
   try {
 
     const master =
@@ -1254,19 +1169,12 @@ async function cari(dariScan = false) {
 
 
     /* =====================================================
-       MODE SCAN
-       EXACT MATCH SAJA
+       SCAN = EXACT BARCODE
     ===================================================== */
 
     if (dariScan) {
 
-      const barcodeScan =
-        normalisasiBarcode(
-          keyword
-        );
-
-
-      const barcodeHasil =
+      const hasil =
         master.filter(
           function(item) {
 
@@ -1280,7 +1188,7 @@ async function cari(dariScan = false) {
 
             return barcodeExactSama(
               barcodeValue,
-              barcodeScan
+              keyword
             );
 
           }
@@ -1288,35 +1196,18 @@ async function cari(dariScan = false) {
 
 
       console.log(
-        '================================='
+        'BARCODE SCAN:',
+        keyword
       );
 
       console.log(
-        'HASIL SCAN BARCODE'
-      );
-
-      console.log(
-        'Barcode kamera:',
-        barcodeScan
-      );
-
-      console.log(
-        'Jumlah exact match:',
-        barcodeHasil.length
-      );
-
-      console.log(
-        'Produk exact match:',
-        barcodeHasil
-      );
-
-      console.log(
-        '================================='
+        'EXACT MATCH:',
+        hasil
       );
 
 
       if (
-        barcodeHasil.length === 0
+        hasil.length === 0
       ) {
 
         tampilError(
@@ -1331,11 +1222,11 @@ async function cari(dariScan = false) {
 
 
       if (
-        barcodeHasil.length === 1
+        hasil.length === 1
       ) {
 
         await tampilProduk(
-          barcodeHasil[0]
+          hasil[0]
         );
 
         return;
@@ -1344,7 +1235,7 @@ async function cari(dariScan = false) {
 
 
       tampilDaftarHasil(
-        barcodeHasil
+        hasil
       );
 
       return;
@@ -1353,7 +1244,7 @@ async function cari(dariScan = false) {
 
 
     /* =====================================================
-       PENCARIAN MANUAL
+       MANUAL SEARCH
     ===================================================== */
 
     const target =
@@ -1406,24 +1297,11 @@ async function cari(dariScan = false) {
             );
 
 
-          const cocokBarcode =
-            barcode === targetBarcode;
-
-          const cocokKode =
-            kode === target;
-
-          const cocokId =
-            id === target;
-
-          const cocokNama =
-            nama.includes(target);
-
-
           return (
-            cocokBarcode ||
-            cocokKode ||
-            cocokId ||
-            cocokNama
+            barcode === targetBarcode ||
+            kode === target ||
+            id === target ||
+            nama.includes(target)
           );
 
         }
@@ -1431,7 +1309,7 @@ async function cari(dariScan = false) {
 
 
     console.log(
-      'Pencarian manual:',
+      'Pencarian:',
       keyword
     );
 
@@ -1635,10 +1513,6 @@ async function tampilProduk(
     );
 
 
-    /*
-     * Kirim ID jika tersedia.
-     */
-
     if (item.id) {
 
       params.set(
@@ -1685,61 +1559,19 @@ async function tampilProduk(
     }
 
 
-    /*
-     * Jika ID sudah ada,
-     * Accurate bisa langsung menuju detail.
-     *
-     * Ini mempercepat proses dibanding
-     * mencari ulang berdasarkan barcode.
-     */
-
-    const url =
-      API_URL +
-      '?' +
-      params.toString();
-
-
-    const waktuMulai =
-      performance.now();
-
-
-    console.log(
-      'Mengambil stok Accurate...'
-    );
-
-
     const response =
       await fetch(
-        url,
+        API_URL +
+        '?' +
+        params.toString(),
         {
-          method: 'GET',
           cache: 'no-store'
         }
       );
 
 
-    if (!response.ok) {
-
-      throw new Error(
-        'HTTP ' +
-        response.status
-      );
-
-    }
-
-
     const json =
       await response.json();
-
-
-    console.log(
-      'Waktu ambil stok:',
-      Math.round(
-        performance.now() -
-        waktuMulai
-      ) +
-      ' ms'
-    );
 
 
     if (
@@ -1822,7 +1654,6 @@ async function tampilProduk(
   catch(error) {
 
     console.error(
-      'Gagal ambil stok:',
       error
     );
 
@@ -1941,38 +1772,19 @@ function resetResult() {
 
 scanBtn.addEventListener(
   'click',
-  function() {
-
-    /*
-     * Audio harus dipanggil dari user action.
-     * Ini penting di iPhone.
-     */
+  async function() {
 
     siapkanAudio();
 
-    bukaScanner();
+    await bukaScanner();
 
   }
 );
 
 
 /* =========================================================
-   CEK KEMAMPUAN KAMERA
-========================================================= */
-
-function kameraTersedia() {
-
-  return (
-    navigator.mediaDevices &&
-    typeof navigator.mediaDevices.getUserMedia ===
-      'function'
-  );
-
-}
-
-
-/* =========================================================
    BUKA SCANNER
+   KHUSUS LEBIH RAMAH iPHONE
 ========================================================= */
 
 async function bukaScanner() {
@@ -1982,6 +1794,43 @@ async function bukaScanner() {
    */
 
   tutupScanner();
+
+
+  /*
+   * iPhone harus menjalankan getUserMedia
+   * setelah user menekan tombol.
+   */
+
+  if (
+    !navigator.mediaDevices ||
+    !navigator.mediaDevices.getUserMedia
+  ) {
+
+    alert(
+      'Browser ini tidak mendukung akses kamera. Gunakan Safari atau Chrome versi terbaru.'
+    );
+
+    return;
+
+  }
+
+
+  /*
+   * HTTPS wajib.
+   */
+
+  if (
+    location.protocol !== 'https:' &&
+    location.hostname !== 'localhost'
+  ) {
+
+    alert(
+      'Kamera membutuhkan koneksi HTTPS.'
+    );
+
+    return;
+
+  }
 
 
   scannerCard.style.display =
@@ -1999,55 +1848,17 @@ async function bukaScanner() {
   scanning =
     true;
 
+  scanLocked =
+    false;
+
+  lastScannedCode =
+    '';
+
   currentZoom =
     1;
 
   manualZoomMode =
     false;
-
-
-  /*
-   * iPhone/Safari membutuhkan
-   * halaman HTTPS.
-   */
-
-  if (
-    location.protocol !== 'https:' &&
-    location.hostname !== 'localhost'
-  ) {
-
-    cameraStatus.textContent =
-      'Kamera membutuhkan HTTPS.';
-
-    scanning =
-      false;
-
-    alert(
-      'Kamera iPhone membutuhkan HTTPS. Buka website menggunakan alamat HTTPS.'
-    );
-
-    return;
-
-  }
-
-
-  if (
-    !kameraTersedia()
-  ) {
-
-    cameraStatus.textContent =
-      'Browser tidak mendukung kamera.';
-
-    scanning =
-      false;
-
-    alert(
-      'Browser ini tidak mendukung akses kamera.'
-    );
-
-    return;
-
-  }
 
 
   try {
@@ -2057,8 +1868,15 @@ async function bukaScanner() {
 
     /*
      * =====================================================
-     * METODE 1
-     * iPhone / Android modern
+     * CARA 1
+     *
+     * Jangan memakai:
+     * facingMode: { exact: 'environment' }
+     *
+     * karena pada beberapa iPhone Safari
+     * justru dapat menyebabkan OverconstrainedError.
+     *
+     * Kita pakai ideal.
      * =====================================================
      */
 
@@ -2072,7 +1890,7 @@ async function bukaScanner() {
           video: {
 
             facingMode: {
-              exact: 'environment'
+              ideal: 'environment'
             },
 
             width: {
@@ -2093,88 +1911,31 @@ async function bukaScanner() {
 
     }
 
-    catch(errorExact) {
+    catch(error1) {
 
       console.log(
-        'Exact environment gagal:',
-        errorExact
+        'Kamera environment gagal:',
+        error1
       );
 
 
       /*
        * ===================================================
-       * METODE 2
-       * Fallback iPhone
+       * CARA 2
+       *
+       * iPhone kadang lebih cocok dengan
+       * video: true lalu kita pilih kamera.
        * ===================================================
        */
 
-      try {
+      stream =
+        await navigator.mediaDevices.getUserMedia({
 
-        stream =
-          await navigator.mediaDevices.getUserMedia({
+          audio: false,
 
-            audio: false,
+          video: true
 
-            video: {
-
-              facingMode: {
-                ideal: 'environment'
-              },
-
-              width: {
-                ideal: 1280
-              },
-
-              height: {
-                ideal: 720
-              },
-
-              frameRate: {
-                ideal: 30
-              }
-
-            }
-
-          });
-
-      }
-
-      catch(errorFallback) {
-
-        console.log(
-          'Fallback gagal:',
-          errorFallback
-        );
-
-
-        /*
-         * =================================================
-         * METODE 3
-         * Kamera tanpa facingMode
-         *
-         * Sangat membantu beberapa Safari/iPhone.
-         * =================================================
-         */
-
-        stream =
-          await navigator.mediaDevices.getUserMedia({
-
-            audio: false,
-
-            video: true
-
-          });
-
-      }
-
-    }
-
-
-    if (!stream) {
-
-      throw new Error(
-        'Stream kamera kosong.'
-      );
+        });
 
     }
 
@@ -2183,44 +1944,48 @@ async function bukaScanner() {
       stream;
 
 
-    /*
-     * Penting untuk iOS:
-     * srcObject harus di-set sebelum play.
-     */
-
     video.srcObject =
       stream;
 
 
+    /*
+     * Sangat penting untuk iPhone.
+     */
+
     video.setAttribute(
       'playsinline',
-      'true'
+      ''
     );
 
     video.setAttribute(
       'webkit-playsinline',
-      'true'
+      ''
     );
 
-    video.muted =
-      true;
-
-
-    /*
-     * Safari kadang membutuhkan load()
-     * sebelum play().
-     */
 
     try {
 
-      video.load();
+      await video.play();
 
     }
 
-    catch(error) {}
+    catch(playError) {
 
+      console.log(
+        'Video play pertama gagal:',
+        playError
+      );
 
-    await video.play();
+      /*
+       * Coba lagi.
+       */
+
+      video.muted =
+        true;
+
+      await video.play();
+
+    }
 
 
     const tracks =
@@ -2248,16 +2013,8 @@ async function bukaScanner() {
     );
 
 
-    console.log(
-      'Kamera settings:',
-      currentTrack.getSettings
-        ? currentTrack.getSettings()
-        : {}
-    );
-
-
     cameraStatus.textContent =
-      'Kamera aktif — arahkan barcode ke kotak';
+      'Kamera aktif. Arahkan barcode ke kotak.';
 
 
     siapkanZoom(
@@ -2266,8 +2023,8 @@ async function bukaScanner() {
 
 
     /*
-     * Mulai scanner setelah video
-     * benar-benar aktif.
+     * Tunggu sebentar agar kamera iPhone
+     * benar-benar stabil sebelum scanner dimulai.
      */
 
     setTimeout(
@@ -2280,7 +2037,7 @@ async function bukaScanner() {
         }
 
       },
-      300
+      500
     );
 
   }
@@ -2288,65 +2045,65 @@ async function bukaScanner() {
   catch(error) {
 
     console.error(
-      'Kamera gagal:',
+      'KAMERA GAGAL:',
       error
     );
+
+
+    const namaError =
+      error &&
+      error.name
+        ? error.name
+        : 'UnknownError';
 
 
     tutupScanner();
 
 
-    let pesan =
-      'Kamera tidak dapat digunakan.';
-
-
     if (
-      error &&
-      error.name ===
+      namaError ===
       'NotAllowedError'
     ) {
 
-      pesan =
-        'Izin kamera ditolak. Izinkan kamera untuk Safari lalu coba lagi.';
+      alert(
+        'Akses kamera ditolak. Di iPhone buka Settings → Safari → Camera → Allow, lalu buka ulang halaman ini.'
+      );
+
+      return;
 
     }
 
-    else if (
-      error &&
-      error.name ===
+
+    if (
+      namaError ===
       'NotFoundError'
     ) {
 
-      pesan =
-        'Kamera tidak ditemukan pada perangkat.';
+      alert(
+        'Kamera tidak ditemukan di perangkat.'
+      );
+
+      return;
 
     }
 
-    else if (
-      error &&
-      error.name ===
+
+    if (
+      namaError ===
       'NotReadableError'
     ) {
 
-      pesan =
-        'Kamera sedang digunakan aplikasi lain. Tutup aplikasi kamera lain lalu coba lagi.';
+      alert(
+        'Kamera sedang digunakan aplikasi lain. Tutup aplikasi yang menggunakan kamera lalu coba lagi.'
+      );
 
-    }
-
-    else if (
-      error &&
-      error.name ===
-      'SecurityError'
-    ) {
-
-      pesan =
-        'Safari memblokir kamera. Pastikan website menggunakan HTTPS.';
+      return;
 
     }
 
 
     alert(
-      pesan
+      'Kamera tidak dapat digunakan. Pastikan izin kamera sudah diberikan dan halaman dibuka melalui HTTPS.'
     );
 
   }
@@ -2363,39 +2120,21 @@ async function mulaiBarcodeScanner() {
   hentikanBarcodeScanner();
 
 
-  /*
-   * Untuk iPhone:
-   *
-   * Jangan terlalu bergantung pada
-   * BarcodeDetector.
-   *
-   * Safari lebih aman menggunakan ZXing.
-   */
-
-  const isIOS =
-    /iPhone|iPad|iPod/i.test(
-      navigator.userAgent
-    );
-
-
-  if (
-    isIOS
-  ) {
-
-    console.log(
-      'iOS terdeteksi → menggunakan ZXing.'
-    );
-
-    mulaiZXingScanner();
-
+  if (!scanning) {
     return;
-
   }
 
 
   /*
-   * Android / browser lain:
-   * Coba BarcodeDetector dahulu.
+   * =====================================================
+   * BarcodeDetector
+   *
+   * Safari/iOS pada versi tertentu belum mendukung
+   * BarcodeDetector secara konsisten.
+   *
+   * Karena itu kalau tersedia kita boleh coba,
+   * tetapi ZXing tetap menjadi fallback.
+   * =====================================================
    */
 
   if (
@@ -2446,6 +2185,11 @@ async function mulaiBarcodeScanner() {
         formats.length > 0
       ) {
 
+        console.log(
+          'Menggunakan BarcodeDetector native.'
+        );
+
+
         mulaiNativeBarcodeDetector(
           formats
         );
@@ -2459,7 +2203,7 @@ async function mulaiBarcodeScanner() {
     catch(error) {
 
       console.log(
-        'BarcodeDetector gagal:',
+        'BarcodeDetector tidak bisa digunakan:',
         error
       );
 
@@ -2469,7 +2213,11 @@ async function mulaiBarcodeScanner() {
 
 
   /*
-   * Fallback
+   * =====================================================
+   * ZXing
+   *
+   * Ini sangat penting untuk iPhone.
+   * =====================================================
    */
 
   mulaiZXingScanner();
@@ -2500,7 +2248,7 @@ function mulaiNativeBarcodeDetector(
   catch(error) {
 
     console.log(
-      'Gagal membuat BarcodeDetector:',
+      'BarcodeDetector gagal:',
       error
     );
 
@@ -2518,9 +2266,6 @@ function mulaiNativeBarcodeDetector(
   let detecting =
     false;
 
-  let lastSuccessfulCode =
-    '';
-
 
   async function scanFrame() {
 
@@ -2534,7 +2279,7 @@ function mulaiNativeBarcodeDetector(
       barcodeDetectionTimer =
         setTimeout(
           scanFrame,
-          150
+          120
         );
 
       return;
@@ -2550,7 +2295,7 @@ function mulaiNativeBarcodeDetector(
       barcodeDetectionTimer =
         setTimeout(
           scanFrame,
-          150
+          120
         );
 
       return;
@@ -2572,12 +2317,8 @@ function mulaiNativeBarcodeDetector(
 
       if (
         results &&
-        results.length > 0
+        results.length
       ) {
-
-        let rawValue =
-          '';
-
 
         for (
           const result of results
@@ -2588,42 +2329,23 @@ function mulaiNativeBarcodeDetector(
             result.rawValue
           ) {
 
-            rawValue =
+            const text =
               String(
                 result.rawValue
               ).trim();
 
-            break;
+
+            if (text) {
+
+              await barcodeBerhasil(
+                text
+              );
+
+              return;
+
+            }
 
           }
-
-        }
-
-
-        if (rawValue) {
-
-          if (
-            rawValue ===
-            lastSuccessfulCode
-          ) {
-
-            detecting =
-              false;
-
-            return;
-
-          }
-
-
-          lastSuccessfulCode =
-            rawValue;
-
-
-          berhasilScan(
-            rawValue
-          );
-
-          return;
 
         }
 
@@ -2638,7 +2360,7 @@ function mulaiNativeBarcodeDetector(
     catch(error) {
 
       console.log(
-        'BarcodeDetector:',
+        'Native detector:',
         error
       );
 
@@ -2664,19 +2386,17 @@ function mulaiNativeBarcodeDetector(
 
   scanFrame();
 
+
   mulaiAutoZoomStabil();
 
 }
 
 
 /* =========================================================
-   ZXING
+   ZXING SCANNER
 ========================================================= */
 
 function mulaiZXingScanner() {
-
-  hentikanBarcodeScanner();
-
 
   try {
 
@@ -2692,32 +2412,17 @@ function mulaiZXingScanner() {
     }
 
 
-    if (
-      !video.srcObject
-    ) {
-
-      cameraStatus.textContent =
-        'Kamera belum siap.';
-
-      return;
-
-    }
-
-
     codeReader =
       new ZXing.BrowserMultiFormatReader();
 
 
     cameraStatus.textContent =
-      'Scanner aktif — mencari barcode...';
+      'Mencari barcode...';
 
 
     /*
-     * Karena stream sudah dibuka sendiri,
-     * kita gunakan decodeFromVideoElement.
-     *
-     * Ini lebih stabil di Safari dibanding
-     * membiarkan ZXing membuka kamera sendiri.
+     * decodeFromVideoElement lebih kompatibel
+     * dengan stream yang sudah kita pasang sendiri.
      */
 
     codeReader.decodeFromVideoElement(
@@ -2729,31 +2434,26 @@ function mulaiZXingScanner() {
         }
 
 
-        if (result) {
-
-          const text =
-            String(
-              result.getText() ||
-              ''
-            ).trim();
-
-
-          if (!text) {
-            return;
-          }
-
-
-          console.log(
-            'BARCODE TERBACA ZXING:',
-            text
-          );
-
-
-          berhasilScan(
-            text
-          );
-
+        if (!result) {
+          return;
         }
+
+
+        const text =
+          String(
+            result.getText() ||
+            ''
+          ).trim();
+
+
+        if (!text) {
+          return;
+        }
+
+
+        barcodeBerhasil(
+          text
+        );
 
       }
     );
@@ -2780,27 +2480,53 @@ function mulaiZXingScanner() {
 
 
 /* =========================================================
-   BERHASIL SCAN
+   BARCODE BERHASIL
 ========================================================= */
 
-async function berhasilScan(
-  rawValue
+async function barcodeBerhasil(
+  text
 ) {
 
-  if (!scanning) {
+  if (
+    !scanning ||
+    scanLocked
+  ) {
+
     return;
+
   }
 
 
-  const text =
+  const clean =
     String(
-      rawValue || ''
+      text || ''
     ).trim();
 
 
-  if (!text) {
+  if (!clean) {
     return;
   }
+
+
+  /*
+   * Cegah scanner membaca barcode yang sama
+   * berkali-kali.
+   */
+
+  if (
+    lastScannedCode === clean
+  ) {
+
+    return;
+
+  }
+
+
+  scanLocked =
+    true;
+
+  lastScannedCode =
+    clean;
 
 
   console.log(
@@ -2808,12 +2534,8 @@ async function berhasilScan(
   );
 
   console.log(
-    'BARCODE BERHASIL DIBACA'
-  );
-
-  console.log(
-    'Raw:',
-    text
+    'BARCODE BERHASIL DIBACA:',
+    clean
   );
 
   console.log(
@@ -2822,11 +2544,11 @@ async function berhasilScan(
 
 
   cameraStatus.textContent =
-    'Barcode berhasil dibaca';
+    'Barcode berhasil dibaca ✓';
 
 
   /*
-   * Stop scanner SEBELUM request API.
+   * Matikan scanner sebelum fetch API.
    */
 
   scanning =
@@ -2839,10 +2561,11 @@ async function berhasilScan(
 
 
   /*
-   * Feedback langsung.
+   * Beep langsung saat barcode terbaca.
    */
 
   bunyiBeep();
+
   getarBerhasil();
 
 
@@ -2854,20 +2577,21 @@ async function berhasilScan(
 
 
   /*
-   * Masukkan barcode ke search.
+   * Masukkan barcode ke input.
    */
 
   searchInput.value =
-    text;
-
+    clean;
 
   clearBtn.style.display =
     'block';
 
 
   /*
-   * true =
-   * EXACT BARCODE MATCH
+   * TRUE = MODE SCAN.
+   *
+   * Artinya:
+   * barcode HARUS EXACT MATCH.
    */
 
   await cari(true);
@@ -3002,12 +2726,6 @@ function siapkanZoom(
 
     const capabilities =
       track.getCapabilities();
-
-
-    console.log(
-      'Camera capabilities:',
-      capabilities
-    );
 
 
     if (
@@ -3237,32 +2955,6 @@ function hentikanBarcodeScanner() {
 
   }
 
-
-  /*
-   * ZXing tidak selalu langsung berhenti
-   * dari reset saja, jadi reset dipanggil
-   * secara aman.
-   */
-
-  if (codeReader) {
-
-    try {
-
-      codeReader.reset();
-
-    }
-
-    catch(error) {
-
-      console.log(
-        'ZXing reset:',
-        error
-      );
-
-    }
-
-  }
-
 }
 
 
@@ -3294,7 +2986,11 @@ function hentikanAutoZoom() {
 
 closeCameraBtn.addEventListener(
   'click',
-  tutupScanner
+  function() {
+
+    tutupScanner();
+
+  }
 );
 
 
@@ -3304,9 +3000,37 @@ function tutupScanner() {
     false;
 
 
+  scanLocked =
+    false;
+
+
   hentikanBarcodeScanner();
 
   hentikanAutoZoom();
+
+
+  if (codeReader) {
+
+    try {
+
+      codeReader.reset();
+
+    }
+
+    catch(error) {
+
+      console.log(
+        'ZXing reset:',
+        error
+      );
+
+    }
+
+  }
+
+
+  codeReader =
+    null;
 
 
   if (currentStream) {
@@ -3345,18 +3069,9 @@ function tutupScanner() {
   catch(error) {}
 
 
-  try {
-
-    video.srcObject =
-      null;
-
-  }
-
-  catch(error) {}
-
-
-  codeReader =
+  video.srcObject =
     null;
+
 
   currentStream =
     null;
